@@ -1,0 +1,22 @@
+{
+  "name": "media-ideology-coding",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RickNabb/media-ideology-coding.git"
+  },
+  "author": "Nick Rabb (nicholas.rabb@tufts.edu)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/RickNabb/media-ideology-coding/issues"
+  },
+  "homepage": "https://github.com/RickNabb/media-ideology-coding#readme",
+  "dependencies": {
+    "mysql": "^2.18.1"
+  }
+}
