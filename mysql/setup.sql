@@ -159,3 +159,221 @@ CREATE TABLE IF NOT EXISTS dangerous_virus_codes (
     ON DELETE SET NULL
     ON UPDATE CASCADE
 );
+
+/* HOWARD MASK-WEARING CODES */
+
+-- CREATE TABLE IF NOT EXISTS h_comfort_difficult_breathing_codes (
+--   id BIGINT AUTO_INCREMENT PRIMARY KEY,
+--   post_id BIGINT,
+--   code INT DEFAULT -1,
+--   CONSTRAINT fk_h_comfort_difficult_breathing_post
+--   FOREIGN KEY (post_id)
+--     REFERENCES posts(id)
+--     ON DELETE SET NULL
+--     ON UPDATE CASCADE
+-- );
+
+-- CREATE TABLE IF NOT EXISTS h_comfort_too_hot_codes (
+--   id BIGINT AUTO_INCREMENT PRIMARY KEY,
+--   post_id BIGINT,
+--   code INT DEFAULT -1,
+--   CONSTRAINT fk_h_comfort_too_hot_post
+--   FOREIGN KEY (post_id)
+--     REFERENCES posts(id)
+--     ON DELETE SET NULL
+--     ON UPDATE CASCADE
+-- );
+
+-- CREATE TABLE IF NOT EXISTS h_efficacy_health_codes (
+--   id BIGINT AUTO_INCREMENT PRIMARY KEY,
+--   post_id BIGINT,
+--   code INT DEFAULT -1,
+--   CONSTRAINT fk_h_efficacy_health_post
+--   FOREIGN KEY (post_id)
+--     REFERENCES posts(id)
+--     ON DELETE SET NULL
+--     ON UPDATE CASCADE
+-- );
+
+-- CREATE TABLE IF NOT EXISTS h_efficacy_ineffective_codes (
+--   id BIGINT AUTO_INCREMENT PRIMARY KEY,
+--   post_id BIGINT,
+--   code INT DEFAULT -1,
+--   CONSTRAINT fk_h_efficacy_ineffective_post
+--   FOREIGN KEY (post_id)
+--     REFERENCES posts(id)
+--     ON DELETE SET NULL
+--     ON UPDATE CASCADE
+-- );
+
+-- CREATE TABLE IF NOT EXISTS h_access_difficult_codes (
+--   id BIGINT AUTO_INCREMENT PRIMARY KEY,
+--   post_id BIGINT,
+--   code INT DEFAULT -1,
+--   CONSTRAINT fk_h_access_difficult_post
+--   FOREIGN KEY (post_id)
+--     REFERENCES posts(id)
+--     ON DELETE SET NULL
+--     ON UPDATE CASCADE
+-- );
+
+-- CREATE TABLE IF NOT EXISTS h_access_expensive_codes (
+--   id BIGINT AUTO_INCREMENT PRIMARY KEY,
+--   post_id BIGINT,
+--   code INT DEFAULT -1,
+--   CONSTRAINT fk_h_access_expensive_post
+--   FOREIGN KEY (post_id)
+--     REFERENCES posts(id)
+--     ON DELETE SET NULL
+--     ON UPDATE CASCADE
+-- );
+
+-- CREATE TABLE IF NOT EXISTS h_compensation_stay_away_codes (
+--   id BIGINT AUTO_INCREMENT PRIMARY KEY,
+--   post_id BIGINT,
+--   code INT DEFAULT -1,
+--   CONSTRAINT fk_h_compensation_stay_away_post
+--   FOREIGN KEY (post_id)
+--     REFERENCES posts(id)
+--     ON DELETE SET NULL
+--     ON UPDATE CASCADE
+-- );
+
+-- CREATE TABLE IF NOT EXISTS h_inconvenience_remembering_codes (
+--   id BIGINT AUTO_INCREMENT PRIMARY KEY,
+--   post_id BIGINT,
+--   code INT DEFAULT -1,
+--   CONSTRAINT fk_h_inconvenience_remembering_post
+--   FOREIGN KEY (post_id)
+--     REFERENCES posts(id)
+--     ON DELETE SET NULL
+--     ON UPDATE CASCADE
+-- );
+
+-- CREATE TABLE IF NOT EXISTS h_inconvenience_hassle_codes (
+--   id BIGINT AUTO_INCREMENT PRIMARY KEY,
+--   post_id BIGINT,
+--   code INT DEFAULT -1,
+--   CONSTRAINT fk_h_inconvenience_hassle_post
+--   FOREIGN KEY (post_id)
+--     REFERENCES posts(id)
+--     ON DELETE SET NULL
+--     ON UPDATE CASCADE
+-- );
+
+-- CREATE TABLE IF NOT EXISTS h_appearance_ugly_codes (
+--   id BIGINT AUTO_INCREMENT PRIMARY KEY,
+--   post_id BIGINT,
+--   code INT DEFAULT -1,
+--   CONSTRAINT fk_h_appearance_ugly_post
+--   FOREIGN KEY (post_id)
+--     REFERENCES posts(id)
+--     ON DELETE SET NULL
+--     ON UPDATE CASCADE
+-- );
+
+-- CREATE TABLE IF NOT EXISTS h_appearance_weird_codes (
+--   id BIGINT AUTO_INCREMENT PRIMARY KEY,
+--   post_id BIGINT,
+--   code INT DEFAULT -1,
+--   CONSTRAINT fk_h_appearance_weird_post
+--   FOREIGN KEY (post_id)
+--     REFERENCES posts(id)
+--     ON DELETE SET NULL
+--     ON UPDATE CASCADE
+-- );
+
+-- CREATE TABLE IF NOT EXISTS h_attention_untrustworthy_codes (
+--   id BIGINT AUTO_INCREMENT PRIMARY KEY,
+--   post_id BIGINT,
+--   code INT DEFAULT -1,
+--   CONSTRAINT fk_h_attention_untrustworthy_post
+--   FOREIGN KEY (post_id)
+--     REFERENCES posts(id)
+--     ON DELETE SET NULL
+--     ON UPDATE CASCADE
+-- );
+
+-- CREATE TABLE IF NOT EXISTS h_attention_uncomfortable_codes (
+--   id BIGINT AUTO_INCREMENT PRIMARY KEY,
+--   post_id BIGINT,
+--   code INT DEFAULT -1,
+--   CONSTRAINT fk_h_attention_uncomfortable_post
+--   FOREIGN KEY (post_id)
+--     REFERENCES posts(id)
+--     ON DELETE SET NULL
+--     ON UPDATE CASCADE
+-- );
+
+-- CREATE TABLE IF NOT EXISTS h_independence_forced_codes (
+--   id BIGINT AUTO_INCREMENT PRIMARY KEY,
+--   post_id BIGINT,
+--   code INT DEFAULT -1,
+--   CONSTRAINT fk_h_independence_forced_post
+--   FOREIGN KEY (post_id)
+--     REFERENCES posts(id)
+--     ON DELETE SET NULL
+--     ON UPDATE CASCADE
+-- );
+
+-- CREATE TABLE IF NOT EXISTS h_independence_authority_codes (
+--   id BIGINT AUTO_INCREMENT PRIMARY KEY,
+--   post_id BIGINT,
+--   code INT DEFAULT -1,
+--   CONSTRAINT fk_h_independence_authority_post
+--   FOREIGN KEY (post_id)
+--     REFERENCES posts(id)
+--     ON DELETE SET NULL
+--     ON UPDATE CASCADE
+-- );
+
+CREATE TABLE IF NOT EXISTS mask_wearing_codes (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  post_id BIGINT,
+  code INT DEFAULT -1,
+  CONSTRAINT fk_mask_wearing_post
+  FOREIGN KEY (post_id)
+    REFERENCES posts(id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS mask_wearing_disagree_codes (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  post_id BIGINT,
+  code INT DEFAULT -1,
+  CONSTRAINT fk_mask_wearing_disagree_post
+  FOREIGN KEY (post_id)
+    REFERENCES posts(id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS mask_wearing_agree_codes (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  post_id BIGINT,
+  code INT DEFAULT -1,
+  CONSTRAINT fk_mask_wearing_agree_post
+  FOREIGN KEY (post_id)
+    REFERENCES posts(id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS articles_mask (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  post VARCHAR(10240),
+  native_id TEXT,
+  post_account_id BIGINT,
+  post_type BIGINT,
+  CONSTRAINT fk_article_mask_account
+  FOREIGN KEY (post_account_id)
+    REFERENCES post_accounts(id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+  CONSTRAINT fk_article_mask_type
+  FOREIGN KEY (post_type)
+    REFERENCES post_types(id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+);
