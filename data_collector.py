@@ -18,6 +18,8 @@ from multiprocessing import Pool
 import io
 import numpy as np
 import re
+import math
+from datetime import datetime
 
 DATA_DIR = './news-data'
 
@@ -197,6 +199,33 @@ def write_mc_df_to_sql(df):
       f.write(f'INSERT INTO `articles_mask` (`post`,`native_id`,`post_account_id`,`post_type`) VALUES ("{par}","{row_data.stories_id}","{POST_ACCOUNTS_IDS[row_data.media_id]}","{2}");\n')
   for f in files.values():
     f.close()
+
+def write_mc_df_to_sql_date_sample(df):
+  files = { name: io.open(f'mysql/articles/{name}_sample.sql', 'w', encoding='utf-8') for name in media_id_to_name.values() }
+  NUM_PER_MONTH = 10
+  ids_written = []
+  written_per_month = { month: 0 for month in range(1,13) }
+  for row in df.iterrows():
+    print(f'Checking row {row[0]}')
+    dt_format = '%Y-%m-%d %H:%M:%S'
+    row_data = row[1]
+    if pd.isna(row_data.publish_date):
+      continue
+    dt_str = row_data.publish_date
+    if ('.' in dt_str):
+      dt_str = dt_str[:dt_str.index('.')]
+    dt = datetime.strptime(dt_str, dt_format)
+    if row[0] not in ids_written and written_per_month[dt.month] < NUM_PER_MONTH:
+      print(f'Writing row {row[0]}')
+      f = files[row_data.media_name]
+      pars = get_keyword_paragraph(row_data.article_data_raw, 'mask', 2)
+      for par in pars:
+        f.write(f'INSERT INTO `articles_mask` (`post`,`native_id`,`post_account_id`,`post_type`) VALUES ("{par}","{row_data.stories_id}","{POST_ACCOUNTS_IDS[row_data.media_id]}","{2}");\n')
+      ids_written.append(row[0])
+      written_per_month[dt.month] += 1
+  for f in files.values():
+    f.close()
+
 
 def get_keyword_paragraph(text, keyword, num_surround_pars):
   keyword_idx = np.array([m.start() for m in re.finditer(keyword, text)])

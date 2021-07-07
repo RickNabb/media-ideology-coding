@@ -329,33 +329,33 @@ CREATE TABLE IF NOT EXISTS dangerous_virus_codes (
 
 CREATE TABLE IF NOT EXISTS mask_wearing_codes (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  post_id BIGINT,
+  article_id BIGINT,
   code INT DEFAULT -1,
   CONSTRAINT fk_mask_wearing_post
-  FOREIGN KEY (post_id)
-    REFERENCES posts(id)
+  FOREIGN KEY (article_id)
+    REFERENCES articles_mask(id)
     ON DELETE SET NULL
     ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS mask_wearing_disagree_codes (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  post_id BIGINT,
+  article_id BIGINT,
   code INT DEFAULT -1,
   CONSTRAINT fk_mask_wearing_disagree_post
-  FOREIGN KEY (post_id)
-    REFERENCES posts(id)
+  FOREIGN KEY (article_id)
+    REFERENCES articles_mask(id)
     ON DELETE SET NULL
     ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS mask_wearing_agree_codes (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  post_id BIGINT,
+  article_id BIGINT,
   code INT DEFAULT -1,
   CONSTRAINT fk_mask_wearing_agree_post
-  FOREIGN KEY (post_id)
-    REFERENCES posts(id)
+  FOREIGN KEY (article_id)
+    REFERENCES articles_mask(id)
     ON DELETE SET NULL
     ON UPDATE CASCADE
 );
