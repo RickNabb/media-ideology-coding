@@ -27,6 +27,10 @@ from stem.control import Controller
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 
+# For NLP pipelines
+import spacy
+from spacy.tokens import Span
+
 DATA_DIR = './news-data'
 
 '''
@@ -318,9 +322,36 @@ def get_keyword_paragraph(text, keyword, num_surround_pars):
       start_idx = break_idx[max(last_break_idx-num_surround_pars, 0)]+1
 
     par = text[int(start_idx):int(end_idx)]
-    if par not in paragraphs:
-      paragraphs.append(par.replace('\n','<br/><br/>').replace('"','\\"'))
+    formatted_par = par.replace('\n',' <br/><br/> ').replace('"','\\"')
+    if formatted_par not in paragraphs:
+      paragraphs.append(formatted_par)
   return paragraphs
+
+'''
+NLP HELPER FUNCTIONS
+'''
+
+NER_GROUP_LABEL='GROUP'
+
+NER_GROUPS = [ 'medical officials', 'doctors', 'democrats', 'republicans', 'immigrants', 'government officials', 'legislators', 'health officials', 'communists', 'socialists', 'libertarians', 'children', 'parents', 'elders', 'the elderly', 'Americans', 'patriots', 'governors', 'legislators', 'migrants', 'terrorists', 'the public', 'citizens', 'epidemiologists', 'representatives', 'congress', 'hospital workers', 'scientists', 'mayors', 'celebrities', 'the media' ]
+
+def label_ner_groups(doc, groups):
+  doc_text = [ token.text.lower() for token in doc ]
+  entities = []
+  for group in groups:
+    group_tokens = group.split(' ')
+    n_gram_tokens = []
+    for i in range(len(doc_text)-len(group_tokens)):
+      n_gram = []
+      for j in range(len(group_tokens)):
+        n_gram.append(doc_text[i+j])
+      n_gram_tokens.append(n_gram)
+    matches = list(map(lambda el: sum(el) == len(el), np.array(n_gram_tokens) == group_tokens))
+    indices = np.where(matches)[0]
+    for i in indices:
+      ent = Span(doc, i, i+len(group_tokens), label=NER_GROUP_LABEL)
+      entities.append(ent)
+  doc.set_ents(entities, default="unmodified")
 
 '''
 PANDAS FUNCTIONS
