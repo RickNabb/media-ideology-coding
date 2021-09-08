@@ -49,6 +49,13 @@ fb_page_names = {
 }
 
 def get_fb_posts_from_march_onward(page):
+  '''
+  Use the facebook scraper library to get posts from a certain fb page up to
+  250 pages back. When this was written, it got posts back to March 2020, but
+  that is no longer the case.
+
+  :param page: The name of the page to fetch (as it appears in the fb url)
+  '''
   p = 250
   f = open(f'./data/fb-posts/{page}.json', 'w')
   f.write('[')
@@ -59,6 +66,9 @@ def get_fb_posts_from_march_onward(page):
   f.close()
 
 def collect_fb_data():
+  '''
+  Collect facebook data from the pages contained in the dictionary object above.
+  '''
   for key in fb_page_names:
     print(f'Fetching data for {key}...')
     get_fb_posts_from_march_onward(fb_page_names[key])
@@ -68,16 +78,30 @@ def json_posts_to_df(filepath):
 
 '''
 MEDIA CLOUD DATA
+
+Use these functions for working with MediaCloud data -- MediaCloud is a web platform
+developed by researchers at the Berkman-Klein center at Harvard for analyzing
+media discourse. It aggregates media stories from a variety of sources, and can
+search them with boolean-style query language.
 '''
 
 # signal TOR for a new connection
 def switchIP():
+  '''
+  When the TOR process is running, get a new IP address.
+  '''
   with Controller.from_port(port = 9051) as controller:
     controller.authenticate()
     controller.signal(Signal.NEWNYM)
 
 # get a new selenium webdriver with tor as the proxy
 def my_proxy(PROXY_HOST,PROXY_PORT):
+  '''
+  Get a new TOR proxy to send web requests through.
+
+  :param PROXY_HOST: The host to set up the proxy with (usually localhost)
+  :param PROXY_PORT: The port to point it to.
+  '''
   fp = webdriver.FirefoxProfile()
   # Direct = 0, Manual = 1, PAC = 2, AUTODETECT = 4, SYSTEM = 5
   fp.set_preference("network.proxy.type", 1)
@@ -89,6 +113,12 @@ def my_proxy(PROXY_HOST,PROXY_PORT):
   return webdriver.Firefox(options=options, firefox_profile=fp)
 
 def scrape_body(url):
+  '''
+  Given a web url, issue an http GET request to get the entire HTML body of the
+  page for later parsing.
+
+  :param url: The url to fetch data from.
+  '''
   # proxy = my_proxy("127.0.0.1", 9050)
   headers = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8', 'Accept-Encoding': 'gzip, deflate, br', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0'}
   body = requests.get(url, headers=headers)
@@ -99,6 +129,12 @@ def scrape_body(url):
   return body.text
 
 def parseNYTText(body):
+  '''
+  Use the BeautifulSoup library (a markup parser) to pull out the main story text
+  from a New York Times article.
+
+  :param body: Raw HTML text to feed into BeautifulSoup for further parsing.
+  '''
   soup = BeautifulSoup(body)
   text = ''
   article_class = 'css-1r7ky0e'
@@ -109,6 +145,12 @@ def parseNYTText(body):
   return text
 
 def parseFoxText(body):
+  '''
+  Use the BeautifulSoup library (a markup parser) to pull out the main story text
+  from a Fox News article.
+
+  :param body: Raw HTML text to feed into BeautifulSoup for further parsing.
+  '''
   soup = BeautifulSoup(body)
   text = ''
   body_class = 'article-body'
@@ -118,6 +160,12 @@ def parseFoxText(body):
   return text
 
 def parseHuffPostText(body):
+  '''
+  Use the BeautifulSoup library (a markup parser) to pull out the main story text
+  from a Huffington Post article.
+
+  :param body: Raw HTML text to feed into BeautifulSoup for further parsing.
+  '''
   soup = BeautifulSoup(body)
   text = ''
   par_class = 'content-list-component'
@@ -128,6 +176,12 @@ def parseHuffPostText(body):
   return text
 
 def parseBreitbartText(body):
+  '''
+  Use the BeautifulSoup library (a markup parser) to pull out the main story text
+  from a Breitbart article.
+
+  :param body: Raw HTML text to feed into BeautifulSoup for further parsing.
+  '''
   soup = BeautifulSoup(body)
   body_class = 'entry-content'
   text = ''
@@ -135,7 +189,11 @@ def parseBreitbartText(body):
     text += p.text + '\n'
   return text
 
-# Mappings from media name to media_id
+'''
+Mappings from media name to media_id: These are the media-ids used by MediaCloud
+for different news sources. Some of them are also made up by me (Carlson, Hannity,
+and Ingraham) because MediaCloud does not aggregate their transcripts.
+'''
 NYT = 1
 FOX = 1092
 TUCKER_CARLSON = 1093
@@ -144,6 +202,9 @@ LAURA_INGRAHAM = 1095
 HUFF_POST = 623375
 BREITBART = 19334
 
+'''
+A mapping of media_id -> parsing function for ease of use
+'''
 text_parsing_functions = {
   NYT: parseNYTText,
   FOX: parseFoxText,
@@ -154,6 +215,9 @@ text_parsing_functions = {
   BREITBART: parseBreitbartText,
 }
 
+'''
+A mapping of media_id -> readable name
+'''
 media_id_to_name = {
   NYT: 'New York Times',
   FOX: 'Fox News',
@@ -164,6 +228,26 @@ media_id_to_name = {
   BREITBART: 'Breitbart'
 }
 
+'''
+This is from the post_accounts_seed.sql file (should be correct??)
+A mapping from media_id -> unique ID used in the mysql database (used for sql file
+writing).
+'''
+POST_ACCOUNTS_IDS = {
+  NYT: 6,
+  FOX: 1,
+  HUFF_POST: 2,
+  BREITBART: 3,
+  TUCKER_CARLSON: 8,
+  SEAN_HANNITY: 9,
+  LAURA_INGRAHAM: 10
+}
+
+'''
+An array to turn on/off certain organizations to look at from a large MediaCloud
+dataframe that may include many organizations that we don't want to parse data
+from.
+'''
 organizations_to_parse = [
   NYT, FOX, HUFF_POST, BREITBART, TUCKER_CARLSON, SEAN_HANNITY, LAURA_INGRAHAM
 ]
@@ -176,6 +260,14 @@ MC_SEP = '\x1c'
 # to get raw text: parse_mc_article_html(df)
 
 def load_article_parallel(row):
+  '''
+  A function that can parse one row of data from a dataframe, pull the data from
+  the url, and return the properly parsed function based on the media_id
+  of the row. This function is written purposely this way so it can be
+  parallelized with a thread pool.
+
+  :param row: One dataframe row to process.
+  '''
   print(f'Parsing url at row {row[0]}')
   try:
     row_data = row[1]
@@ -187,6 +279,16 @@ def load_article_parallel(row):
     return ''
 
 def load_mediacloud_df(path):
+  '''
+  Read MediaCloud data from a pandas dataframe CSV, which includes:
+  (1) Filtering the media organizations only to those we want to parse data from.
+  (2) In parallel, scrape the website URL for data and parse properly to return
+  a raw HTML version of the article body.
+  (3) Add a column to the dataframe called 'article_data' that contains HTML from
+  the article body.
+
+  :param path: A path to the pandas df CSV file.
+  '''
   df = pd.read_csv(path)
   valid_orgs_df = df[df['media_id'].isin(organizations_to_parse)]
   article_texts = []
@@ -205,6 +307,11 @@ def load_mediacloud_df(path):
   return valid_orgs_df
 
 def article_raw_text(row):
+  '''
+  Take article HTML and pull out raw text separated by '\n' newline characters.
+
+  :param row: A dataframe row with HTML in the 'article_data' column to parse.
+  '''
   print(f'Parsing url at row {row[0]}')
   try:
     row_data = row[1]
@@ -216,6 +323,13 @@ def article_raw_text(row):
     return ''
 
 def parse_mc_article_html(df):
+  '''
+  Parse an entire dataframe's worth of mediacloud article HTML into raw text. This
+  loops through the entire dataframe in parallel and converts all HTML into raw text
+  housed in the column 'article_data_raw'
+
+  :param df: The dataframe to parse.
+  '''
   article_texts = []
   print(f'Fetching article data for {len(df)} rows on {NUM_THREADS} threads...')
   with Pool(NUM_THREADS) as p:
@@ -228,6 +342,17 @@ javascript to get JSON for the article data:
 $('.article > .info > header > .title > a').toArray().reduce((accum, cur) => { accum.push({ url: cur.href, title: cur.innerHTML }); return accum}, [])
 '''
 def write_article_json_to_mc_csv(in_filename, out_filename, media_id):
+  '''
+  Convert JSON representing a list of media articles into a MediaCloud-style
+  dataframe CSV file (so it can be used like other MediaCloud data frames). Thus
+  far, this has only been used to convert lists of Tucker Carlson, Sean Hannity,
+  and Laura Ingraham transcripts to readable dataframes.
+
+  :param in_filename: A path and filename to the JSON file.
+  :param out_filename: A path and filename to the CSV file to output.
+  :param media_id: Some media_id to assign to all of the stories in the new
+  dataframe.
+  '''
   in_file = open(in_filename, 'r')
   # out_file = open(out_file, 'w')
   articles = json.load(in_file)
@@ -245,18 +370,13 @@ def write_article_json_to_mc_csv(in_filename, out_filename, media_id):
   df.to_csv(out_filename)
   return df
 
-# This is from the post_accounts_seed.sql file (should be correct??)
-POST_ACCOUNTS_IDS = {
-  NYT: 6,
-  FOX: 1,
-  HUFF_POST: 2,
-  BREITBART: 3,
-  TUCKER_CARLSON: 8,
-  SEAN_HANNITY: 9,
-  LAURA_INGRAHAM: 10
-}
-
 def write_mc_df_to_sql(df):
+  '''
+  Write a MediaCloud dataframe's content into SQL files that can be used to seed
+  a mySQL database.
+
+  :param df: The dataframe to read article data from, and write to SQL files.
+  '''
   media_ids = df.media_id.unique()
   files = { media_id_to_name[media_id]: io.open(f'mysql/articles/{media_id_to_name[media_id]}.sql', 'w', encoding='utf-8') for media_id in media_ids }
   for row in df.iterrows():
@@ -271,6 +391,13 @@ def write_mc_df_to_sql(df):
     f.close()
 
 def write_mc_df_to_sql_date_sample(df):
+  '''
+  Write a sampling of a MediaCloud dataframe's content into SQL files that can
+  be used to seed a mySQL database. The sampling is based on time, attempting to
+  only fetch NUM_PER_MONTH rows per month (e.g. only 10 articles per month, randomly fetched).
+
+  :param df: The dataframe to read article data from, and write to SQL files.
+  '''
   files = { name: io.open(f'mysql/articles/{name}_sample.sql', 'w', encoding='utf-8') for name in media_id_to_name.values() }
   NUM_PER_MONTH = 10
   ids_written = []
@@ -300,6 +427,18 @@ def write_mc_df_to_sql_date_sample(df):
     f.close()
 
 def get_keyword_paragraph(text, keyword, num_surround_pars):
+  '''
+  Given a body of text, fetch series of paragraphs surrounding one where a specified
+  keyword appears (e.g. 1 paragraph on either side of one where the word 'mask'
+  appears). This function attempts to not return duplicate entires in the array
+  of paragraphs returned.
+
+  :param text: Raw text with newline characters separating paragraphs.
+  :param keyword: A string keyword to search for.
+  :param num_surround_pars: How many paragraphs before and after to fetch alongside
+  the paragraph where a keyword appears (e.g. num_surround_pairs=2 will return
+  two paragraphs before and after one containing the keyword).
+  '''
   keyword_idx = np.array([m.start() for m in re.finditer(keyword, text)])
   break_idx = np.array([m.start() for m in re.finditer('\n', text)])
   paragraphs = []
@@ -333,9 +472,20 @@ NLP HELPER FUNCTIONS
 
 NER_GROUP_LABEL='GROUP'
 
+'''
+A list of groups to also tag during Named Entity Recognition parsing, under the
+NER label "GROUP"
+'''
 NER_GROUPS = [ 'medical officials', 'doctors', 'democrats', 'republicans', 'immigrants', 'government officials', 'legislators', 'health officials', 'communists', 'socialists', 'libertarians', 'children', 'parents', 'elders', 'the elderly', 'Americans', 'patriots', 'governors', 'legislators', 'migrants', 'terrorists', 'the public', 'citizens', 'epidemiologists', 'representatives', 'congress', 'hospital workers', 'scientists', 'mayors', 'celebrities', 'the media' ]
 
 def label_ner_groups(doc, groups):
+  '''
+  Given a spacy doc object, search it for instances of any of the groups passed
+  in parameters, and tag them as a GROUP.
+
+  :param doc: A spacy doc object.
+  :param groups: A list of group strings to label with the NER GROUP label.
+  '''
   doc_text = [ token.text.lower() for token in doc ]
   entities = []
   for group in groups:
