@@ -22,10 +22,10 @@ import math
 from datetime import datetime
 
 # For TOR interactions
-from stem import Signal
-from stem.control import Controller
-from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
+# from stem import Signal
+# from stem.control import Controller
+# from selenium import webdriver
+# from selenium.webdriver.firefox.options import Options
 
 # For NLP pipelines
 import spacy
