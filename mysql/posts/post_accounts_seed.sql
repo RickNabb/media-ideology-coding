@@ -5,3 +5,6 @@ INSERT INTO `post_accounts` (`account_name`) VALUES ("cnn");
 INSERT INTO `post_accounts` (`account_name`) VALUES ("dailykos");
 INSERT INTO `post_accounts` (`account_name`) VALUES ("nytimes");
 INSERT INTO `post_accounts` (`account_name`) VALUES ("theblaze");
+INSERT INTO `post_accounts` (`account_name`) VALUES ("tucker_carlson");
+INSERT INTO `post_accounts` (`account_name`) VALUES ("sean_hannity");
+INSERT INTO `post_accounts` (`account_name`) VALUES ("laura_ingraham");
