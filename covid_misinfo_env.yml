@@ -4,6 +4,7 @@ dependencies:
   - python=3.7
   - facebook_scraper
   - spacy
+  - stanza
   - ipython
   - numpy
   - scipy
