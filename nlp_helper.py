@@ -1,6 +1,8 @@
 # For NLP pipelines
 import spacy
+import numpy as np
 from spacy.tokens import Span
+from stanza.server import CoreNLPClient
 
 '''
 NLP HELPER FUNCTIONS
@@ -38,3 +40,18 @@ def label_ner_groups(doc, groups):
       ent = Span(doc, i, i+len(group_tokens), label=NER_GROUP_LABEL)
       entities.append(ent)
   doc.set_ents(entities, default="unmodified")
+
+def split_into_sentences(text):
+  '''
+  Split a piece of text into sentence with the StanfordNLP library.
+
+  :param text: The text to split into sentences.
+  '''
+  with CoreNLPClient(
+    annotators=['tokenize','ssplit'],
+    timeout=30000,
+    memory='5G'
+  ) as client:
+    ann = client.annotate(text)
+    return [ text[sent.characterOffsetBegin:sent.characterOffsetEnd] for sent in ann.sentence ]
+

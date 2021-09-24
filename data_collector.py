@@ -21,6 +21,8 @@ import re
 import math
 from datetime import datetime
 
+from nlp_helper import split_into_sentences
+
 # For TOR interactions
 # from stem import Signal
 # from stem.control import Controller
@@ -254,6 +256,7 @@ NUM_THREADS = 10
 MC_SEP = '\x1c'
 # the command is pd.read_csv(path, sep=MC_SEP)
 # to get raw text: parse_mc_article_html(df)
+SENT_SEP = chr(181)
 
 def load_article_parallel(row):
   '''
@@ -380,9 +383,10 @@ def write_mc_df_to_sql(df):
     row_data = row[1]
     f = files[row_data.media_name]
     pars = get_keyword_paragraph(row_data.article_data_raw, 'mask', 2)
-    print(len(pars))
     for par in pars:
-      f.write(f'INSERT INTO `articles_mask` (`post`,`native_id`,`post_account_id`,`post_type`) VALUES ("{par}","{row_data.stories_id}","{POST_ACCOUNTS_IDS[row_data.media_id]}","{2}");\n')
+      sentences = split_into_sentences(par)
+      text = SENT_SEP.join(sentences)
+      f.write(f'INSERT INTO `articles_mask` (`post`,`native_id`,`post_account_id`,`post_type`) VALUES ("{text}","{row_data.stories_id}","{POST_ACCOUNTS_IDS[row_data.media_id]}","{2}");\n')
   for f in files.values():
     f.close()
 
@@ -416,7 +420,9 @@ def write_mc_df_to_sql_date_sample(df):
         f = files[row_data.media_name]
         pars = get_keyword_paragraph(row_data.article_data_raw, 'mask', 1)
         for par in pars:
-          f.write(f'INSERT INTO `articles_mask` (`post`,`native_id`,`post_account_id`,`post_type`) VALUES ("{par}","{row_data.stories_id}","{POST_ACCOUNTS_IDS[row_data.media_id]}","{2}");\n')
+          sentences = split_into_sentences(par)
+          text = SENT_SEP.join(sentences)
+          f.write(f'INSERT INTO `articles_mask` (`post`,`native_id`,`post_account_id`,`post_type`) VALUES ("{text}","{row_data.stories_id}","{POST_ACCOUNTS_IDS[row_data.media_id]}","{2}");\n')
         ids_written.append(row[0])
         written_per_month[dt.month] += 1
   for f in files.values():
