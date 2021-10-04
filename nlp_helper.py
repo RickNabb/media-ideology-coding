@@ -45,18 +45,27 @@ def label_ner_groups(doc, groups):
       entities.append(ent)
   doc.set_ents(entities, default="unmodified")
 
-def find_entity_set(nlp, text):
+def find_entity_set_text(nlp, text):
   '''
   Get a set of all of the entities mentioned in a piece of text.
 
   :param nlp: The spacy parser to use.
   :param text: The text to search for entities.
   '''
-  nlp = spacy.load('en_core_web_sm')
   doc = nlp(text)
   label_ner_groups(doc, NER_GROUPS)
   entities = doc.ents
   return set(entities)
+
+def find_entity_set_df(nlp, df):
+  '''
+  Get a set of all the entities mentioned in an entire dataframe
+  of articles.
+
+  :param nlp: The spacy parser to use
+  :param df: The data frame to get article text from and discover entities in.
+  '''
+
 
 def split_into_sentences(text):
   '''
