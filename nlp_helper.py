@@ -52,10 +52,21 @@ def find_entity_set_text(nlp, text):
   :param nlp: The spacy parser to use.
   :param text: The text to search for entities.
   '''
+  VALID_ENTITY_CATEGORIES = ['ORG','PERSON','NORP','WORK_OF_ART','GPE','GROUP','FAC','LAW']
   doc = nlp(text)
   label_ner_groups(doc, NER_GROUPS)
   entities = doc.ents
-  return set(entities)
+  valid_category_entities = filter(lambda entity: entity.label_ in VALID_ENTITY_CATEGORIES, entities)
+  # return entities
+  str_entities = map(lambda el: str(el), valid_category_entities)
+  return set(list(str_entities))
+
+def link_entity_set(nlp, text):
+  nlp.add_pipe('entityLinker', last=True)
+  # text = ' '.join(entity_set)
+  doc = nlp(text)
+  nlp.remove_pipe('entityLinker')
+  return doc
 
 def find_entity_set_df(nlp, df):
   '''
@@ -65,7 +76,12 @@ def find_entity_set_df(nlp, df):
   :param nlp: The spacy parser to use
   :param df: The data frame to get article text from and discover entities in.
   '''
-
+  entity_set = set([])
+  for row in df.iterrows():
+    row_data = row[1]
+    entities = find_entity_set_text(row_data.article_data_raw)
+    entity_set.union(entities)
+  return entity_set
 
 def split_into_sentences(text):
   '''

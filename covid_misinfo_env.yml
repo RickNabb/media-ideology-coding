@@ -1,10 +1,10 @@
 name: covid_misinfo_env
 
 dependencies:
-  - python=3.7
-  - facebook_scraper
+  - python==3.8
+  # - facebook_scraper
   - spacy
-  - stanza
+  # - stanza
   - ipython
   - numpy
   - scipy
