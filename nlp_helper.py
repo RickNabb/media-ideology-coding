@@ -1,6 +1,7 @@
 # For NLP pipelines
 import spacy
 import numpy as np
+import json
 from spacy.tokens import Span
 from stanza.server import CoreNLPClient
 
@@ -54,7 +55,7 @@ def find_entity_set_text(nlp, text):
   '''
   VALID_ENTITY_CATEGORIES = ['ORG','PERSON','NORP','WORK_OF_ART','GPE','GROUP','FAC','LAW']
   doc = nlp(text)
-  label_ner_groups(doc, NER_GROUPS)
+  # label_ner_groups(doc, NER_GROUPS)
   entities = doc.ents
   valid_category_entities = filter(lambda entity: entity.label_ in VALID_ENTITY_CATEGORIES, entities)
   # return entities
@@ -63,7 +64,7 @@ def find_entity_set_text(nlp, text):
 
 def link_entity_set(nlp, text):
   nlp.add_pipe('entityLinker', last=True)
-  # text = ' '.join(entity_set)
+  text = ' '.join(entity_set)
   doc = nlp(text)
   nlp.remove_pipe('entityLinker')
   return doc
@@ -79,9 +80,20 @@ def find_entity_set_df(nlp, df):
   entity_set = set([])
   for row in df.iterrows():
     row_data = row[1]
-    entities = find_entity_set_text(row_data.article_data_raw)
-    entity_set.union(entities)
+    entities = find_entity_set_text(nlp, row_data.article_data_raw)
+    entity_set = entity_set.union(entities)
   return entity_set
+
+def write_entity_set_to_json(entity_set, out_path):
+  '''
+  Write a set of named entities to a JSON file at a specified path.
+
+  :param entity_set: The set of entities (strings) to write
+  :param out_path: The path to write to
+  '''
+  f = open(out_path, 'w')
+  json.dump(list(entity_set), f)
+  f.close()
 
 def split_into_sentences(text):
   '''
