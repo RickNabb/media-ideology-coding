@@ -19,7 +19,7 @@ import io
 import numpy as np
 import re
 import math
-from datetime import datetime
+from datetime import datetime, date
 
 from nlp_helper import split_into_sentences
 
@@ -187,6 +187,34 @@ def parseBreitbartText(body):
     text += p.text + '\n'
   return text
 
+def parseVoxText(body):
+  '''
+  Use the BeautifulSoup library (a markup parser) to pull out the main story text
+  from a Vox article.
+
+  :param body: Raw HTML text to feed into BeautifulSoup for further parsing.
+  '''
+  soup = BeautifulSoup(body)
+  body_class = 'c-entry-content'
+  text = ''
+  for p in soup.find(attrs={'class': body_class}).find_all('p'):
+    text += p.text + '\n'
+  return text
+
+def parseDailyKosText(body):
+  '''
+  Use the BeautifulSoup library (a markup parser) to pull out the main story text
+  from a Daily Kos article.
+
+  :param body: Raw HTML text to feed into BeautifulSoup for further parsing.
+  '''
+  soup = BeautifulSoup(body)
+  body_class = 'story__content'
+  text = ''
+  for p in soup.find_all(attrs={'class': body_class})[1].find_all('p'):
+    text += p.text + '\n'
+  return text
+
 '''
 Mappings from media name to media_id: These are the media-ids used by MediaCloud
 for different news sources. Some of them are also made up by me (Carlson, Hannity,
@@ -199,6 +227,8 @@ SEAN_HANNITY = 1094
 LAURA_INGRAHAM = 1095
 HUFF_POST = 623375
 BREITBART = 19334
+DAILY_KOS = 115
+VOX = 104828
 
 '''
 A mapping of media_id -> parsing function for ease of use
@@ -211,6 +241,8 @@ text_parsing_functions = {
   LAURA_INGRAHAM: parseFoxText,
   HUFF_POST: parseHuffPostText,
   BREITBART: parseBreitbartText,
+  VOX: parseVoxText,
+  DAILY_KOS: parseDailyKosText
 }
 
 '''
@@ -223,7 +255,9 @@ media_id_to_name = {
   SEAN_HANNITY: 'SeanHannity',
   LAURA_INGRAHAM: 'LauraIngraham',
   HUFF_POST: 'Huffington Post - United States',
-  BREITBART: 'Breitbart'
+  BREITBART: 'Breitbart',
+  VOX: 'Vox',
+  DAILY_KOS: 'Daily Kos'
 }
 
 '''
@@ -238,7 +272,9 @@ POST_ACCOUNTS_IDS = {
   BREITBART: 3,
   TUCKER_CARLSON: 8,
   SEAN_HANNITY: 9,
-  LAURA_INGRAHAM: 10
+  LAURA_INGRAHAM: 10,
+  VOX: 11,
+  DAILY_KOS: 5
 }
 
 '''
@@ -247,7 +283,7 @@ dataframe that may include many organizations that we don't want to parse data
 from.
 '''
 organizations_to_parse = [
-  NYT, FOX, HUFF_POST, BREITBART, TUCKER_CARLSON, SEAN_HANNITY, LAURA_INGRAHAM
+  NYT, FOX, HUFF_POST, BREITBART, TUCKER_CARLSON, SEAN_HANNITY, LAURA_INGRAHAM, DAILY_KOS, VOX
 ]
 
 NUM_THREADS = 10
@@ -257,6 +293,12 @@ MC_SEP = '\x1c'
 # the command is pd.read_csv(path, sep=MC_SEP)
 # to get raw text: parse_mc_article_html(df)
 SENT_SEP = chr(181)
+
+'''
+The number of surrounding paragraphs to get for entries containing
+the keyword.
+'''
+SURROUNDING_PARAGRAPHS = 0
 
 def load_article_parallel(row):
   '''
@@ -377,15 +419,16 @@ def write_mc_df_to_sql(df):
   :param df: The dataframe to read article data from, and write to SQL files.
   '''
   media_ids = df.media_id.unique()
-  files = { media_id_to_name[media_id]: io.open(f'mysql/articles/{media_id_to_name[media_id]}.sql', 'w', encoding='utf-8') for media_id in media_ids }
+  files = { media_id_to_name[media_id]: io.open(f'./mysql/articles/{media_id_to_name[media_id]}.sql', 'w', encoding='utf-8') for media_id in media_ids }
   for row in df.iterrows():
     print(f'Writing row {row[0]}')
     row_data = row[1]
     f = files[row_data.media_name]
-    pars = get_keyword_paragraph(row_data.article_data_raw, 'mask', 2)
+    pars = get_keyword_paragraph(row_data['article_data_raw'], 'mask', SURROUNDING_PARAGRAPHS)
     for par in pars:
-      sentences = split_into_sentences(par)
-      text = SENT_SEP.join(sentences)
+      # sentences = split_into_sentences(par)
+      # text = SENT_SEP.join(sentences)
+      text = par
       f.write(f'INSERT INTO `articles_mask` (`post`,`native_id`,`post_account_id`,`post_type`) VALUES ("{text}","{row_data.stories_id}","{POST_ACCOUNTS_IDS[row_data.media_id]}","{2}");\n')
   for f in files.values():
     f.close()
@@ -418,7 +461,7 @@ def write_mc_df_to_sql_date_sample(df):
       if row[0] not in ids_written and written_per_month[dt.month] < NUM_PER_MONTH:
         print(f'Writing row {row[0]}')
         f = files[row_data.media_name]
-        pars = get_keyword_paragraph(row_data.article_data_raw, 'mask', 1)
+        pars = get_keyword_paragraph(row_data.article_data_raw, 'mask', SURROUNDING_PARAGRAPHS)
         for par in pars:
           sentences = split_into_sentences(par)
           text = SENT_SEP.join(sentences)
@@ -474,3 +517,34 @@ PANDAS FUNCTIONS
 
 def rows_containing_covid(df):
   return df[df['post_text'].str.contains('COVID|coronavirus|pandemic|virus')]
+
+def rows_within_time_range(df, start_date_string, end_date_string):
+  '''
+  Filter a dataframe by time start and end (inclusive).
+
+  :param df: The dataframe to filter -- should have 'publish_date' as
+  the date time stamp column.
+  :param start_date_string: A string to start the date filtering at,
+  should be in format 'YYYY-MM-DD'.
+  :param end_date_string: A string to end the date filtering at,
+  should be in format 'YYYY-MM-DD'.
+  '''
+  return df[(df['publish_date'] >= start_date_string) & (df['publish_date'] <= end_date_string)]
+
+def rows_from_sources(df, source_list):
+  query_str = ''
+  for source in source_list:
+    query_str += f'(media_id == {source}) or '
+  return df.query(query_str[:-4])
+
+def df_with_experiment_filters(df):
+  if 'Unnamed: 0' in df.columns:
+    df = df.drop(columns=['Unnamed: 0'])
+  if 'Unnamed: 0.1' in df.columns:
+    df = df.drop(columns=['Unnamed: 0.1'])
+  # TODO: Need to add CNN and Daily Kos
+  source_list = [NYT, FOX, BREITBART]
+  df_for_dates = rows_within_time_range(df, '2020-04-01','2020-06-14')
+  df_for_sources = rows_from_sources(df_for_dates, source_list)
+  df_without_nan = df_for_sources.dropna(subset=['article_data_raw'])
+  return df_without_nan
