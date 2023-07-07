@@ -429,7 +429,7 @@ def write_mc_df_to_sql(df):
       # sentences = split_into_sentences(par)
       # text = SENT_SEP.join(sentences)
       text = par
-      f.write(f'INSERT INTO `articles_mask` (`post`,`native_id`,`post_account_id`,`post_type`) VALUES ("{text}","{row_data.stories_id}","{POST_ACCOUNTS_IDS[row_data.media_id]}","{2}");\n')
+      f.write(f'INSERT INTO `articles_mask` (`post`,`native_id`,`article_account_id`) VALUES ("{text}","{row_data.stories_id}","{POST_ACCOUNTS_IDS[row_data.media_id]}");\n')
   for f in files.values():
     f.close()
 
@@ -465,7 +465,7 @@ def write_mc_df_to_sql_date_sample(df):
         for par in pars:
           sentences = split_into_sentences(par)
           text = SENT_SEP.join(sentences)
-          f.write(f'INSERT INTO `articles_mask` (`post`,`native_id`,`post_account_id`,`post_type`) VALUES ("{text}","{row_data.stories_id}","{POST_ACCOUNTS_IDS[row_data.media_id]}","{2}");\n')
+          f.write(f'INSERT INTO `articles_mask` (`post`,`native_id`,`article_account_id`) VALUES ("{text}","{row_data.stories_id}","{POST_ACCOUNTS_IDS[row_data.media_id]}");\n')
         ids_written.append(row[0])
         written_per_month[dt.month] += 1
   for f in files.values():
@@ -542,9 +542,16 @@ def df_with_experiment_filters(df):
     df = df.drop(columns=['Unnamed: 0'])
   if 'Unnamed: 0.1' in df.columns:
     df = df.drop(columns=['Unnamed: 0.1'])
-  # TODO: Need to add CNN and Daily Kos
-  source_list = [NYT, FOX, BREITBART]
+  source_list = [NYT, FOX, BREITBART,DAILY_KOS,VOX]
   df_for_dates = rows_within_time_range(df, '2020-04-01','2020-06-14')
   df_for_sources = rows_from_sources(df_for_dates, source_list)
   df_without_nan = df_for_sources.dropna(subset=['article_data_raw'])
   return df_without_nan
+
+def regenerate_article_sql():
+  covid_mask_df = pd.read_csv('./news-data/df_csvs/covid-or-mask_w-article.csv')
+  kos_vox_df = pd.read_csv('./news-data/df_csvs/kos-vox-w-article.csv')
+  covid_mask_exp_df = df_with_experiment_filters(covid_mask_df)
+  kos_vox_exp_df = df_with_experiment_filters(kos_vox_df)
+  write_mc_df_to_sql(covid_mask_exp_df)
+  write_mc_df_to_sql(kos_vox_exp_df)
