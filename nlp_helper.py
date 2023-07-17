@@ -1,8 +1,8 @@
 # For NLP pipelines
-import spacy
+# import spacy
 import numpy as np
 import json
-from spacy.tokens import Span
+# from spacy.tokens import Span
 from stanza.server import CoreNLPClient
 
 '''
@@ -21,6 +21,8 @@ NER_GROUPS = [ 'medical officials', 'doctors', 'democrats', 'republicans', 'immi
 
 def label_ner_groups(doc, groups):
   '''
+  DEPRECATED
+
   Given a spacy doc object, search it for instances of any of the groups passed
   in parameters, and tag them as a GROUP.
 
@@ -29,22 +31,23 @@ def label_ner_groups(doc, groups):
 
   Mutates the doc object so there's no need to return
   '''
-  doc_text = [ token.text.lower() for token in doc ]
-  entities = []
-  for group in groups:
-    group_tokens = group.split(' ')
-    n_gram_tokens = []
-    for i in range(len(doc_text)-len(group_tokens)):
-      n_gram = []
-      for j in range(len(group_tokens)):
-        n_gram.append(doc_text[i+j])
-      n_gram_tokens.append(n_gram)
-    matches = list(map(lambda el: sum(el) == len(el), np.array(n_gram_tokens) == group_tokens))
-    indices = np.where(matches)[0]
-    for i in indices:
-      ent = Span(doc, i, i+len(group_tokens), label=NER_GROUP_LABEL)
-      entities.append(ent)
-  doc.set_ents(entities, default="unmodified")
+  return -1
+  # doc_text = [ token.text.lower() for token in doc ]
+  # entities = []
+  # for group in groups:
+  #   group_tokens = group.split(' ')
+  #   n_gram_tokens = []
+  #   for i in range(len(doc_text)-len(group_tokens)):
+  #     n_gram = []
+  #     for j in range(len(group_tokens)):
+  #       n_gram.append(doc_text[i+j])
+  #     n_gram_tokens.append(n_gram)
+  #   matches = list(map(lambda el: sum(el) == len(el), np.array(n_gram_tokens) == group_tokens))
+  #   indices = np.where(matches)[0]
+  #   for i in indices:
+  #     ent = Span(doc, i, i+len(group_tokens), label=NER_GROUP_LABEL)
+  #     entities.append(ent)
+  # doc.set_ents(entities, default="unmodified")
 
 def find_entity_set_text(nlp, text):
   '''
