@@ -54,6 +54,11 @@ def label_training_agreement_analysis(mask_training_codes_df):
       agreement_vector = np.array([ agreement_codes[article_id][row[1]['attribute'].replace('_training','')] == row[1]['code'] for row in session_article_codes.iterrows() ], dtype=int)
       agreement_scores[session_id][article_id] = agreement_vector.sum() / np.ones(len(agreement_vector)).sum()
 
+def percent_paragraphs_labeled_for_labeled_stories(mask_codes_df, articles_db_df):
+  articles = mask_codes_df['native_id'].unique()
+  article_percentages = { article_id: (len(mask_codes_df[mask_codes_df['native_id'] == article_id]['article_id'].unique()) / len(articles_db_df[articles_db_df['native_id'] == article_id])) for article_id in articles }
+  return sorted(article_percentages.items(), key=lambda item: item[1])
+
 def label_date_range_analysis(mask_codes_df, articles_df):
   outlets = [FOX, NYT, BREITBART, VOX, DAILY_KOS]
   cols = ['date'] + list(mask_codes_df['attribute'].unique()) + [ media_id_to_name[outlet] for outlet in outlets ] + ['total_labels']
@@ -151,5 +156,6 @@ def label_analysis():
 
   training_agreement_scores = label_training_agreement_analysis(mask_training_codes_df)
   date_range_results = label_date_range_analysis(mask_codes_df, articles_df)
+  percent_articles_labeled = percent_paragraphs_labeled_for_labeled_stories(mask_codes_df, articles_df)
 
-  return (training_agreement_scores, date_range_results)
+  return (training_agreement_scores, date_range_results, percent_articles_labeled)
