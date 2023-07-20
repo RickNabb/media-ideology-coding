@@ -2,7 +2,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import date, timedelta
-from data_collector import NYT, FOX, TUCKER_CARLSON, SEAN_HANNITY, LAURA_INGRAHAM, HUFF_POST, BREITBART, DAILY_KOS, VOX, media_id_to_name, MC_SEP
+from data_collector import NYT, FOX, TUCKER_CARLSON, SEAN_HANNITY, LAURA_INGRAHAM, HUFF_POST, BREITBART, DAILY_KOS, VOX, media_id_to_name, MC_SEP, POST_ACCOUNTS_IDS
+from sklearn.metrics import cohen_kappa_score
 
 # Pulled from https://stackoverflow.com/questions/1060279/iterating-through-a-range-of-dates-in-python
 
@@ -51,8 +52,23 @@ def label_training_agreement_analysis(mask_training_codes_df):
   for session_id in agreement_scores.keys():
     for article_id in agreement_codes.keys():
       session_article_codes = mask_training_codes_df[(mask_training_codes_df['session_id'] == session_id) & (mask_training_codes_df['article_id'] == article_id)][['attribute','code','confidence']]
+      code_vector = np.array(session_article_codes['code'])
+      gold_vector = np.array([ agreement_codes[article_id][attr.replace('_training','')] for attr in session_article_codes['attribute'] ])
+
+      # print(f'{session_id},{article_id}')
+      # print(code_vector)
+      # print(gold_vector)
+      
+      # This should not be the case, but somehow it is
+      if len(session_article_codes) == 0:
+        continue
+
       agreement_vector = np.array([ agreement_codes[article_id][row[1]['attribute'].replace('_training','')] == row[1]['code'] for row in session_article_codes.iterrows() ], dtype=int)
-      agreement_scores[session_id][article_id] = agreement_vector.sum() / np.ones(len(agreement_vector)).sum()
+      cohen_kappa = cohen_kappa_score(gold_vector, code_vector)
+      agreement_scores[session_id][article_id] = { 'raw_agree': -1, 'cohen': -1, 'fleiss': -1 }
+      agreement_scores[session_id][article_id]['cohen'] = cohen_kappa
+      agreement_scores[session_id][article_id]['raw_agree'] = agreement_vector.sum() / len(agreement_vector)
+  return agreement_scores
 
 def percent_paragraphs_labeled_for_labeled_stories(mask_codes_df, articles_db_df):
   articles = mask_codes_df['native_id'].unique()
@@ -120,10 +136,41 @@ def graph_media_outlets_across_dates(label_date_range_results):
   ax.set_xticks(dates)
   ax.set_xticklabels([f'{date.month}-{date.day}' for date in dates], rotation=-45, ha='left', fontsize=6)
   ax.set_xlabel('Date')
-  ax.set_ylabel('Number of labels per outlet (without "Does not mention")')
+  ax.set_ylabel('Number of labeled articles per outlet (without "Does not mention")')
   ax.legend()
 
   plt.show()
+
+def graph_media_outlets_total_across_dates(articles_df):
+  outlets = [FOX, NYT, BREITBART, VOX, DAILY_KOS]
+  articles_no_nan = articles_df.dropna(subset=['publish_date'])
+  # Article id = stories_id
+
+  date_df = pd.DataFrame(columns=outlets)
+  start_date = date(2020, 4, 6)
+  end_date = date(2020, 6, 8)
+  for day in daterange(start_date, end_date):
+    articles_for_date = articles_no_nan[articles_no_nan['publish_date'].str.contains(str(day))][['stories_id','media_id']]
+    media_articles_for_date = [ len(articles_for_date[articles_for_date['media_id'] == outlet]['stories_id'].unique()) for outlet in outlets ]
+    date_df.loc[len(date_df)] = media_articles_for_date
+
+  fig,ax = plt.subplots(figsize=(8,4))
+  dates = list(daterange(start_date, end_date))
+
+  bottom = np.zeros(len(dates))
+  for outlet in outlets:
+    articles_for_outlet = date_df[outlet]
+    ax.bar(dates, articles_for_outlet, bottom=bottom, label=media_id_to_name[outlet])
+    bottom += articles_for_outlet
+
+  ax.set_xticks(dates)
+  ax.set_xticklabels([f'{date.month}-{date.day}' for date in dates], rotation=-45, ha='left', fontsize=6)
+  ax.set_xlabel('Date')
+  ax.set_ylabel('Number of articles per outlet')
+  ax.legend()
+
+  plt.show()
+
 
 def graph_media_outlet_total_distribution(label_date_range_results):
   outlets = [FOX, NYT, BREITBART, VOX, DAILY_KOS]
@@ -135,7 +182,32 @@ def graph_media_outlet_total_distribution(label_date_range_results):
 
   ax.set_xticklabels([media_id_to_name[outlet] for outlet in outlets], fontsize=8)
   ax.set_xlabel('Media Outlet')
-  ax.set_ylabel('Number of labels per outlet (without "Does not mention")')
+  ax.set_ylabel('Number of labeled articles per outlet (without "Does not mention")')
+
+  plt.show()
+
+def graph_articles_per_outlet_distribution(articles_db_df):
+  outlets = [FOX, NYT, BREITBART, VOX, DAILY_KOS]
+
+  fig,ax = plt.subplots(figsize=(8,4))
+
+  articles_per_outlet = [ len(articles_db_df[articles_db_df['article_account_id'] == POST_ACCOUNTS_IDS[outlet]]['native_id'].unique()) for outlet in outlets ]
+  ax.bar([ media_id_to_name[outlet] for outlet in outlets ], articles_per_outlet)
+
+  ax.set_xticklabels([media_id_to_name[outlet] for outlet in outlets], fontsize=8)
+  ax.set_xlabel('Media Outlet')
+  ax.set_ylabel('Number of articles per outlet')
+
+  plt.show()
+
+def graph_label_confidence_distribution(mask_codes_df):
+  fig,ax = plt.subplots(figsize=(8,4))
+
+  ax.bar(range(1,8), [ len(mask_codes_df[mask_codes_df['confidence'] == i]) for i in range(1,8) ])
+  ax.set_xticks(range(1,8))
+  ax.set_xticklabels(range(1,8))
+  ax.set_xlabel('Confidence Score')
+  ax.set_ylabel('Number of labels for confidence score')
 
   plt.show()
 
