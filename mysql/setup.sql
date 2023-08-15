@@ -29,7 +29,8 @@ CREATE TABLE IF NOT EXISTS mask_wearing_codes (
   attribute VARCHAR(10240),
   code INT DEFAULT -1,
   confidence INT,
-  session_id BIGINT
+  session_id BIGINT,
+  timestamp TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS mask_wearing_training_codes (
@@ -38,5 +39,10 @@ CREATE TABLE IF NOT EXISTS mask_wearing_training_codes (
   attribute VARCHAR(10240),
   code INT DEFAULT -1,
   confidence INT,
-  session_id BIGINT
+  session_id BIGINT,
+  timestamp TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS coding_settings (
+  distribution_method VARCHAR(256)
 );

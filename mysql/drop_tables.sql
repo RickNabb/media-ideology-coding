@@ -21,3 +21,4 @@ DROP TABLE IF EXISTS `articles_training`;
 DROP TABLE IF EXISTS `post_accounts`;
 DROP TABLE IF EXISTS `article_accounts`;
 DROP TABLE IF EXISTS `post_types`;
+DROP TABLE IF EXISTS `coding_settings`;
