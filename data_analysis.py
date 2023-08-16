@@ -4,12 +4,39 @@ import matplotlib.pyplot as plt
 from datetime import date, timedelta
 from data_collector import NYT, FOX, TUCKER_CARLSON, SEAN_HANNITY, LAURA_INGRAHAM, HUFF_POST, BREITBART, DAILY_KOS, VOX, media_id_to_name, MC_SEP, POST_ACCOUNTS_IDS
 from sklearn.metrics import cohen_kappa_score
+from statsmodels.stats.inter_rater import fleiss_kappa, aggregate_raters
 
 # Pulled from https://stackoverflow.com/questions/1060279/iterating-through-a-range-of-dates-in-python
 
 def daterange(start_date, end_date):
   for n in range(int((end_date - start_date).days)):
     yield start_date + timedelta(n)
+
+def combine_coding_rounds():
+  data_path = './labeled-data/'
+  sub_paths = [ 'round1', 'round2' ]
+  training_df = pd.DataFrame(columns=['id','article_id','attribute','code','confidence','session_id','datetime'])
+  code_df = pd.DataFrame(columns=['id','article_id','attribute','code','confidence','session_id','datetime'])
+
+  training_dfs = [training_df]
+  code_dfs = [code_df]
+
+  for sub_path in sub_paths:
+    file_path = f'{data_path}/{sub_path}'
+    training_round_df = pd.read_csv(f'{file_path}/mask_wearing_training_codes.csv')
+    codes_round_df = pd.read_csv(f'{file_path}/mask_wearing_codes.csv')
+
+    if 'Unnamed: 0' in training_round_df.columns:
+      training_round_df.drop(columns=['Unnamed: 0'], inplace=True)
+    if 'Unnamed: 0' in codes_round_df.columns:
+      codes_round_df.drop(columns=['Unnamed: 0'], inplace=True)
+    
+    training_dfs.append(training_round_df)
+    code_dfs.append(codes_round_df)
+
+  training_combined_df = pd.concat(training_dfs)
+  code_combined_df = pd.concat(code_dfs)
+  return { 'training': training_combined_df, 'codes': code_combined_df } 
 
 def label_training_agreement_analysis(mask_training_codes_df):
   agreement_codes = {
@@ -105,6 +132,30 @@ def label_date_range_analysis(mask_codes_df, articles_df):
 
   return date_df
 
+def num_times_paragraphs_labeled(labels_df):
+  article_ids = labels_df['article_id'].unique()
+  num_times_article_labeled = { article_id: len(labels_df[labels_df['article_id'] == article_id]['session_id'].unique()) for article_id in article_ids }
+  num_times_labeled = { times: len([ num for num in num_times_article_labeled.values() if num == times ]) for times in set(num_times_article_labeled.values()) }
+  return num_times_labeled
+
+def num_paragraphs_labeled_per_category(labels_df):
+  '''
+  Return a dictionary of the number of labels (0,1,2) per category
+  (the attribute) -- showing how many labels of each type we have.
+  '''
+  categories = labels_df['attribute'].unique()
+  labels = labels_df['code'].unique()
+  return { category: { label: len(labels_df[(labels_df['attribute'] == category) & (labels_df['code'] == label)]['article_id'].unique()) for label in labels } for category in categories }
+
+def num_confidences_per_category(labels_df):
+  '''
+  Return a dictionary of the number of confidence scores of each value (1-7)
+  for each category (attribute).
+  '''
+  categories = labels_df['attribute'].unique()
+  confidences = labels_df['confidence'].unique()
+  return { category: { confidence: len(labels_df[(labels_df['attribute'] == category) & (labels_df['confidence'] == confidence)]['article_id'].unique()) for confidence in confidences } for category in categories }
+
 def graph_labels_across_dates(label_date_range_results):
   fig,ax = plt.subplots(figsize=(8,4))
   start_date = date(2020, 4, 6)
@@ -171,6 +222,48 @@ def graph_media_outlets_total_across_dates(articles_df):
 
   plt.show()
 
+def graph_percent_articles_at_least_one_code_across_dates(mask_wearing_df, articles_df):
+  date_df = pd.DataFrame(columns=['date','percent_articles_w_label'])
+  articles_no_nan = articles_df.dropna(subset=['publish_date'])
+  start_date = date(2020, 4, 6)
+  end_date = date(2020, 6, 8)
+  for day in daterange(start_date, end_date):
+    articles_for_date = articles_no_nan[articles_no_nan['publish_date'].str.contains(str(day))]['stories_id']
+    articles_w_label = mask_wearing_df[mask_wearing_df['native_id'].isin(articles_for_date)]['native_id'].unique()
+    date_df.loc[len(date_df)] = [day, (len(articles_w_label)/len(articles_for_date))]
+
+  dates = list(daterange(start_date, end_date))
+  fig,ax = plt.subplots(figsize=(8,4))
+
+  ax.bar(dates, date_df['percent_articles_w_label']*100)
+  ax.set_xticks(dates)
+  ax.set_xticklabels([f'{date.month}-{date.day}' for date in dates], rotation=-45, ha='left', fontsize=6)
+  ax.set_xlabel('Date')
+  ax.set_ylabel('Percent of articles w/ at least 1 label')
+
+  plt.show()
+
+def graph_percent_paragraphs_at_least_one_code_across_dates(mask_wearing_df, articles_df, articles_db_df):
+  date_df = pd.DataFrame(columns=['date','percent_paragraphs_w_label'])
+  articles_no_nan = articles_df.dropna(subset=['publish_date'])
+  start_date = date(2020, 4, 6)
+  end_date = date(2020, 6, 8)
+  for day in daterange(start_date, end_date):
+    articles_for_date = articles_no_nan[articles_no_nan['publish_date'].str.contains(str(day))]['stories_id']
+    paragraphs_for_date = articles_db_df[articles_db_df['native_id'].isin(articles_for_date)]['id']
+    paragraphs_w_label = mask_wearing_df[mask_wearing_df['article_id'].isin(paragraphs_for_date)]['native_id'].unique()
+    date_df.loc[len(date_df)] = [day, (len(paragraphs_w_label)/len(paragraphs_for_date))]
+
+  dates = list(daterange(start_date, end_date))
+  fig,ax = plt.subplots(figsize=(8,4))
+
+  ax.bar(dates, date_df['percent_paragraphs_w_label']*100)
+  ax.set_xticks(dates)
+  ax.set_xticklabels([f'{date.month}-{date.day}' for date in dates], rotation=-45, ha='left', fontsize=6)
+  ax.set_xlabel('Date')
+  ax.set_ylabel('Percent of paragraphs w/ at least 1 label')
+
+  plt.show()
 
 def graph_media_outlet_total_distribution(label_date_range_results):
   outlets = [FOX, NYT, BREITBART, VOX, DAILY_KOS]
@@ -211,23 +304,82 @@ def graph_label_confidence_distribution(mask_codes_df):
 
   plt.show()
 
+def graph_label_confidence_distribution_per_category(mask_codes_df):
+  for category in mask_codes_df['attribute'].unique():
+    fig,ax = plt.subplots(figsize=(8,4))
 
-def label_analysis():
-  # Read in label data
-  mask_codes_df = pd.read_csv('./labeled-data/round1/mask_wearing_codes.csv')
-  mask_training_codes_df = pd.read_csv('./labeled-data/round1/mask_wearing_training_codes.csv')
+    ax.bar(range(1,8), [ len(mask_codes_df[(mask_codes_df['attribute'] == category) & (mask_codes_df['confidence'] == i)]) for i in range(1,8) ])
+    ax.set_xticks(range(1,8))
+    ax.set_xticklabels(range(1,8))
+    ax.set_xlabel('Confidence Score')
+    ax.set_ylabel('Number of labels for confidence score')
+    ax.set_title(f'Confidences for "{category}"')
+
+    plt.show()
+
+def ratings_across_categories_for_paragraph(mask_codes_df, article_id):
+  '''
+  Returns a dataframe containing all ratings for a given article_id (paragraph).
+  This reports the rating across all categories (attributes).
+  '''
+  agreement_cols = mask_codes_df['attribute'].unique()
+  codes_for_article = mask_codes_df[mask_codes_df['article_id'] == article_id]
+  coders = codes_for_article['session_id'].unique()
+  table = pd.DataFrame(columns=agreement_cols)
+  for coder in coders:
+    table.loc[len(table)] = [ codes_for_article[(codes_for_article['session_id'] == coder) & (codes_for_article['attribute'] == col)].iloc[0]['code'] for col in agreement_cols ]
+  return table
+
+def inter_rater_agreement_across_categories(mask_codes_df, article_id):
+  table = ratings_across_categories_for_paragraph(mask_codes_df, article_id)
+  # return aggregate_raters(np.transpose(table.to_numpy()))
+  return fleiss_kappa(aggregate_raters(np.transpose(table.to_numpy()))[0])
+
+def inter_rater_agreement_across_attributes_histogram(mask_codes_df):
+  fig,ax = plt.subplots(figsize=(8,4))
+  paragraphs = mask_codes_df['article_id'].unique()
+  multi_coded_paragraphs = [ paragraph for paragraph in paragraphs if len(mask_codes_df[mask_codes_df['article_id'] == paragraph]['session_id'].unique()) > 1 ]
+  agreements = { paragraph: inter_rater_agreement_across_categories(mask_codes_df, paragraph) for paragraph in multi_coded_paragraphs }
+
+  ax.hist([ round(val, 2) for val in agreements.values() ])
+  ax.set_xlabel('Agreement scores')
+  ax.set_ylabel('Frequency of agreement')
+  ax.set_title(f'Inter-rater agreement histogram')
+
+  plt.show()
+
+
+def mask_wearing_codes_df():
+  combined_codes_df = combine_coding_rounds()
+  mask_codes_df = combined_codes_df['codes']
   articles_db_df = pd.read_csv('./labeled-data/round1/articles_mask.csv')
   mask_codes_df = mask_codes_df.merge(articles_db_df[['id','native_id']], left_on='article_id',right_on='id')
   mask_codes_df.drop(columns=['id_y'], inplace=True)
   mask_codes_df.rename(columns={'id_x': 'id'}, inplace=True)
-  
+  return mask_codes_df
+
+def mask_wearing_training_codes_df():
+  combined_codes_df = combine_coding_rounds()
+  training_codes_df = combined_codes_df['training']
+  return training_codes_df
+
+def articles_df():
   # Read in article data
   kos_vox_df = pd.read_csv('./news-data/df_csvs/kos-vox-w-article.csv')
   fox_nyt_breit_df = pd.read_csv('./news-data/df_csvs/covid-or-mask_w-article.csv', sep=MC_SEP)
   articles_df = pd.concat([kos_vox_df, fox_nyt_breit_df])
+  articles_df.drop(columns=['Unnamed: 0','Unnamed: 0.1'], inplace=True)
+  return articles_df
+
+def label_analysis():
+  # Read in label data
+  mask_training_codes_df = mask_wearing_training_codes_df()
+  mask_codes_df = mask_wearing_codes_df()
+  articles_db_df = pd.read_csv('./labeled-data/round1/articles_mask.csv')
+  articles_df = articles_df()
 
   training_agreement_scores = label_training_agreement_analysis(mask_training_codes_df)
   date_range_results = label_date_range_analysis(mask_codes_df, articles_df)
-  percent_articles_labeled = percent_paragraphs_labeled_for_labeled_stories(mask_codes_df, articles_df)
+  percent_articles_labeled = percent_paragraphs_labeled_for_labeled_stories(mask_codes_df, articles_db_df)
 
   return (training_agreement_scores, date_range_results, percent_articles_labeled)
