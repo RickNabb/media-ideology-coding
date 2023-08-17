@@ -2,9 +2,10 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import date, timedelta
-from data_collector import NYT, FOX, TUCKER_CARLSON, SEAN_HANNITY, LAURA_INGRAHAM, HUFF_POST, BREITBART, DAILY_KOS, VOX, media_id_to_name, MC_SEP, POST_ACCOUNTS_IDS
 from sklearn.metrics import cohen_kappa_score
 from statsmodels.stats.inter_rater import fleiss_kappa, aggregate_raters
+import xml.etree.ElementTree as ET
+from data_collector import NYT, FOX, TUCKER_CARLSON, SEAN_HANNITY, LAURA_INGRAHAM, HUFF_POST, BREITBART, DAILY_KOS, VOX, media_id_to_name, MC_SEP, POST_ACCOUNTS_IDS
 
 # Pulled from https://stackoverflow.com/questions/1060279/iterating-through-a-range-of-dates-in-python
 
@@ -383,3 +384,62 @@ def label_analysis():
   percent_articles_labeled = percent_paragraphs_labeled_for_labeled_stories(mask_codes_df, articles_db_df)
 
   return (training_agreement_scores, date_range_results, percent_articles_labeled)
+
+##################
+# OPINION ANALYSIS
+##################
+
+'''
+TODO:
+- Make a function that resolves multicodes into one code so the opinion change code can just work with one label
+'''
+
+REP_MEDIA_OUTLETS = [BREITBART, FOX]
+MOD_MEDIA_OUTLETS = [NYT, FOX]
+DEM_MEDIA_OUTLETS = [NYT, VOX, DAILY_KOS]
+
+REP_STARTING_OPINION = 43.12
+MOD_STARTING_OPINION = 48.58
+DEM_STARTING_OPINION = 65.34
+
+def naive_opinion_change_simulation(mask_wearing_codes, articles_df):
+  # Break up media outlets into Rep, Moderate, Dem
+
+  # Seed initial data for 3 groups
+  rep_opinion_timeseries = [REP_STARTING_OPINION]
+  mod_opinion_timeseries = [MOD_STARTING_OPINION]
+  dem_opinion_timeseries = [DEM_STARTING_OPINION]
+
+  # Progress through codes over time and increment based on codes
+  articles_no_nan = articles_df.dropna(subset=['publish_date'])
+  start_date = date(2020, 4, 6)
+  end_date = date(2020, 6, 8)
+  for day in daterange(start_date, end_date):
+    articles_for_date = articles_no_nan[articles_no_nan['publish_date'].str.contains(str(day))]['stories_id']
+    codes_for_date = mask_wearing_codes[mask_wearing_codes['native_id'].isin(articles_for_date)]
+
+
+
+  # Return timeseries for each category
+  return None
+
+def opinion_from_gallup_data():
+  rep_opinion_timeseries = opinion_data_from_svg('./gallup-data/SVG/rep-opinion.svg', REP_STARTING_OPINION)
+  mod_opinion_timeseries = opinion_data_from_svg('./gallup-data/SVG/mod-opinion.svg', MOD_STARTING_OPINION)
+  dem_opinion_timeseries = opinion_data_from_svg('./gallup-data/SVG/dem-opinion.svg', DEM_STARTING_OPINION)
+  return { 'rep': rep_opinion_timeseries, 'mod': mod_opinion_timeseries, 'dem': dem_opinion_timeseries }
+
+def opinion_data_from_svg(path, starting_opinion):
+  svg_y_points = process_graph_svg(path)
+  starting_diff = starting_opinion - svg_y_points[0]
+  opinion_data = np.array(svg_y_points) + starting_diff
+  return opinion_data
+
+def process_graph_svg(path):
+  tree = ET.parse(path)
+  points_str = tree.getroot().find('{http://www.w3.org/2000/svg}g').find('{http://www.w3.org/2000/svg}polyline').get('points')
+  points = points_str.split(' ')
+  points_matrix = np.matrix([ [float(points[i]), float(points[i+1])] for i in range(0, len(points), 2)])
+  line_flipped = points_matrix * np.matrix([[1, 0],[0, -1]])
+  y_points = [ el[1] for el in line_flipped ]
+  return y_points
