@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import random
 from datetime import date, timedelta
 from sklearn.metrics import cohen_kappa_score
 from statsmodels.stats.inter_rater import fleiss_kappa, aggregate_raters
@@ -422,6 +423,54 @@ def naive_opinion_change_simulation(mask_wearing_codes, articles_df):
 
   # Return timeseries for each category
   return None
+
+def resolve_multiple_codes_per_paragraph(mask_wearing_codes):
+  '''
+  This function resolves multiple annotations for paragraphs into one
+  annotation. The method by which it does this is majority vote, with ties
+  resolved by the total confidence score for the tied votes. In the case
+  where confidence scores are equal, a random code is chosen.
+
+  Returned is a dictionary of { article_id: { attribute: winning_code }}
+  '''
+  article_ids = mask_wearing_codes['article_id'].unique()
+  session_ids_per_article = { article_id: len(mask_wearing_codes[mask_wearing_codes['article_id'] == article_id]['session_id'].unique()) for article_id in article_ids }
+  pars_with_multiple_codes = [ article_id for article_id,num_sessions in session_ids_per_article.items() if num_sessions > 1 ]
+
+  # Take majority vote
+  attributes = mask_wearing_codes['attribute'].unique()
+  labels = mask_wearing_codes['code'].unique()
+  code_votes = { article_id: {
+    attribute: {
+      label: len(mask_wearing_codes[(mask_wearing_codes['article_id'] == article_id) & (mask_wearing_codes['attribute'] == attribute) & (mask_wearing_codes['code'] == label)]['session_id'].unique()) for label in labels
+    } for attribute in attributes
+  } for article_id in pars_with_multiple_codes }
+  majority_vote_winners = { article_id: {
+    attribute: [ key for key in code_votes[article_id][attribute] if code_votes[article_id][attribute][key] == max(code_votes[article_id][attribute].values()) ] for attribute in attributes
+  } for article_id in code_votes }
+  
+  # Resolve ties
+  for article_id in majority_vote_winners:
+    votes_for_article = majority_vote_winners[article_id]
+    for attribute in votes_for_article:
+      votes = votes_for_article[attribute]
+      if len(votes) > 1:
+        # print(f'resolving with confidences {votes}')
+        total_confidences_per_vote = { code: sum(mask_wearing_codes[(mask_wearing_codes['article_id'] == article_id) & (mask_wearing_codes['attribute'] == attribute) & (mask_wearing_codes['code'] == code)]['confidence']) for code in votes }
+        # print(f'confidence scores: {total_confidences_per_vote}')
+        max_votes_by_confidence = [ code for code in total_confidences_per_vote if total_confidences_per_vote[code] == max(total_confidences_per_vote.values()) ]
+
+        # Check if there's still a tie
+        if len(max_votes_by_confidence) > 1:
+          # print('remaining tie resolved by random')
+          majority_vote_winners[article_id][attribute] = random.choice(max_votes_by_confidence)
+        else:
+          # print(f'resolved as: {max_votes_by_confidence[0]}')
+          majority_vote_winners[article_id][attribute] = max_votes_by_confidence[0]
+      else:
+        majority_vote_winners[article_id][attribute] = votes[0]
+
+  return majority_vote_winners
 
 def opinion_from_gallup_data():
   rep_opinion_timeseries = opinion_data_from_svg('./gallup-data/SVG/rep-opinion.svg', REP_STARTING_OPINION)
