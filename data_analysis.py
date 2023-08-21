@@ -295,6 +295,101 @@ def graph_articles_per_outlet_distribution(articles_db_df):
 
   plt.show()
 
+def graph_articles_per_partisanship_distribution(articles_db_df):
+  media_diets = [ 
+    [ POST_ACCOUNTS_IDS[outlet] for outlet in REP_MEDIA_OUTLETS ],
+    [ POST_ACCOUNTS_IDS[outlet] for outlet in MOD_MEDIA_OUTLETS ],
+    [ POST_ACCOUNTS_IDS[outlet] for outlet in DEM_MEDIA_OUTLETS ]
+  ]
+
+  fig,ax = plt.subplots(figsize=(8,4))
+
+  articles_per_outlet = [ len(articles_db_df[articles_db_df['article_account_id'].isin(media_diet)]['native_id'].unique()) for media_diet in media_diets ]
+  bar_labels = [ 'Rep', 'Mod', 'Dem' ]
+  ax.bar(bar_labels, articles_per_outlet)
+
+  ax.set_xticklabels(bar_labels, fontsize=8)
+  ax.set_xlabel('Partisanship')
+  ax.set_ylabel('Number of articles per partisan media diet')
+
+  plt.show()
+
+def graph_articles_partisanship_over_time(articles_df):
+  media_diets = [ 
+    REP_MEDIA_OUTLETS,
+    MOD_MEDIA_OUTLETS,
+    DEM_MEDIA_OUTLETS 
+  ]
+
+  date_df = pd.DataFrame(columns=['rep','mod','dem'])
+  articles_no_nan = articles_df.dropna(subset=['publish_date'])
+  start_date = date(2020, 4, 6)
+  end_date = date(2020, 6, 8)
+  for day in daterange(start_date, end_date):
+    articles_for_date = articles_no_nan[articles_no_nan['publish_date'].str.contains(str(day))][['stories_id', 'media_id']]
+    # paragraphs_for_date = articles_db_df[articles_db_df['native_id'].isin(articles_for_date)]['id']
+    date_df.loc[len(date_df)] = [
+      len(articles_for_date[articles_for_date['media_id'].isin(media_diets[0])]),
+      len(articles_for_date[articles_for_date['media_id'].isin(media_diets[1])]),
+      len(articles_for_date[articles_for_date['media_id'].isin(media_diets[2])]),
+    ]
+
+  fig,ax = plt.subplots(figsize=(8,4))
+  dates = list(daterange(start_date, end_date))
+
+  bottom = np.zeros(len(dates))
+  media_diets_and_colors = { 'rep': 'red', 'mod': 'gray', 'dem': 'blue' }
+  for diet in media_diets_and_colors:
+    articles_for_outlet = date_df[diet]
+    ax.bar(dates, articles_for_outlet, bottom=bottom, label=diet, color=media_diets_and_colors[diet])
+    bottom += articles_for_outlet
+
+  ax.set_xticks(dates)
+  ax.set_xticklabels([f'{date.month}-{date.day}' for date in dates], rotation=-45, ha='left', fontsize=6)
+  ax.set_xlabel('Date')
+  ax.set_ylabel('Number of articles per partisan media diet')
+  ax.legend()
+
+  plt.show()
+
+def graph_paragraphs_partisanship_over_time(articles_df, articles_db_df):
+  media_diets = [ 
+    [ POST_ACCOUNTS_IDS[outlet] for outlet in REP_MEDIA_OUTLETS ],
+    [ POST_ACCOUNTS_IDS[outlet] for outlet in MOD_MEDIA_OUTLETS ],
+    [ POST_ACCOUNTS_IDS[outlet] for outlet in DEM_MEDIA_OUTLETS ]
+  ]
+
+  date_df = pd.DataFrame(columns=['rep','mod','dem'])
+  articles_no_nan = articles_df.dropna(subset=['publish_date'])
+  start_date = date(2020, 4, 6)
+  end_date = date(2020, 6, 8)
+  for day in daterange(start_date, end_date):
+    articles_for_date = articles_no_nan[articles_no_nan['publish_date'].str.contains(str(day))]['stories_id']
+    paragraphs_for_date = articles_db_df[articles_db_df['native_id'].isin(articles_for_date)][['id','article_account_id']]
+    date_df.loc[len(date_df)] = [
+      len(paragraphs_for_date[paragraphs_for_date['article_account_id'].isin(media_diets[0])]),
+      len(paragraphs_for_date[paragraphs_for_date['article_account_id'].isin(media_diets[1])]),
+      len(paragraphs_for_date[paragraphs_for_date['article_account_id'].isin(media_diets[2])]),
+    ]
+
+  fig,ax = plt.subplots(figsize=(8,4))
+  dates = list(daterange(start_date, end_date))
+
+  bottom = np.zeros(len(dates))
+  media_diets_and_colors = { 'rep': 'red', 'mod': 'gray', 'dem': 'blue' }
+  for diet in media_diets_and_colors:
+    articles_for_outlet = date_df[diet]
+    ax.bar(dates, articles_for_outlet, bottom=bottom, label=diet, color=media_diets_and_colors[diet])
+    bottom += articles_for_outlet
+
+  ax.set_xticks(dates)
+  ax.set_xticklabels([f'{date.month}-{date.day}' for date in dates], rotation=-45, ha='left', fontsize=6)
+  ax.set_xlabel('Date')
+  ax.set_ylabel('Number of articles per partisan media diet')
+  ax.legend()
+
+  plt.show()
+
 def graph_label_confidence_distribution(mask_codes_df):
   fig,ax = plt.subplots(figsize=(8,4))
 
@@ -403,9 +498,40 @@ REP_STARTING_OPINION = 43.12
 MOD_STARTING_OPINION = 48.58
 DEM_STARTING_OPINION = 65.34
 
-def naive_opinion_change_simulation(mask_wearing_codes, articles_df):
-  # Break up media outlets into Rep, Moderate, Dem
+OPINION_CHANGE_POLARITY_BY_ATTR = {
+  'mw_comfort_breathe': { 0: -1, 1: 1, 2: 0 },
+  'mw_comfort_hot': { 0: -1, 1: 1, 2: 0 },
+  'mw_efficacy_health': { 0: -1, 1: 1, 2: 0 },
+  'mw_efficacy_eff': { 0: -1, 1: 1, 2: 0 },
+  'mw_access_diff': { 0: -1, 1: 1, 2: 0 },
+  'mw_access_cost': { 0: -1, 1: 1, 2: 0 },
+  'mw_compensation': { 0: -1, 1: 1, 2: 0 },
+  'mw_inconvenience_remember': { 0: -1, 1: 1, 2: 0 },
+  'mw_inconvenience_hassle': { 0: -1, 1: 1, 2: 0 },
+  'mw_appearance': { 0: -1, 1: 1, 2: 0 },
+  'mw_attention_trust': { 0: -1, 1: 1, 2: 0 },
+  'mw_attention_uncomfortable': { 0: -1, 1: 1, 2: 0 },
+  'mw_independence_forced': { 0: -1, 1: 1, 2: 0 },
+  'mw_independence_authority': { 0: -1, 1: 1, 2: 0 },
+}
 
+def graph_opinion_timeseries(rep_timeseries, mod_timeseries, dem_timeseries):
+  fig,ax = plt.subplots(figsize=(8,4))
+  start_date = date(2020, 4, 6)
+  end_date = date(2020, 6, 9)
+  dates = list(daterange(start_date, end_date))
+
+  ax.plot(dates, rep_timeseries, color='red')
+  ax.plot(dates, mod_timeseries, color='gray')
+  ax.plot(dates, dem_timeseries, color='blue')
+  ax.set_xticks(dates)
+  ax.set_xticklabels([f'{date.month}-{date.day}' for date in dates], rotation=-45, ha='left', fontsize=6)
+  ax.set_xlabel('Date')
+  ax.set_ylabel('% Support for Wearing Masks')
+
+  plt.show()
+
+def naive_opinion_change_simulation(mask_wearing_codes, articles_df):
   # Seed initial data for 3 groups
   rep_opinion_timeseries = [REP_STARTING_OPINION]
   mod_opinion_timeseries = [MOD_STARTING_OPINION]
@@ -416,13 +542,60 @@ def naive_opinion_change_simulation(mask_wearing_codes, articles_df):
   start_date = date(2020, 4, 6)
   end_date = date(2020, 6, 8)
   for day in daterange(start_date, end_date):
+    print(f'Evaluating {day}')
+    next_rep = rep_opinion_timeseries[-1]
+    next_mod = mod_opinion_timeseries[-1]
+    next_dem = dem_opinion_timeseries[-1]
+
+    rep_diff = 0
+    mod_diff = 0
+    dem_diff = 0
+
     articles_for_date = articles_no_nan[articles_no_nan['publish_date'].str.contains(str(day))]['stories_id']
     codes_for_date = mask_wearing_codes[mask_wearing_codes['native_id'].isin(articles_for_date)]
+    resolved_codes = resolve_multiple_codes_per_paragraph(codes_for_date)
+    # print(f'multi-coded pars: {resolved_codes}')
 
-
+    # Paragraphs w/ more than one code
+    for article_id in resolved_codes:
+      native_id = mask_wearing_codes[mask_wearing_codes['article_id'] == article_id]['native_id'].iloc[0]
+      media_id = articles_df[articles_df['stories_id'] == native_id]['media_id'].iloc[0]
+      for attr, code in resolved_codes[article_id].items():
+        opinion_change = OPINION_CHANGE_POLARITY_BY_ATTR[attr][code]
+        if media_id in REP_MEDIA_OUTLETS:
+          rep_diff += opinion_change
+        elif media_id in MOD_MEDIA_OUTLETS:
+          mod_diff += opinion_change
+        elif media_id in DEM_MEDIA_OUTLETS:
+          dem_diff += opinion_change
+    
+    # Non-multi-coded paragraphs
+    single_coded_pars = codes_for_date[~codes_for_date['article_id'].isin(resolved_codes)]
+    # print(f'single-coded pars: {single_coded_pars}')
+    for row in single_coded_pars.iterrows():
+      attr = row[1]['attribute']
+      code = row[1]['code']
+      native_id = row[1]['native_id']
+      media_id = articles_df[articles_df['stories_id'] == native_id]['media_id'].iloc[0]
+      opinion_change = OPINION_CHANGE_POLARITY_BY_ATTR[attr][code]
+      if media_id in REP_MEDIA_OUTLETS:
+        rep_diff += opinion_change
+      elif media_id in MOD_MEDIA_OUTLETS:
+        mod_diff += opinion_change
+      elif media_id in DEM_MEDIA_OUTLETS:
+        dem_diff += opinion_change
+    
+    # print(f'rep diff: {rep_diff}')
+    next_rep += rep_diff
+    next_mod += mod_diff
+    next_dem += dem_diff
+    
+    rep_opinion_timeseries.append(next_rep)
+    mod_opinion_timeseries.append(next_mod)
+    dem_opinion_timeseries.append(next_dem)
 
   # Return timeseries for each category
-  return None
+  return { 'rep': rep_opinion_timeseries, 'mod': mod_opinion_timeseries, 'dem': dem_opinion_timeseries }
 
 def resolve_multiple_codes_per_paragraph(mask_wearing_codes):
   '''
