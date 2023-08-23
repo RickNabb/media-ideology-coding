@@ -16,7 +16,7 @@ def daterange(start_date, end_date):
 
 def combine_coding_rounds():
   data_path = './labeled-data/'
-  sub_paths = [ 'round1', 'round2' ]
+  sub_paths = [ 'round1', 'round2', 'round3' ]
   training_df = pd.DataFrame(columns=['id','article_id','attribute','code','confidence','session_id','datetime'])
   code_df = pd.DataFrame(columns=['id','article_id','attribute','code','confidence','session_id','datetime'])
 
@@ -81,8 +81,8 @@ def label_training_agreement_analysis(mask_training_codes_df):
   for session_id in agreement_scores.keys():
     for article_id in agreement_codes.keys():
       session_article_codes = mask_training_codes_df[(mask_training_codes_df['session_id'] == session_id) & (mask_training_codes_df['article_id'] == article_id)][['attribute','code','confidence']]
-      code_vector = np.array(session_article_codes['code'])
-      gold_vector = np.array([ agreement_codes[article_id][attr.replace('_training','')] for attr in session_article_codes['attribute'] ])
+      code_vector = np.array(session_article_codes['code'], dtype=int)
+      gold_vector = np.array([ agreement_codes[article_id][attr.replace('_training','')] for attr in session_article_codes['attribute'] ], dtype=int)
 
       # print(f'{session_id},{article_id}')
       # print(code_vector)
@@ -189,7 +189,7 @@ def graph_media_outlets_across_dates(label_date_range_results):
   ax.set_xticks(dates)
   ax.set_xticklabels([f'{date.month}-{date.day}' for date in dates], rotation=-45, ha='left', fontsize=6)
   ax.set_xlabel('Date')
-  ax.set_ylabel('Number of labeled articles per outlet (without "Does not mention")')
+  ax.set_ylabel('Number of labeled articles per outlet\n(without "Does not mention")')
   ax.legend()
 
   plt.show()
@@ -292,6 +292,87 @@ def graph_articles_per_outlet_distribution(articles_db_df):
   ax.set_xticklabels([media_id_to_name[outlet] for outlet in outlets], fontsize=8)
   ax.set_xlabel('Media Outlet')
   ax.set_ylabel('Number of articles per outlet')
+
+  plt.show()
+
+def graph_labels_by_partisan_diet_across_dates(label_date_range_results):
+  media_diets = { 
+    'rep': [ media_id_to_name[outlet] for outlet in REP_MEDIA_OUTLETS ],
+    'mod': [ media_id_to_name[outlet] for outlet in MOD_MEDIA_OUTLETS ],
+    'dem': [ media_id_to_name[outlet] for outlet in DEM_MEDIA_OUTLETS ]
+  }
+  media_diets_and_colors = { 'rep': 'red', 'mod': 'gray', 'dem': 'blue' }
+
+  fig,ax = plt.subplots(figsize=(8,4))
+  start_date = date(2020, 4, 6)
+  end_date = date(2020, 6, 8)
+  dates = list(daterange(start_date, end_date))
+
+  bottom = np.zeros(len(dates))
+  for name,diet in media_diets.items():
+    labels_from_outlets = [ list(label_date_range_results[outlet]) for outlet in diet ]
+    labels_for_diet = np.array(labels_from_outlets).sum(axis=0)
+    ax.bar(dates, labels_for_diet, bottom=bottom, label=name, color=media_diets_and_colors[name])
+    bottom += labels_for_diet
+
+  ax.set_xticks(dates)
+  ax.set_xticklabels([f'{date.month}-{date.day}' for date in dates], rotation=-45, ha='left', fontsize=6)
+  ax.set_xlabel('Date')
+  ax.set_ylabel('Number of labeled articles per partisanship\n(without "Does not mention")')
+  ax.legend()
+
+  plt.show()
+
+def graph_total_labels_by_partisan_diet(mask_wearing_df, articles_db_df):
+  media_diets = [ 
+    [ POST_ACCOUNTS_IDS[outlet] for outlet in REP_MEDIA_OUTLETS ],
+    [ POST_ACCOUNTS_IDS[outlet] for outlet in MOD_MEDIA_OUTLETS ],
+    [ POST_ACCOUNTS_IDS[outlet] for outlet in DEM_MEDIA_OUTLETS ]
+  ]
+
+  fig,ax = plt.subplots(figsize=(8,4))
+
+  articles_per_diet = [ articles_db_df[articles_db_df['article_account_id'].isin(media_diet)]['id'].unique() for media_diet in media_diets ]
+  paragraphs_labels_per_diet = [ len(mask_wearing_df[mask_wearing_df['article_id'].isin(articles)]['article_id'].unique()) for articles in articles_per_diet ]
+  bar_labels = [ 'Rep', 'Mod', 'Dem' ]
+  ax.bar(bar_labels, paragraphs_labels_per_diet, label=bar_labels, color=['red','gray','blue'])
+
+  ax.set_xticklabels(bar_labels, fontsize=8)
+  ax.set_xlabel('Partisanship')
+  ax.set_ylabel('Number of labeled paragraphs per\npartisan media diet')
+
+  plt.show()
+
+def graph_labels_by_partisan_diet(mask_wearing_df, articles_db_df):
+  media_diets = { 
+    'rep': [ POST_ACCOUNTS_IDS[outlet] for outlet in REP_MEDIA_OUTLETS ],
+    'mod': [ POST_ACCOUNTS_IDS[outlet] for outlet in MOD_MEDIA_OUTLETS ],
+    'dem': [ POST_ACCOUNTS_IDS[outlet] for outlet in DEM_MEDIA_OUTLETS ]
+  }
+
+  codes = mask_wearing_df['code'].unique()
+  articles_per_diet = { partisan: articles_db_df[articles_db_df['article_account_id'].isin(media_diet)]['id'].unique() for partisan,media_diet in media_diets.items() }
+  paragraphs_labels_per_diet = { partisan: [ len(mask_wearing_df[(mask_wearing_df['article_id'].isin(articles)) & (mask_wearing_df['code'] == code)]['article_id'].unique()) for code in codes ] for partisan,articles in articles_per_diet.items() }
+
+  x = np.arange(len(codes))
+  width = 0.25
+  multiplier = 0
+
+  fig,ax = plt.subplots(figsize=(8,4))
+  media_diets_and_colors = { 'rep': 'red', 'mod': 'gray', 'dem': 'blue' }
+
+  for partisan,num_codes in paragraphs_labels_per_diet.items():
+    offset = width * multiplier
+    rects = ax.bar(x + offset, num_codes, width, label=partisan, color=media_diets_and_colors[partisan])
+    ax.bar_label(rects, padding=3)
+    multiplier+=1
+
+  # bar_labels = [ 'Rep', 'Mod', 'Dem' ]
+  ax.set_xticks(x+offset)
+  ax.set_xticklabels(codes, fontsize=8)
+  ax.set_xlabel('Code')
+  ax.set_ylabel('Number of labeled paragraphs per\npartisan media diet')
+  ax.legend()
 
   plt.show()
 
@@ -445,7 +526,6 @@ def inter_rater_agreement_across_attributes_histogram(mask_codes_df):
 
   plt.show()
 
-
 def mask_wearing_codes_df():
   combined_codes_df = combine_coding_rounds()
   mask_codes_df = combined_codes_df['codes']
@@ -473,10 +553,10 @@ def label_analysis():
   mask_training_codes_df = mask_wearing_training_codes_df()
   mask_codes_df = mask_wearing_codes_df()
   articles_db_df = pd.read_csv('./labeled-data/round1/articles_mask.csv')
-  articles_df = articles_df()
+  articles_all_df = articles_df()
 
   training_agreement_scores = label_training_agreement_analysis(mask_training_codes_df)
-  date_range_results = label_date_range_analysis(mask_codes_df, articles_df)
+  date_range_results = label_date_range_analysis(mask_codes_df, articles_all_df)
   percent_articles_labeled = percent_paragraphs_labeled_for_labeled_stories(mask_codes_df, articles_db_df)
 
   return (training_agreement_scores, date_range_results, percent_articles_labeled)
@@ -564,9 +644,9 @@ def naive_opinion_change_simulation(mask_wearing_codes, articles_df):
         opinion_change = OPINION_CHANGE_POLARITY_BY_ATTR[attr][code]
         if media_id in REP_MEDIA_OUTLETS:
           rep_diff += opinion_change
-        elif media_id in MOD_MEDIA_OUTLETS:
+        if media_id in MOD_MEDIA_OUTLETS:
           mod_diff += opinion_change
-        elif media_id in DEM_MEDIA_OUTLETS:
+        if media_id in DEM_MEDIA_OUTLETS:
           dem_diff += opinion_change
     
     # Non-multi-coded paragraphs
@@ -580,12 +660,12 @@ def naive_opinion_change_simulation(mask_wearing_codes, articles_df):
       opinion_change = OPINION_CHANGE_POLARITY_BY_ATTR[attr][code]
       if media_id in REP_MEDIA_OUTLETS:
         rep_diff += opinion_change
-      elif media_id in MOD_MEDIA_OUTLETS:
+      if media_id in MOD_MEDIA_OUTLETS:
         mod_diff += opinion_change
-      elif media_id in DEM_MEDIA_OUTLETS:
+      if media_id in DEM_MEDIA_OUTLETS:
         dem_diff += opinion_change
     
-    # print(f'rep diff: {rep_diff}')
+    print(f'dem diff: {dem_diff}')
     next_rep += rep_diff
     next_mod += mod_diff
     next_dem += dem_diff
