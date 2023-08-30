@@ -484,8 +484,9 @@ def get_keyword_paragraph(text, keyword, num_surround_pars):
   the paragraph where a keyword appears (e.g. num_surround_pairs=2 will return
   two paragraphs before and after one containing the keyword).
   '''
-  keyword_idx = np.array([m.start() for m in re.finditer(keyword, text)])
-  break_idx = np.array([m.start() for m in re.finditer('\n', text)])
+  clean_text = text.replace("\xa0\n"," ")
+  keyword_idx = np.array([m.start() for m in re.finditer(keyword, clean_text)])
+  break_idx = np.array([m.start() for m in re.finditer('\n', clean_text)])
   paragraphs = []
   for k_idx in keyword_idx:
     break_diff = break_idx-k_idx
@@ -496,7 +497,7 @@ def get_keyword_paragraph(text, keyword, num_surround_pars):
     if len(break_diff[break_diff < 0]) > 0:
       last_break_idx = np.where(break_diff==-1*min(abs(break_diff[break_diff < 0])))[0]
     
-    end_idx = len(text)
+    end_idx = len(clean_text)
     if next_break_idx > -1:
       end_idx = break_idx[min(next_break_idx+num_surround_pars, len(break_idx)-1)]
 
@@ -505,11 +506,25 @@ def get_keyword_paragraph(text, keyword, num_surround_pars):
       # Add the +1 to skip the newline character
       start_idx = break_idx[max(last_break_idx-num_surround_pars, 0)]+1
 
-    par = text[int(start_idx):int(end_idx)]
+    par = clean_text[int(start_idx):int(end_idx)]
     formatted_par = par.replace('\n',' <br/><br/> ').replace('"','\\"')
     if formatted_par not in paragraphs:
       paragraphs.append(formatted_par)
   return paragraphs
+
+def add_dates_to_opinion_transcripts(df):
+  new_df = df.copy()
+  for row in df.iterrows():
+    row_id = row[0]
+    data = row[1]
+    text = data['article_data_raw']
+    if ('rush transcript from' in text):
+      start_index = text.index('rush transcript from')
+      date_indices = [ m.span() for m in re.finditer('January|February|March|April|May|June|July|August|September|October|November|December', text[start_index:start_index+100]) ][0]
+      date = text[start_index:start_index+100][date_indices[0]:date_indices[1]+9].replace('.','')
+      dt = datetime.strptime(date, '%B %d, %Y')
+      new_df.at[row_id,'publish_date'] = dt.strftime('%Y-%m-%d')
+  return new_df
 
 '''
 PANDAS FUNCTIONS
@@ -542,16 +557,28 @@ def df_with_experiment_filters(df):
     df = df.drop(columns=['Unnamed: 0'])
   if 'Unnamed: 0.1' in df.columns:
     df = df.drop(columns=['Unnamed: 0.1'])
-  source_list = [NYT, FOX, BREITBART,DAILY_KOS,VOX]
+  source_list = [NYT, FOX, BREITBART,DAILY_KOS,VOX,TUCKER_CARLSON,SEAN_HANNITY,LAURA_INGRAHAM]
   df_for_dates = rows_within_time_range(df, '2020-04-01','2020-06-14')
   df_for_sources = rows_from_sources(df_for_dates, source_list)
   df_without_nan = df_for_sources.dropna(subset=['article_data_raw'])
   return df_without_nan
 
 def regenerate_article_sql():
-  covid_mask_df = pd.read_csv('./news-data/df_csvs/covid-or-mask_w-article.csv')
+  covid_mask_df = pd.read_csv('./news-data/df_csvs/covid-or-mask_w-article.csv', sep=MC_SEP)
   kos_vox_df = pd.read_csv('./news-data/df_csvs/kos-vox-w-article.csv')
+  carlson_df = pd.read_csv('./news-data/df_csvs/carlson-mask.csv')
+  carlson_df_with_dates = add_dates_to_opinion_transcripts(carlson_df)
+  hannity_df = pd.read_csv('./news-data/df_csvs/hannity-mask.csv')
+  hannity_df_with_dates = add_dates_to_opinion_transcripts(hannity_df)
+  ingraham_df = pd.read_csv('./news-data/df_csvs/ingraham-mask.csv')
+  ingraham_df_with_dates = add_dates_to_opinion_transcripts(ingraham_df)
   covid_mask_exp_df = df_with_experiment_filters(covid_mask_df)
   kos_vox_exp_df = df_with_experiment_filters(kos_vox_df)
+  carlson_exp_df = df_with_experiment_filters(carlson_df_with_dates)
+  hannity_exp_df = df_with_experiment_filters(hannity_df_with_dates)
+  ingraham_exp_df = df_with_experiment_filters(ingraham_df_with_dates)
   write_mc_df_to_sql(covid_mask_exp_df)
   write_mc_df_to_sql(kos_vox_exp_df)
+  write_mc_df_to_sql(carlson_exp_df)
+  write_mc_df_to_sql(hannity_exp_df)
+  write_mc_df_to_sql(ingraham_exp_df)
