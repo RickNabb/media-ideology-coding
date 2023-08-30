@@ -395,6 +395,25 @@ def graph_articles_per_partisanship_distribution(articles_db_df):
 
   plt.show()
 
+def graph_paragraphs_per_partisanship_distribution(articles_db_df):
+  media_diets = [ 
+    [ POST_ACCOUNTS_IDS[outlet] for outlet in REP_MEDIA_OUTLETS ],
+    [ POST_ACCOUNTS_IDS[outlet] for outlet in MOD_MEDIA_OUTLETS ],
+    [ POST_ACCOUNTS_IDS[outlet] for outlet in DEM_MEDIA_OUTLETS ]
+  ]
+
+  fig,ax = plt.subplots(figsize=(8,4))
+
+  paragraphs_per_outlet = [ len(articles_db_df[articles_db_df['article_account_id'].isin(media_diet)]) for media_diet in media_diets ]
+  bar_labels = [ 'Rep', 'Mod', 'Dem' ]
+  ax.bar(bar_labels, paragraphs_per_outlet)
+
+  ax.set_xticklabels(bar_labels, fontsize=8)
+  ax.set_xlabel('Partisanship')
+  ax.set_ylabel('Number of paragraphs per partisan media diet')
+
+  plt.show()
+
 def graph_articles_partisanship_over_time(articles_df):
   media_diets = [ 
     REP_MEDIA_OUTLETS,
@@ -495,6 +514,19 @@ def graph_label_confidence_distribution_per_category(mask_codes_df):
 
     plt.show()
 
+def ratings_for_category_for_paragraph(mask_codes_df, article_id, attribute):
+  '''
+  Returns a dataframe containing all ratings for a given article_id (paragraph).
+  This reports the rating across one category (attribute).
+  '''
+  agreement_cols = [ attribute ]
+  codes_for_article = mask_codes_df[mask_codes_df['article_id'] == article_id]
+  coders = codes_for_article['session_id'].unique()
+  table = pd.DataFrame(columns=agreement_cols)
+  for coder in coders:
+    table.loc[len(table)] = [ codes_for_article[(codes_for_article['session_id'] == coder) & (codes_for_article['attribute'] == col)].iloc[0]['code'] for col in agreement_cols ]
+  return table
+
 def ratings_across_categories_for_paragraph(mask_codes_df, article_id):
   '''
   Returns a dataframe containing all ratings for a given article_id (paragraph).
@@ -508,10 +540,19 @@ def ratings_across_categories_for_paragraph(mask_codes_df, article_id):
     table.loc[len(table)] = [ codes_for_article[(codes_for_article['session_id'] == coder) & (codes_for_article['attribute'] == col)].iloc[0]['code'] for col in agreement_cols ]
   return table
 
-def inter_rater_agreement_across_categories(mask_codes_df, article_id):
-  table = ratings_across_categories_for_paragraph(mask_codes_df, article_id)
+def inter_rater_agreement_for_category(mask_codes_df, article_id, attribute):
+  table = ratings_for_category_for_paragraph(mask_codes_df, article_id, attribute)
   # return aggregate_raters(np.transpose(table.to_numpy()))
   return fleiss_kappa(aggregate_raters(np.transpose(table.to_numpy()))[0])
+
+def inter_rater_agreement_across_categories(mask_codes_df, article_id):
+  table = ratings_across_categories_for_paragraph(mask_codes_df, article_id)
+  if len(table) > 2:
+  # return aggregate_raters(np.transpose(table.to_numpy()))
+    return fleiss_kappa(aggregate_raters(np.transpose(table.to_numpy()))[0])
+  else:
+    table_np = table.to_numpy()
+    return cohen_kappa_score(table_np[0], table_np[1])
 
 def inter_rater_agreement_across_attributes_histogram(mask_codes_df):
   fig,ax = plt.subplots(figsize=(8,4))
@@ -547,6 +588,62 @@ def articles_df():
   articles_df = pd.concat([kos_vox_df, fox_nyt_breit_df])
   articles_df.drop(columns=['Unnamed: 0','Unnamed: 0.1'], inplace=True)
   return articles_df
+
+def high_quality_codes_across_categories(mask_wearing_df):
+  article_ids = mask_wearing_df['article_id'].unique()
+  high_quality_paragraphs = []
+  for article_id in article_ids:
+    rows_for_article_id = mask_wearing_df[mask_wearing_df['article_id'] == article_id]
+    num_annotaters = len(rows_for_article_id['session_id'].unique())
+    # If there are multiple annotaters, resolve by agreement
+    if num_annotaters > 1:
+      agreement = inter_rater_agreement_across_categories(mask_wearing_df, article_id)
+      # Rated as moderate agreement from Landis & Koch 1977 (https://datatab.net/tutorial/fleiss-kappa)
+      if agreement > 0.4:
+        high_quality_paragraphs.append(article_id)
+    # Otherwise, look at high confidences
+    else:
+      if rows_for_article_id['confidence'].mean() >= 5:
+        high_quality_paragraphs.append(article_id)
+  return high_quality_paragraphs
+
+def high_quality_resolved_codes(mask_wearing_df):
+  '''
+  Select only high quality codes from the entire coded set, and then
+  resolve articles with multiple coders.
+
+  :param mask_wearing_df: A data frame of mask wearing codes combined
+  across coding rounds.
+  '''
+  high_quality_ids = high_quality_codes_across_categories(mask_wearing_df)
+  mask_wearing_hq_df = mask_wearing_df[mask_wearing_df['article_id'].isin(high_quality_ids)]
+  mask_wearing_hq_df.drop(columns=['id'],inplace=True)
+  resolved_codes = resolve_multiple_codes_per_paragraph(mask_wearing_hq_df)
+  codes_without_multiples = mask_wearing_hq_df[~mask_wearing_hq_df['article_id'].isin(resolved_codes)]
+  mask_wearing_hq_resolved_df = codes_without_multiples.copy()
+  mask_wearing_hq_resolved_df.reset_index(inplace=True)
+  mask_wearing_hq_resolved_df.drop(columns=['index'],inplace=True)
+  for article_id,codes in resolved_codes.items():
+    for attr,code in codes.items():
+      # All the attributes we care about (datetime, native_id) are the same
+      # for all, so we can fetch iloc[0]
+      row_for_article_id = mask_wearing_hq_df[mask_wearing_hq_df['article_id']==article_id].iloc[0]
+      # print(row_for_article_id['datetime'])
+      # print(f'added row {article_id}: {attr}: {code}')
+      # print(len(mask_wearing_hq_resolved_df))
+      mask_wearing_hq_resolved_df.loc[len(mask_wearing_hq_resolved_df)] = [article_id, attr, code, -1, -1, row_for_article_id['datetime'], row_for_article_id['native_id']]
+      # print(len(mask_wearing_hq_resolved_df))
+  return mask_wearing_hq_resolved_df
+
+def add_text_to_codes_df(mask_wearing_df,article_db_df):
+  mask_wearing_with_text = mask_wearing_df.copy()
+  texts = []
+  for row in mask_wearing_df.iterrows():
+    data = row[1]
+    text = article_db_df[article_db_df['id']==data['article_id']].iloc[0]['post']
+    texts.append(text)
+  mask_wearing_with_text['text'] = texts
+  return mask_wearing_with_text
 
 def label_analysis():
   # Read in label data
@@ -665,7 +762,8 @@ def naive_opinion_change_simulation(mask_wearing_codes, articles_df):
       if media_id in DEM_MEDIA_OUTLETS:
         dem_diff += opinion_change
     
-    print(f'dem diff: {dem_diff}')
+    # print(f'dem diff: {dem_diff}')
+
     next_rep += rep_diff
     next_mod += mod_diff
     next_dem += dem_diff
