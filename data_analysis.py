@@ -659,13 +659,72 @@ def label_analysis():
   return (training_agreement_scores, date_range_results, percent_articles_labeled)
 
 ##################
-# OPINION ANALYSIS
+# PSEUDO-LABEL ANALYSIS
 ##################
 
-'''
-TODO:
-- Make a function that resolves multicodes into one code so the opinion change code can just work with one label
-'''
+def read_all_pseudo_label_data(path):
+  attributes = ['mw_independence_authority', 'mw_comfort_breathe',
+       'mw_independence_forced', 'mw_attention_trust',
+       'mw_attention_uncomfortable', 'mw_appearance', 'mw_compensation',
+       'mw_access_cost', 'mw_inconvenience_remember',
+       'mw_inconvenience_hassle', 'mw_efficacy_health', 'mw_efficacy_eff',
+       'mw_access_diff', 'mw_comfort_hot']
+  data = { attr: read_pseudo_label_data(path, attr) for attr in attributes }
+  return data
+
+def read_pseudo_label_data(path, attribute):
+  dfs = [ pd.read_json(f'{path}/{attribute}-{i}.json') for i in range(5) ]
+  for df in dfs:
+    df['article_id'] = df.index
+  return dfs
+
+def majority_vote_all_label_data(pseudo_label_data):
+  return { attr: majority_vote_pseudo_labels(pseudo_label_data[attr]) for attr in pseudo_label_data }
+
+def majority_vote_pseudo_labels(ps_dfs):
+  label_weights = {}
+  for article_id in ps_dfs[0]['article_id']:
+    label_weight = {}
+    for i in range(len(ps_dfs)):
+      df = ps_dfs[i]
+      row = df[df['article_id'] == article_id]
+      pseudo_label = row['pseudo_label'].iloc[0]
+      pseudo_weight = row['pseudo_weight'].iloc[0]
+      if pseudo_label not in label_weight:
+        label_weight[pseudo_label] = pseudo_weight
+      else:
+        # TODO: Not sure if this should be add or multiply
+        label_weight[pseudo_label] += pseudo_weight
+    label_weights[article_id] = label_weight
+  # print(label_weights)
+  final_labels = {}
+  for article_id,label_weight in label_weights.items():
+    max_label = max(label_weight, key=label_weight.get)
+    final_labels[article_id] = (max_label, max(label_weight.values()))
+  return final_labels
+
+def code_format_pseudo_label_df(pseudo_labels):
+  '''
+  :param pseudo_labels: The result of running majority_vote_pseudo_labels --
+  a dict of { attr: { article_id: code } }
+  '''
+  attributes = ['mw_independence_authority', 'mw_comfort_breathe',
+       'mw_independence_forced', 'mw_attention_trust',
+       'mw_attention_uncomfortable', 'mw_appearance', 'mw_compensation',
+       'mw_access_cost', 'mw_inconvenience_remember',
+       'mw_inconvenience_hassle', 'mw_efficacy_health', 'mw_efficacy_eff',
+       'mw_access_diff', 'mw_comfort_hot']
+  df = pd.DataFrame(columns=['article_id','attribute','code','confidence','session_id','datetime'])
+  for article_id in pseudo_labels['mw_comfort_hot']:
+    for attr in attributes:
+      ps_entry = pseudo_labels[attr][article_id]
+      df.loc[len(df)] = [article_id, attr, ps_entry[0], ps_entry[1], -1, -1]
+  return df
+
+
+##################
+# OPINION ANALYSIS
+##################
 
 REP_MEDIA_OUTLETS = [BREITBART, FOX]
 MOD_MEDIA_OUTLETS = [NYT, FOX]
