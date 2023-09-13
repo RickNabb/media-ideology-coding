@@ -44,5 +44,6 @@ CREATE TABLE IF NOT EXISTS mask_wearing_training_codes (
 );
 
 CREATE TABLE IF NOT EXISTS coding_settings (
-  distribution_method VARCHAR(256)
+  distribution_method VARCHAR(256),
+  outlets_distributed VARCHAR(256)
 );
