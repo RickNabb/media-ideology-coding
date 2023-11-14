@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import random
+import math
 from datetime import date, timedelta
 from sklearn.metrics import cohen_kappa_score
 from statsmodels.stats.inter_rater import fleiss_kappa, aggregate_raters
@@ -708,7 +709,64 @@ def graph_opinion_timeseries(rep_timeseries, mod_timeseries, dem_timeseries):
 
   plt.show()
 
-def naive_opinion_change_simulation(mask_wearing_codes, articles_df):
+def opinion_change_naive_linear(article_codes):
+  '''
+  :param article_codes: Attribute code pairs for a given article
+  '''
+  total_change = 0
+  for attr, code in article_codes.items():
+    total_change += OPINION_CHANGE_POLARITY_BY_ATTR[attr][code]
+  return total_change
+
+def article_belief_value(article_codes):
+  pos_codes = 0
+  neg_codes = 0
+  for attr, code in article_codes.items():
+    code_polarity = OPINION_CHANGE_POLARITY_BY_ATTR[attr][code]
+    if code_polarity == 1:
+      pos_codes += 1
+    else:
+      neg_codes += 1
+  return (3 + 3 * ((pos - neg) / (pos + neg))) 
+
+def curr_sigmoid_p(exponent, translation):
+  '''
+  A curried sigmoid function used to calculate probabilty of belief
+  given a certain distance. This way, it is initialized to use exponent
+  and translation, and can return a function that can be vectorized to
+  apply with one param -- message_distance.
+
+  :param exponent: An exponent factor in the sigmoid function.
+  :param translation: A translation factor in the sigmoid function.
+  '''
+  return lambda message_distance: (1 / (1 + math.exp(exponent * (message_distance - translation))))
+
+def sigmoid_contagion_p(message_distance, exponent, translation):
+  '''
+  A sigmoid function to calcluate probability of belief in a given distance
+  between beliefs, governed by a few parameters.
+  '''
+  return (1 / (1 + math.exp(exponent * (message_distance - translation))))
+
+def opinion_change_dissonant(population_opinion, article_belief, beta_fn):
+  '''
+  :param population_opinion: A vector of belief values for a population
+  :param article_belief: The belief value for the article being received
+  :param beta_fn: A function that takes in two belief values and returns a
+  probability of belief update.
+  '''
+  dists = abs(population_opinion - article_belief)
+  beta_vectorized = np.vectorize(beta_fn)
+  probabilities = beta_vectorized(dists)
+  rands = np.random.rand(len(probabilities))
+  adopters = probabilities >= rands
+  same = ~adopters
+  new_opinion = (adopters * article_belief) + (same * population_opinion)
+  return new_opinion
+
+
+
+def naive_opinion_change_simulation(mask_wearing_codes, articles_df, opinion_fn):
   # Seed initial data for 3 groups
   rep_opinion_timeseries = [REP_STARTING_OPINION]
   mod_opinion_timeseries = [MOD_STARTING_OPINION]
@@ -737,14 +795,9 @@ def naive_opinion_change_simulation(mask_wearing_codes, articles_df):
     for article_id in resolved_codes:
       native_id = mask_wearing_codes[mask_wearing_codes['article_id'] == article_id]['native_id'].iloc[0]
       media_id = articles_df[articles_df['stories_id'] == native_id]['media_id'].iloc[0]
-      for attr, code in resolved_codes[article_id].items():
-        opinion_change = OPINION_CHANGE_POLARITY_BY_ATTR[attr][code]
-        if media_id in REP_MEDIA_OUTLETS:
-          rep_diff += opinion_change
-        if media_id in MOD_MEDIA_OUTLETS:
-          mod_diff += opinion_change
-        if media_id in DEM_MEDIA_OUTLETS:
-          dem_diff += opinion_change
+
+      rep_diff, mod_diff, dem_diff = opinion_fn(resolved_codes[article_id], media_id)
+
     
     # Non-multi-coded paragraphs
     single_coded_pars = codes_for_date[~codes_for_date['article_id'].isin(resolved_codes)]
