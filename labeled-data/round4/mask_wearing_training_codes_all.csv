@@ -1,0 +1,1317 @@
+"id","article_id","attribute","code","confidence","session_id","datetime"
+"294","1","mw_independence_authority_training","2","7","68591",NULL
+"295","1","mw_comfort_breathe_training","0","7","68591",NULL
+"296","1","mw_attention_trust_training","2","7","68591",NULL
+"297","1","mw_attention_uncomfortable_training","2","7","68591",NULL
+"298","1","mw_inconvenience_remember_training","2","7","68591",NULL
+"299","1","mw_independence_forced_training","2","7","68591",NULL
+"300","1","mw_access_cost_training","2","7","68591",NULL
+"301","1","mw_access_diff_training","2","7","68591",NULL
+"302","1","mw_appearance_training","2","7","68591",NULL
+"303","1","mw_compensation_training","2","7","68591",NULL
+"304","1","mw_efficacy_health_training","1","2","68591",NULL
+"305","1","mw_inconvenience_hassle_training","1","5","68591",NULL
+"306","1","mw_efficacy_eff_training","1","7","68591",NULL
+"307","1","mw_comfort_hot_training","2","7","68591",NULL
+"308","2","mw_attention_trust_training","2","7","68591",NULL
+"309","2","mw_independence_authority_training","2","7","68591",NULL
+"310","2","mw_comfort_breathe_training","2","7","68591",NULL
+"311","2","mw_attention_uncomfortable_training","2","7","68591",NULL
+"312","2","mw_independence_forced_training","2","7","68591",NULL
+"313","2","mw_compensation_training","1","2","68591",NULL
+"314","2","mw_appearance_training","2","7","68591",NULL
+"315","2","mw_inconvenience_remember_training","2","7","68591",NULL
+"316","2","mw_access_diff_training","2","7","68591",NULL
+"317","2","mw_comfort_hot_training","2","7","68591",NULL
+"318","2","mw_efficacy_eff_training","1","5","68591",NULL
+"319","2","mw_access_cost_training","2","7","68591",NULL
+"320","2","mw_inconvenience_hassle_training","2","7","68591",NULL
+"321","2","mw_efficacy_health_training","2","4","68591",NULL
+"322","1","mw_comfort_hot_training","2","7","31521",NULL
+"323","1","mw_efficacy_health_training","1","6","31521",NULL
+"324","1","mw_comfort_breathe_training","0","5","31521",NULL
+"325","1","mw_access_cost_training","2","7","31521",NULL
+"326","1","mw_efficacy_eff_training","1","5","31521",NULL
+"327","1","mw_access_diff_training","2","4","31521",NULL
+"328","1","mw_inconvenience_hassle_training","1","4","31521",NULL
+"329","1","mw_compensation_training","2","6","31521",NULL
+"330","1","mw_inconvenience_remember_training","2","5","31521",NULL
+"331","1","mw_appearance_training","2","6","31521",NULL
+"332","1","mw_attention_uncomfortable_training","2","6","31521",NULL
+"333","1","mw_independence_authority_training","2","6","31521",NULL
+"334","1","mw_attention_trust_training","2","6","31521",NULL
+"335","1","mw_independence_forced_training","1","3","31521",NULL
+"336","3","mw_comfort_breathe_training","2","7","68591",NULL
+"337","3","mw_independence_forced_training","2","7","68591",NULL
+"338","3","mw_attention_uncomfortable_training","2","7","68591",NULL
+"339","3","mw_independence_authority_training","2","7","68591",NULL
+"340","3","mw_attention_trust_training","2","7","68591",NULL
+"341","3","mw_appearance_training","2","7","68591",NULL
+"342","3","mw_inconvenience_remember_training","2","7","68591",NULL
+"343","3","mw_inconvenience_hassle_training","0","2","68591",NULL
+"344","3","mw_compensation_training","2","7","68591",NULL
+"345","3","mw_efficacy_eff_training","2","7","68591",NULL
+"346","3","mw_access_diff_training","2","7","68591",NULL
+"347","3","mw_comfort_hot_training","2","7","68591",NULL
+"348","3","mw_efficacy_health_training","2","7","68591",NULL
+"349","3","mw_access_cost_training","2","7","68591",NULL
+"350","1","mw_appearance_training","2","6","67834",NULL
+"351","1","mw_comfort_breathe_training","0","7","67834",NULL
+"352","1","mw_efficacy_eff_training","1","7","67834",NULL
+"353","1","mw_independence_authority_training","2","6","67834",NULL
+"354","1","mw_inconvenience_hassle_training","1","2","67834",NULL
+"355","1","mw_access_cost_training","2","7","67834",NULL
+"356","1","mw_efficacy_health_training","1","7","67834",NULL
+"357","1","mw_access_diff_training","2","7","67834",NULL
+"358","1","mw_comfort_hot_training","2","5","67834",NULL
+"359","1","mw_independence_forced_training","2","5","67834",NULL
+"360","1","mw_attention_trust_training","2","6","67834",NULL
+"361","1","mw_attention_uncomfortable_training","2","5","67834",NULL
+"362","1","mw_inconvenience_remember_training","0","4","67834",NULL
+"363","1","mw_compensation_training","2","5","67834",NULL
+"364","4","mw_attention_uncomfortable_training","0","5","68591",NULL
+"365","4","mw_independence_forced_training","0","7","68591",NULL
+"366","4","mw_comfort_breathe_training","2","7","68591",NULL
+"367","4","mw_attention_trust_training","0","7","68591",NULL
+"368","4","mw_independence_authority_training","0","5","68591",NULL
+"369","4","mw_appearance_training","0","3","68591",NULL
+"370","4","mw_inconvenience_remember_training","2","7","68591",NULL
+"371","4","mw_inconvenience_hassle_training","2","7","68591",NULL
+"372","4","mw_compensation_training","2","7","68591",NULL
+"373","4","mw_access_cost_training","2","7","68591",NULL
+"374","4","mw_efficacy_eff_training","2","7","68591",NULL
+"375","4","mw_access_diff_training","0","7","68591",NULL
+"376","4","mw_comfort_hot_training","2","7","68591",NULL
+"377","4","mw_efficacy_health_training","0","1","68591",NULL
+"378","1","mw_comfort_breathe_training","0","6","95232",NULL
+"379","1","mw_access_cost_training","2","7","95232",NULL
+"380","1","mw_appearance_training","2","7","95232",NULL
+"381","1","mw_independence_authority_training","1","5","95232",NULL
+"382","1","mw_compensation_training","2","4","95232",NULL
+"383","1","mw_inconvenience_hassle_training","0","5","95232",NULL
+"384","1","mw_independence_forced_training","2","3","95232",NULL
+"385","1","mw_comfort_hot_training","2","4","95232",NULL
+"386","1","mw_attention_trust_training","2","7","95232",NULL
+"387","1","mw_attention_uncomfortable_training","2","4","95232",NULL
+"388","1","mw_inconvenience_remember_training","2","4","95232",NULL
+"389","1","mw_efficacy_health_training","2","2","95232",NULL
+"390","1","mw_access_diff_training","2","7","95232",NULL
+"391","1","mw_efficacy_eff_training","1","5","95232",NULL
+"392","2","mw_access_diff_training","2","7","31521",NULL
+"393","2","mw_comfort_hot_training","2","7","31521",NULL
+"394","2","mw_access_cost_training","2","7","31521",NULL
+"395","2","mw_efficacy_eff_training","1","2","31521",NULL
+"396","2","mw_comfort_breathe_training","2","6","31521",NULL
+"397","2","mw_efficacy_health_training","1","3","31521",NULL
+"398","2","mw_compensation_training","1","5","31521",NULL
+"399","2","mw_appearance_training","2","6","31521",NULL
+"400","2","mw_inconvenience_hassle_training","2","6","31521",NULL
+"401","2","mw_inconvenience_remember_training","2","6","31521",NULL
+"402","2","mw_attention_uncomfortable_training","2","6","31521",NULL
+"403","2","mw_attention_trust_training","2","6","31521",NULL
+"404","2","mw_independence_forced_training","2","6","31521",NULL
+"405","2","mw_independence_authority_training","2","7","31521",NULL
+"406","5","mw_independence_forced_training","2","7","68591",NULL
+"407","5","mw_comfort_breathe_training","2","7","68591",NULL
+"408","5","mw_independence_authority_training","2","7","68591",NULL
+"409","5","mw_attention_uncomfortable_training","2","7","68591",NULL
+"410","5","mw_appearance_training","2","7","68591",NULL
+"411","5","mw_attention_trust_training","2","7","68591",NULL
+"412","5","mw_compensation_training","2","7","68591",NULL
+"413","5","mw_access_cost_training","2","7","68591",NULL
+"414","5","mw_inconvenience_remember_training","2","7","68591",NULL
+"415","5","mw_inconvenience_hassle_training","2","7","68591",NULL
+"416","5","mw_access_diff_training","2","7","68591",NULL
+"417","5","mw_efficacy_health_training","1","6","68591",NULL
+"418","5","mw_efficacy_eff_training","1","6","68591",NULL
+"419","5","mw_comfort_hot_training","2","7","68591",NULL
+"420","1","mw_compensation_training","1","3","25524",NULL
+"421","1","mw_access_cost_training","2","6","25524",NULL
+"422","1","mw_inconvenience_hassle_training","0","5","25524",NULL
+"423","1","mw_comfort_breathe_training","0","6","25524",NULL
+"424","1","mw_efficacy_health_training","0","5","25524",NULL
+"425","1","mw_inconvenience_remember_training","2","6","25524",NULL
+"426","1","mw_access_diff_training","2","6","25524",NULL
+"427","1","mw_attention_uncomfortable_training","0","5","25524",NULL
+"428","1","mw_comfort_hot_training","1","5","25524",NULL
+"429","1","mw_attention_trust_training","2","4","25524",NULL
+"430","1","mw_appearance_training","2","5","25524",NULL
+"431","1","mw_efficacy_eff_training","1","6","25524",NULL
+"432","1","mw_independence_forced_training","0","4","25524",NULL
+"433","1","mw_independence_authority_training","0","3","25524",NULL
+"434","2","mw_comfort_breathe_training","2","5","67834",NULL
+"435","2","mw_attention_trust_training","2","7","67834",NULL
+"436","2","mw_access_cost_training","2","6","67834",NULL
+"437","2","mw_compensation_training","1","2","67834",NULL
+"438","2","mw_inconvenience_remember_training","2","4","67834",NULL
+"439","2","mw_inconvenience_hassle_training","2","3","67834",NULL
+"440","2","mw_efficacy_health_training","2","2","67834",NULL
+"441","2","mw_independence_forced_training","0","5","67834",NULL
+"442","2","mw_independence_authority_training","2","4","67834",NULL
+"443","2","mw_comfort_hot_training","2","5","67834",NULL
+"444","2","mw_appearance_training","2","5","67834",NULL
+"445","2","mw_access_diff_training","2","6","67834",NULL
+"446","2","mw_efficacy_eff_training","1","2","67834",NULL
+"447","2","mw_attention_uncomfortable_training","2","5","67834",NULL
+"448","3","mw_efficacy_eff_training","1","5","31521",NULL
+"449","3","mw_comfort_breathe_training","2","7","31521",NULL
+"450","3","mw_comfort_hot_training","2","7","31521",NULL
+"451","3","mw_access_cost_training","2","7","31521",NULL
+"452","3","mw_access_diff_training","2","7","31521",NULL
+"453","3","mw_efficacy_health_training","0","3","31521",NULL
+"454","3","mw_inconvenience_remember_training","2","5","31521",NULL
+"455","3","mw_compensation_training","2","6","31521",NULL
+"456","3","mw_inconvenience_hassle_training","2","5","31521",NULL
+"457","3","mw_appearance_training","2","7","31521",NULL
+"458","3","mw_independence_forced_training","2","6","31521",NULL
+"459","3","mw_attention_uncomfortable_training","2","6","31521",NULL
+"460","3","mw_independence_authority_training","2","4","31521",NULL
+"461","3","mw_attention_trust_training","2","5","31521",NULL
+"462","2","mw_inconvenience_hassle_training","2","7","95232",NULL
+"463","2","mw_comfort_breathe_training","2","7","95232",NULL
+"464","2","mw_access_cost_training","2","7","95232",NULL
+"465","2","mw_access_diff_training","2","7","95232",NULL
+"466","2","mw_efficacy_health_training","2","7","95232",NULL
+"467","2","mw_attention_trust_training","2","7","95232",NULL
+"468","2","mw_inconvenience_remember_training","0","7","95232",NULL
+"469","2","mw_independence_authority_training","0","2","95232",NULL
+"470","2","mw_attention_uncomfortable_training","2","7","95232",NULL
+"471","2","mw_independence_forced_training","0","6","95232",NULL
+"472","2","mw_appearance_training","2","7","95232",NULL
+"473","2","mw_compensation_training","0","6","95232",NULL
+"474","2","mw_efficacy_eff_training","1","3","95232",NULL
+"475","2","mw_comfort_hot_training","2","7","95232",NULL
+"476","3","mw_efficacy_eff_training","0","5","67834",NULL
+"477","3","mw_comfort_hot_training","2","7","67834",NULL
+"478","3","mw_independence_forced_training","0","6","67834",NULL
+"479","3","mw_attention_uncomfortable_training","2","4","67834",NULL
+"480","3","mw_comfort_breathe_training","2","7","67834",NULL
+"481","3","mw_independence_authority_training","2","2","67834",NULL
+"482","3","mw_appearance_training","2","6","67834",NULL
+"483","3","mw_attention_trust_training","2","6","67834",NULL
+"484","3","mw_access_cost_training","2","7","67834",NULL
+"485","3","mw_inconvenience_remember_training","0","5","67834",NULL
+"486","3","mw_efficacy_health_training","0","5","67834",NULL
+"487","3","mw_compensation_training","1","5","67834",NULL
+"488","3","mw_inconvenience_hassle_training","0","5","67834",NULL
+"489","3","mw_access_diff_training","2","7","67834",NULL
+"490","4","mw_comfort_breathe_training","2","5","31521",NULL
+"491","4","mw_efficacy_eff_training","0","3","31521",NULL
+"492","4","mw_access_cost_training","2","5","31521",NULL
+"493","4","mw_comfort_hot_training","2","4","31521",NULL
+"494","4","mw_access_diff_training","0","7","31521",NULL
+"495","4","mw_efficacy_health_training","0","3","31521",NULL
+"496","4","mw_compensation_training","2","5","31521",NULL
+"497","4","mw_inconvenience_remember_training","2","3","31521",NULL
+"498","4","mw_appearance_training","0","5","31521",NULL
+"499","4","mw_inconvenience_hassle_training","0","3","31521",NULL
+"500","4","mw_attention_trust_training","0","7","31521",NULL
+"501","4","mw_independence_forced_training","0","7","31521",NULL
+"502","4","mw_attention_uncomfortable_training","0","6","31521",NULL
+"503","4","mw_independence_authority_training","0","3","31521",NULL
+"504","2","mw_comfort_breathe_training","2","4","25524",NULL
+"505","2","mw_compensation_training","0","6","25524",NULL
+"506","2","mw_comfort_hot_training","0","3","25524",NULL
+"507","2","mw_access_diff_training","2","5","25524",NULL
+"508","2","mw_efficacy_health_training","2","5","25524",NULL
+"509","2","mw_access_cost_training","2","6","25524",NULL
+"510","2","mw_inconvenience_remember_training","0","5","25524",NULL
+"511","2","mw_efficacy_eff_training","1","4","25524",NULL
+"512","2","mw_attention_trust_training","2","4","25524",NULL
+"513","2","mw_independence_authority_training","0","5","25524",NULL
+"514","2","mw_attention_uncomfortable_training","0","4","25524",NULL
+"515","2","mw_appearance_training","2","5","25524",NULL
+"516","2","mw_independence_forced_training","0","6","25524",NULL
+"517","2","mw_inconvenience_hassle_training","0","5","25524",NULL
+"518","3","mw_compensation_training","2","7","95232",NULL
+"519","3","mw_appearance_training","2","7","95232",NULL
+"520","3","mw_comfort_breathe_training","2","7","95232",NULL
+"521","3","mw_inconvenience_hassle_training","2","7","95232",NULL
+"522","3","mw_comfort_hot_training","2","7","95232",NULL
+"523","3","mw_attention_uncomfortable_training","2","7","95232",NULL
+"524","3","mw_efficacy_eff_training","2","7","95232",NULL
+"525","3","mw_efficacy_health_training","2","7","95232",NULL
+"526","3","mw_access_cost_training","2","7","95232",NULL
+"527","3","mw_access_diff_training","2","7","95232",NULL
+"528","3","mw_inconvenience_remember_training","2","7","95232",NULL
+"529","3","mw_attention_trust_training","2","7","95232",NULL
+"530","3","mw_independence_authority_training","2","3","95232",NULL
+"531","3","mw_independence_forced_training","2","4","95232",NULL
+"532","4","mw_comfort_breathe_training","2","6","67834",NULL
+"533","4","mw_compensation_training","2","4","67834",NULL
+"534","4","mw_attention_uncomfortable_training","0","7","67834",NULL
+"535","4","mw_independence_forced_training","0","7","67834",NULL
+"536","4","mw_appearance_training","0","7","67834",NULL
+"537","4","mw_efficacy_health_training","2","4","67834",NULL
+"538","4","mw_efficacy_eff_training","2","4","67834",NULL
+"539","4","mw_access_cost_training","0","4","67834",NULL
+"540","4","mw_inconvenience_remember_training","0","5","67834",NULL
+"541","4","mw_comfort_hot_training","2","7","67834",NULL
+"542","4","mw_inconvenience_hassle_training","0","5","67834",NULL
+"543","4","mw_access_diff_training","0","7","67834",NULL
+"544","4","mw_attention_trust_training","0","7","67834",NULL
+"545","4","mw_independence_authority_training","0","6","67834",NULL
+"546","5","mw_comfort_hot_training","2","7","31521",NULL
+"547","5","mw_efficacy_health_training","1","7","31521",NULL
+"548","5","mw_access_diff_training","0","5","31521",NULL
+"549","5","mw_access_cost_training","2","5","31521",NULL
+"550","5","mw_comfort_breathe_training","2","5","31521",NULL
+"551","5","mw_efficacy_eff_training","1","6","31521",NULL
+"552","5","mw_inconvenience_hassle_training","1","5","31521",NULL
+"553","5","mw_appearance_training","1","5","31521",NULL
+"554","5","mw_compensation_training","2","4","31521",NULL
+"555","5","mw_attention_trust_training","2","3","31521",NULL
+"556","5","mw_inconvenience_remember_training","1","3","31521",NULL
+"557","5","mw_attention_uncomfortable_training","1","3","31521",NULL
+"558","5","mw_independence_authority_training","1","5","31521",NULL
+"559","5","mw_independence_forced_training","1","3","31521",NULL
+"560","4","mw_comfort_breathe_training","2","7","95232",NULL
+"561","4","mw_independence_forced_training","0","7","95232",NULL
+"562","4","mw_attention_trust_training","0","7","95232",NULL
+"563","4","mw_access_cost_training","0","2","95232",NULL
+"564","4","mw_inconvenience_hassle_training","0","5","95232",NULL
+"565","4","mw_attention_uncomfortable_training","0","6","95232",NULL
+"566","4","mw_compensation_training","2","7","95232",NULL
+"567","4","mw_access_diff_training","0","7","95232",NULL
+"568","4","mw_comfort_hot_training","2","7","95232",NULL
+"569","4","mw_appearance_training","0","5","95232",NULL
+"570","4","mw_efficacy_eff_training","2","7","95232",NULL
+"571","4","mw_efficacy_health_training","2","7","95232",NULL
+"572","4","mw_independence_authority_training","2","7","95232",NULL
+"573","4","mw_inconvenience_remember_training","0","6","95232",NULL
+"574","1","mw_comfort_breathe_training","0","7","83713",NULL
+"575","1","mw_independence_forced_training","2","7","83713",NULL
+"576","1","mw_comfort_hot_training","2","7","83713",NULL
+"577","1","mw_compensation_training","2","7","83713",NULL
+"578","1","mw_efficacy_eff_training","1","7","83713",NULL
+"579","1","mw_appearance_training","2","7","83713",NULL
+"580","1","mw_independence_authority_training","2","7","83713",NULL
+"581","1","mw_attention_trust_training","2","7","83713",NULL
+"582","1","mw_inconvenience_hassle_training","2","7","83713",NULL
+"583","1","mw_efficacy_health_training","1","7","83713",NULL
+"584","1","mw_inconvenience_remember_training","2","7","83713",NULL
+"585","1","mw_attention_uncomfortable_training","2","7","83713",NULL
+"586","1","mw_access_cost_training","2","7","83713",NULL
+"587","1","mw_access_diff_training","2","7","83713",NULL
+"588","5","mw_independence_forced_training","2","6","67834",NULL
+"589","5","mw_compensation_training","1","4","67834",NULL
+"590","5","mw_efficacy_eff_training","1","5","67834",NULL
+"591","5","mw_comfort_hot_training","2","5","67834",NULL
+"592","5","mw_comfort_breathe_training","2","5","67834",NULL
+"593","5","mw_inconvenience_remember_training","2","4","67834",NULL
+"594","5","mw_access_diff_training","2","5","67834",NULL
+"595","5","mw_attention_uncomfortable_training","2","6","67834",NULL
+"596","5","mw_attention_trust_training","2","6","67834",NULL
+"597","5","mw_independence_authority_training","2","7","67834",NULL
+"598","5","mw_appearance_training","2","5","67834",NULL
+"599","5","mw_access_cost_training","2","7","67834",NULL
+"600","5","mw_efficacy_health_training","1","5","67834",NULL
+"601","5","mw_inconvenience_hassle_training","2","5","67834",NULL
+"602","3","mw_inconvenience_hassle_training","0","5","25524",NULL
+"603","3","mw_attention_uncomfortable_training","0","6","25524",NULL
+"604","3","mw_independence_forced_training","0","5","25524",NULL
+"605","3","mw_comfort_breathe_training","0","4","25524",NULL
+"606","3","mw_independence_authority_training","1","5","25524",NULL
+"607","3","mw_inconvenience_remember_training","0","5","25524",NULL
+"608","3","mw_compensation_training","1","4","25524",NULL
+"609","3","mw_attention_trust_training","2","4","25524",NULL
+"610","3","mw_efficacy_eff_training","0","5","25524",NULL
+"611","3","mw_efficacy_health_training","0","5","25524",NULL
+"612","3","mw_access_diff_training","2","5","25524",NULL
+"613","3","mw_appearance_training","2","5","25524",NULL
+"614","3","mw_access_cost_training","2","5","25524",NULL
+"615","3","mw_comfort_hot_training","2","5","25524",NULL
+"616","5","mw_comfort_hot_training","2","7","95232",NULL
+"617","5","mw_comfort_breathe_training","2","7","95232",NULL
+"618","5","mw_inconvenience_hassle_training","2","7","95232",NULL
+"619","5","mw_attention_uncomfortable_training","2","7","95232",NULL
+"620","5","mw_attention_trust_training","2","7","95232",NULL
+"621","5","mw_efficacy_eff_training","1","6","95232",NULL
+"622","5","mw_inconvenience_remember_training","2","7","95232",NULL
+"623","5","mw_access_cost_training","2","7","95232",NULL
+"624","5","mw_appearance_training","2","7","95232",NULL
+"625","5","mw_independence_forced_training","2","7","95232",NULL
+"626","5","mw_independence_authority_training","2","5","95232",NULL
+"627","5","mw_compensation_training","2","7","95232",NULL
+"628","5","mw_access_diff_training","2","7","95232",NULL
+"629","5","mw_efficacy_health_training","1","3","95232",NULL
+"630","4","mw_comfort_breathe_training","2","5","25524",NULL
+"631","4","mw_compensation_training","1","5","25524",NULL
+"632","4","mw_efficacy_eff_training","0","5","25524",NULL
+"633","4","mw_comfort_hot_training","2","5","25524",NULL
+"634","4","mw_inconvenience_remember_training","0","4","25524",NULL
+"635","4","mw_independence_authority_training","0","5","25524",NULL
+"636","4","mw_appearance_training","0","5","25524",NULL
+"637","4","mw_attention_trust_training","0","7","25524",NULL
+"638","4","mw_access_diff_training","0","6","25524",NULL
+"639","4","mw_efficacy_health_training","0","4","25524",NULL
+"640","4","mw_access_cost_training","2","4","25524",NULL
+"641","4","mw_inconvenience_hassle_training","0","4","25524",NULL
+"642","4","mw_attention_uncomfortable_training","0","5","25524",NULL
+"643","4","mw_independence_forced_training","0","7","25524",NULL
+"644","2","mw_independence_forced_training","2","7","83713",NULL
+"645","2","mw_attention_trust_training","2","7","83713",NULL
+"646","2","mw_access_cost_training","2","7","83713",NULL
+"647","2","mw_comfort_breathe_training","2","7","83713",NULL
+"648","2","mw_independence_authority_training","2","7","83713",NULL
+"649","2","mw_inconvenience_hassle_training","2","7","83713",NULL
+"650","2","mw_comfort_hot_training","2","7","83713",NULL
+"651","2","mw_compensation_training","1","1","83713",NULL
+"652","2","mw_efficacy_health_training","1","1","83713",NULL
+"653","2","mw_attention_uncomfortable_training","2","7","83713",NULL
+"654","2","mw_inconvenience_remember_training","2","7","83713",NULL
+"655","2","mw_access_diff_training","2","7","83713",NULL
+"656","2","mw_appearance_training","2","7","83713",NULL
+"657","2","mw_efficacy_eff_training","1","1","83713",NULL
+"658","5","mw_comfort_breathe_training","2","4","25524",NULL
+"659","5","mw_compensation_training","1","5","25524",NULL
+"660","5","mw_appearance_training","2","5","25524",NULL
+"661","5","mw_access_cost_training","1","4","25524",NULL
+"662","5","mw_efficacy_health_training","1","5","25524",NULL
+"663","5","mw_inconvenience_hassle_training","1","4","25524",NULL
+"664","5","mw_independence_forced_training","0","4","25524",NULL
+"665","5","mw_independence_authority_training","1","4","25524",NULL
+"666","5","mw_comfort_hot_training","2","4","25524",NULL
+"667","5","mw_attention_uncomfortable_training","2","4","25524",NULL
+"668","5","mw_access_diff_training","1","5","25524",NULL
+"669","5","mw_efficacy_eff_training","1","6","25524",NULL
+"670","5","mw_attention_trust_training","1","4","25524",NULL
+"671","5","mw_inconvenience_remember_training","2","4","25524",NULL
+"672","3","mw_access_diff_training","2","7","83713",NULL
+"673","3","mw_compensation_training","2","7","83713",NULL
+"674","3","mw_inconvenience_hassle_training","2","7","83713",NULL
+"675","3","mw_comfort_breathe_training","2","7","83713",NULL
+"676","3","mw_attention_trust_training","2","7","83713",NULL
+"677","3","mw_inconvenience_remember_training","2","7","83713",NULL
+"678","3","mw_independence_forced_training","2","7","83713",NULL
+"679","3","mw_appearance_training","2","7","83713",NULL
+"680","3","mw_attention_uncomfortable_training","2","7","83713",NULL
+"681","3","mw_independence_authority_training","2","7","83713",NULL
+"682","3","mw_efficacy_health_training","1","7","83713",NULL
+"683","3","mw_efficacy_eff_training","1","1","83713",NULL
+"684","3","mw_access_cost_training","2","7","83713",NULL
+"685","3","mw_comfort_hot_training","2","7","83713",NULL
+"686","1","mw_appearance_training","2","7","81924",NULL
+"687","1","mw_access_diff_training","2","7","81924",NULL
+"688","1","mw_access_cost_training","2","7","81924",NULL
+"689","1","mw_comfort_hot_training","2","7","81924",NULL
+"690","1","mw_efficacy_health_training","1","7","81924",NULL
+"691","1","mw_efficacy_eff_training","1","7","81924",NULL
+"692","1","mw_comfort_breathe_training","0","7","81924",NULL
+"693","1","mw_independence_forced_training","2","7","81924",NULL
+"694","1","mw_attention_uncomfortable_training","2","7","81924",NULL
+"695","1","mw_inconvenience_hassle_training","2","7","81924",NULL
+"696","1","mw_attention_trust_training","2","7","81924",NULL
+"697","1","mw_inconvenience_remember_training","2","7","81924",NULL
+"698","1","mw_compensation_training","2","7","81924",NULL
+"699","1","mw_independence_authority_training","2","7","81924",NULL
+"700","2","mw_attention_uncomfortable_training","2","7","81924",NULL
+"701","2","mw_appearance_training","2","7","81924",NULL
+"702","2","mw_attention_trust_training","2","7","81924",NULL
+"703","2","mw_independence_authority_training","2","7","81924",NULL
+"704","2","mw_comfort_breathe_training","2","7","81924",NULL
+"705","2","mw_independence_forced_training","2","7","81924",NULL
+"706","2","mw_access_cost_training","2","7","81924",NULL
+"707","2","mw_comfort_hot_training","2","7","81924",NULL
+"708","2","mw_inconvenience_hassle_training","2","7","81924",NULL
+"709","2","mw_inconvenience_remember_training","2","7","81924",NULL
+"710","2","mw_efficacy_health_training","1","1","81924",NULL
+"711","2","mw_access_diff_training","2","7","81924",NULL
+"712","2","mw_compensation_training","1","7","81924",NULL
+"713","2","mw_efficacy_eff_training","1","1","81924",NULL
+"714","3","mw_comfort_breathe_training","2","7","81924",NULL
+"715","3","mw_access_cost_training","2","7","81924",NULL
+"716","3","mw_access_diff_training","2","7","81924",NULL
+"717","3","mw_compensation_training","2","7","81924",NULL
+"718","3","mw_efficacy_eff_training","1","7","81924",NULL
+"719","3","mw_comfort_hot_training","2","7","81924",NULL
+"720","3","mw_inconvenience_remember_training","2","7","81924",NULL
+"721","3","mw_efficacy_health_training","1","7","81924",NULL
+"722","3","mw_appearance_training","2","7","81924",NULL
+"723","3","mw_inconvenience_hassle_training","2","7","81924",NULL
+"724","3","mw_independence_forced_training","2","7","81924",NULL
+"725","3","mw_attention_trust_training","2","7","81924",NULL
+"726","3","mw_independence_authority_training","2","7","81924",NULL
+"727","3","mw_attention_uncomfortable_training","2","7","81924",NULL
+"728","4","mw_access_cost_training","2","7","81924",NULL
+"729","4","mw_access_diff_training","0","7","81924",NULL
+"730","4","mw_inconvenience_hassle_training","0","5","81924",NULL
+"731","4","mw_comfort_breathe_training","2","7","81924",NULL
+"732","4","mw_attention_uncomfortable_training","0","7","81924",NULL
+"733","4","mw_attention_trust_training","0","7","81924",NULL
+"734","4","mw_appearance_training","0","5","81924",NULL
+"735","4","mw_efficacy_health_training","2","7","81924",NULL
+"736","4","mw_independence_authority_training","0","5","81924",NULL
+"737","4","mw_independence_forced_training","0","5","81924",NULL
+"738","4","mw_efficacy_eff_training","2","7","81924",NULL
+"739","4","mw_compensation_training","2","7","81924",NULL
+"740","4","mw_inconvenience_remember_training","2","7","81924",NULL
+"741","4","mw_comfort_hot_training","2","7","81924",NULL
+"742","5","mw_compensation_training","2","7","81924",NULL
+"743","5","mw_efficacy_eff_training","1","7","81924",NULL
+"744","5","mw_efficacy_health_training","1","7","81924",NULL
+"745","5","mw_comfort_breathe_training","2","7","81924",NULL
+"746","5","mw_inconvenience_remember_training","2","7","81924",NULL
+"747","5","mw_independence_forced_training","2","7","81924",NULL
+"748","5","mw_independence_authority_training","2","7","81924",NULL
+"749","5","mw_attention_uncomfortable_training","2","7","81924",NULL
+"750","5","mw_inconvenience_hassle_training","2","7","81924",NULL
+"751","5","mw_comfort_hot_training","2","7","81924",NULL
+"752","5","mw_access_cost_training","2","7","81924",NULL
+"753","5","mw_access_diff_training","2","7","81924",NULL
+"754","5","mw_attention_trust_training","2","7","81924",NULL
+"755","5","mw_appearance_training","2","7","81924",NULL
+"756","1","mw_comfort_breathe_training","0","5","74755",NULL
+"757","1","mw_attention_uncomfortable_training","2","7","74755",NULL
+"758","1","mw_inconvenience_remember_training","2","7","74755",NULL
+"759","1","mw_independence_authority_training","2","7","74755",NULL
+"760","1","mw_independence_forced_training","2","7","74755",NULL
+"761","1","mw_appearance_training","2","7","74755",NULL
+"762","1","mw_attention_trust_training","2","7","74755",NULL
+"763","1","mw_inconvenience_hassle_training","0","1","74755",NULL
+"764","1","mw_comfort_hot_training","2","5","74755",NULL
+"765","1","mw_efficacy_eff_training","1","7","74755",NULL
+"766","1","mw_efficacy_health_training","1","5","74755",NULL
+"767","1","mw_compensation_training","2","7","74755",NULL
+"768","1","mw_access_diff_training","0","6","74755",NULL
+"769","1","mw_access_cost_training","2","7","74755",NULL
+"770","2","mw_independence_authority_training","2","7","74755",NULL
+"771","2","mw_comfort_breathe_training","2","7","74755",NULL
+"772","2","mw_efficacy_eff_training","2","7","74755",NULL
+"773","2","mw_efficacy_health_training","2","7","74755",NULL
+"774","2","mw_access_diff_training","2","7","74755",NULL
+"775","2","mw_comfort_hot_training","2","7","74755",NULL
+"776","2","mw_compensation_training","2","7","74755",NULL
+"777","2","mw_attention_trust_training","2","7","74755",NULL
+"778","2","mw_access_cost_training","2","7","74755",NULL
+"779","2","mw_attention_uncomfortable_training","2","7","74755",NULL
+"780","2","mw_inconvenience_hassle_training","2","7","74755",NULL
+"781","2","mw_independence_forced_training","2","7","74755",NULL
+"782","2","mw_appearance_training","2","7","74755",NULL
+"783","2","mw_inconvenience_remember_training","2","7","74755",NULL
+"784","3","mw_comfort_breathe_training","2","7","74755",NULL
+"785","3","mw_access_cost_training","2","7","74755",NULL
+"786","3","mw_compensation_training","2","7","74755",NULL
+"787","3","mw_efficacy_eff_training","2","7","74755",NULL
+"788","3","mw_comfort_hot_training","2","7","74755",NULL
+"789","3","mw_access_diff_training","2","7","74755",NULL
+"790","3","mw_efficacy_health_training","2","1","74755",NULL
+"791","3","mw_independence_authority_training","2","3","74755",NULL
+"792","3","mw_inconvenience_hassle_training","2","7","74755",NULL
+"793","3","mw_appearance_training","2","7","74755",NULL
+"794","3","mw_independence_forced_training","2","7","74755",NULL
+"795","3","mw_inconvenience_remember_training","2","7","74755",NULL
+"796","3","mw_attention_trust_training","2","7","74755",NULL
+"797","3","mw_attention_uncomfortable_training","2","7","74755",NULL
+"798","1","mw_comfort_breathe_training","0","7","32173",NULL
+"799","1","mw_efficacy_eff_training","1","7","32173",NULL
+"800","1","mw_efficacy_health_training","1","7","32173",NULL
+"801","1","mw_access_diff_training","2","7","32173",NULL
+"802","1","mw_access_cost_training","2","7","32173",NULL
+"803","1","mw_comfort_hot_training","2","7","32173",NULL
+"804","1","mw_inconvenience_remember_training","1","4","32173",NULL
+"805","1","mw_inconvenience_hassle_training","1","4","32173",NULL
+"806","1","mw_appearance_training","2","7","32173",NULL
+"807","1","mw_attention_trust_training","2","7","32173",NULL
+"808","1","mw_compensation_training","2","7","32173",NULL
+"809","1","mw_attention_uncomfortable_training","2","7","32173",NULL
+"810","1","mw_independence_forced_training","2","7","32173",NULL
+"811","1","mw_independence_authority_training","2","7","32173",NULL
+"812","4","mw_comfort_breathe_training","2","7","74755",NULL
+"813","4","mw_efficacy_health_training","2","7","74755",NULL
+"814","4","mw_comfort_hot_training","2","7","74755",NULL
+"815","4","mw_independence_forced_training","0","1","74755",NULL
+"816","4","mw_independence_authority_training","2","7","74755",NULL
+"817","4","mw_access_cost_training","2","7","74755",NULL
+"818","4","mw_efficacy_eff_training","2","7","74755",NULL
+"819","4","mw_inconvenience_remember_training","2","7","74755",NULL
+"820","4","mw_access_diff_training","0","6","74755",NULL
+"821","4","mw_attention_uncomfortable_training","2","7","74755",NULL
+"822","4","mw_compensation_training","2","7","74755",NULL
+"823","4","mw_inconvenience_hassle_training","2","7","74755",NULL
+"824","4","mw_attention_trust_training","0","6","74755",NULL
+"825","4","mw_appearance_training","2","7","74755",NULL
+"826","1","mw_comfort_breathe_training","0","4","75862",NULL
+"827","1","mw_comfort_hot_training","2","6","75862",NULL
+"828","1","mw_access_diff_training","2","4","75862",NULL
+"829","1","mw_efficacy_health_training","1","6","75862",NULL
+"830","1","mw_efficacy_eff_training","1","7","75862",NULL
+"831","1","mw_access_cost_training","2","4","75862",NULL
+"832","1","mw_inconvenience_hassle_training","1","5","75862",NULL
+"833","1","mw_compensation_training","2","4","75862",NULL
+"834","1","mw_attention_trust_training","2","4","75862",NULL
+"835","1","mw_appearance_training","2","4","75862",NULL
+"836","1","mw_inconvenience_remember_training","2","4","75862",NULL
+"837","1","mw_attention_uncomfortable_training","1","4","75862",NULL
+"838","1","mw_independence_authority_training","1","6","75862",NULL
+"839","1","mw_independence_forced_training","2","5","75862",NULL
+"840","2","mw_comfort_breathe_training","2","7","32173",NULL
+"841","2","mw_access_diff_training","2","7","32173",NULL
+"842","2","mw_efficacy_health_training","2","4","32173",NULL
+"843","2","mw_efficacy_eff_training","2","4","32173",NULL
+"844","2","mw_comfort_hot_training","2","7","32173",NULL
+"845","2","mw_compensation_training","0","4","32173",NULL
+"846","2","mw_access_cost_training","2","7","32173",NULL
+"847","2","mw_inconvenience_remember_training","2","7","32173",NULL
+"848","2","mw_inconvenience_hassle_training","2","7","32173",NULL
+"849","2","mw_appearance_training","2","7","32173",NULL
+"850","2","mw_attention_trust_training","2","7","32173",NULL
+"851","2","mw_independence_forced_training","2","7","32173",NULL
+"852","2","mw_attention_uncomfortable_training","2","7","32173",NULL
+"853","2","mw_independence_authority_training","1","4","32173",NULL
+"854","3","mw_comfort_breathe_training","2","7","32173",NULL
+"855","3","mw_comfort_hot_training","2","7","32173",NULL
+"856","3","mw_efficacy_eff_training","1","5","32173",NULL
+"857","3","mw_access_diff_training","2","7","32173",NULL
+"858","3","mw_access_cost_training","2","7","32173",NULL
+"859","3","mw_efficacy_health_training","1","5","32173",NULL
+"860","3","mw_compensation_training","2","7","32173",NULL
+"861","3","mw_inconvenience_hassle_training","2","7","32173",NULL
+"862","3","mw_inconvenience_remember_training","2","7","32173",NULL
+"863","3","mw_attention_trust_training","2","7","32173",NULL
+"864","3","mw_appearance_training","2","7","32173",NULL
+"865","3","mw_attention_uncomfortable_training","2","7","32173",NULL
+"866","3","mw_independence_authority_training","2","7","32173",NULL
+"867","3","mw_independence_forced_training","2","7","32173",NULL
+"868","5","mw_efficacy_health_training","1","5","74755",NULL
+"869","5","mw_independence_authority_training","2","7","74755",NULL
+"870","5","mw_efficacy_eff_training","1","5","74755",NULL
+"871","5","mw_comfort_breathe_training","2","7","74755",NULL
+"872","5","mw_comfort_hot_training","2","7","74755",NULL
+"873","5","mw_independence_forced_training","2","7","74755",NULL
+"874","5","mw_access_diff_training","2","7","74755",NULL
+"875","5","mw_inconvenience_remember_training","2","7","74755",NULL
+"876","5","mw_attention_uncomfortable_training","2","7","74755",NULL
+"877","5","mw_attention_trust_training","2","7","74755",NULL
+"878","5","mw_compensation_training","2","7","74755",NULL
+"879","5","mw_appearance_training","2","7","74755",NULL
+"880","5","mw_access_cost_training","2","7","74755",NULL
+"881","5","mw_inconvenience_hassle_training","2","7","74755",NULL
+"882","4","mw_access_diff_training","0","7","32173",NULL
+"883","4","mw_efficacy_health_training","2","7","32173",NULL
+"884","4","mw_comfort_hot_training","2","7","32173",NULL
+"885","4","mw_efficacy_eff_training","2","7","32173",NULL
+"886","4","mw_comfort_breathe_training","2","7","32173",NULL
+"887","4","mw_access_cost_training","2","7","32173",NULL
+"888","4","mw_inconvenience_remember_training","2","7","32173",NULL
+"889","4","mw_compensation_training","2","7","32173",NULL
+"890","4","mw_inconvenience_hassle_training","0","5","32173",NULL
+"891","4","mw_appearance_training","0","5","32173",NULL
+"892","4","mw_attention_uncomfortable_training","0","7","32173",NULL
+"893","4","mw_attention_trust_training","0","7","32173",NULL
+"894","4","mw_independence_authority_training","2","6","32173",NULL
+"895","4","mw_independence_forced_training","0","5","32173",NULL
+"896","5","mw_efficacy_eff_training","1","7","32173",NULL
+"897","5","mw_comfort_breathe_training","2","7","32173",NULL
+"898","5","mw_access_diff_training","1","4","32173",NULL
+"899","5","mw_comfort_hot_training","2","7","32173",NULL
+"900","5","mw_efficacy_health_training","1","7","32173",NULL
+"901","5","mw_inconvenience_remember_training","1","5","32173",NULL
+"902","5","mw_access_cost_training","2","5","32173",NULL
+"903","5","mw_appearance_training","2","7","32173",NULL
+"904","5","mw_inconvenience_hassle_training","1","4","32173",NULL
+"905","5","mw_compensation_training","2","7","32173",NULL
+"906","5","mw_attention_trust_training","2","7","32173",NULL
+"907","5","mw_attention_uncomfortable_training","2","7","32173",NULL
+"908","5","mw_independence_forced_training","2","7","32173",NULL
+"909","5","mw_independence_authority_training","2","7","32173",NULL
+"910","2","mw_efficacy_health_training","1","5","75862",NULL
+"911","2","mw_efficacy_eff_training","1","6","75862",NULL
+"912","2","mw_access_diff_training","2","4","75862",NULL
+"913","2","mw_comfort_breathe_training","0","5","75862",NULL
+"914","2","mw_comfort_hot_training","2","4","75862",NULL
+"915","2","mw_access_cost_training","2","4","75862",NULL
+"916","2","mw_compensation_training","1","6","75862",NULL
+"917","2","mw_inconvenience_hassle_training","2","6","75862",NULL
+"918","2","mw_inconvenience_remember_training","2","3","75862",NULL
+"919","2","mw_attention_trust_training","2","6","75862",NULL
+"920","2","mw_appearance_training","2","5","75862",NULL
+"921","2","mw_attention_uncomfortable_training","2","6","75862",NULL
+"922","2","mw_independence_authority_training","1","4","75862",NULL
+"923","2","mw_independence_forced_training","2","4","75862",NULL
+"924","3","mw_efficacy_health_training","1","6","75862",NULL
+"925","3","mw_comfort_hot_training","2","4","75862",NULL
+"926","3","mw_efficacy_eff_training","1","5","75862",NULL
+"927","3","mw_access_diff_training","2","6","75862",NULL
+"928","3","mw_comfort_breathe_training","2","4","75862",NULL
+"929","3","mw_compensation_training","2","5","75862",NULL
+"930","3","mw_access_cost_training","1","4","75862",NULL
+"931","3","mw_attention_uncomfortable_training","1","2","75862",NULL
+"932","3","mw_inconvenience_remember_training","2","4","75862",NULL
+"933","3","mw_inconvenience_hassle_training","1","5","75862",NULL
+"934","3","mw_attention_trust_training","2","5","75862",NULL
+"935","3","mw_appearance_training","2","4","75862",NULL
+"936","3","mw_independence_forced_training","2","5","75862",NULL
+"937","3","mw_independence_authority_training","2","3","75862",NULL
+"938","4","mw_comfort_hot_training","2","4","75862",NULL
+"939","4","mw_comfort_breathe_training","2","4","75862",NULL
+"940","4","mw_efficacy_eff_training","1","4","75862",NULL
+"941","4","mw_efficacy_health_training","2","3","75862",NULL
+"942","4","mw_access_cost_training","1","4","75862",NULL
+"943","4","mw_access_diff_training","1","5","75862",NULL
+"944","4","mw_compensation_training","2","4","75862",NULL
+"945","4","mw_inconvenience_remember_training","0","5","75862",NULL
+"946","4","mw_attention_trust_training","0","7","75862",NULL
+"947","4","mw_inconvenience_hassle_training","0","5","75862",NULL
+"948","4","mw_appearance_training","0","5","75862",NULL
+"949","4","mw_independence_forced_training","0","6","75862",NULL
+"950","4","mw_independence_authority_training","0","6","75862",NULL
+"951","4","mw_attention_uncomfortable_training","0","7","75862",NULL
+"952","5","mw_comfort_hot_training","2","4","75862",NULL
+"953","5","mw_efficacy_eff_training","1","7","75862",NULL
+"954","5","mw_efficacy_health_training","1","7","75862",NULL
+"955","5","mw_comfort_breathe_training","2","4","75862",NULL
+"956","5","mw_access_diff_training","0","4","75862",NULL
+"957","5","mw_access_cost_training","2","4","75862",NULL
+"958","5","mw_compensation_training","1","5","75862",NULL
+"959","5","mw_inconvenience_remember_training","2","4","75862",NULL
+"960","5","mw_attention_trust_training","2","4","75862",NULL
+"961","5","mw_attention_uncomfortable_training","2","5","75862",NULL
+"962","5","mw_appearance_training","2","4","75862",NULL
+"963","5","mw_inconvenience_hassle_training","2","4","75862",NULL
+"964","5","mw_independence_authority_training","2","5","75862",NULL
+"965","5","mw_independence_forced_training","2","6","75862",NULL
+"966","1","mw_appearance_training","2","7","43847","2023-08-08 12:22:01"
+"967","1","mw_independence_forced_training","1","4","43847","2023-08-08 12:22:01"
+"968","1","mw_comfort_breathe_training","0","6","43847","2023-08-08 12:22:01"
+"969","1","mw_attention_trust_training","2","7","43847","2023-08-08 12:22:02"
+"970","1","mw_inconvenience_remember_training","1","4","43847","2023-08-08 12:22:02"
+"971","1","mw_independence_authority_training","2","7","43847","2023-08-08 12:22:02"
+"972","1","mw_efficacy_health_training","1","7","43847","2023-08-08 12:22:02"
+"973","1","mw_efficacy_eff_training","1","7","43847","2023-08-08 12:22:02"
+"974","1","mw_comfort_hot_training","2","7","43847","2023-08-08 12:22:02"
+"975","1","mw_attention_uncomfortable_training","2","7","43847","2023-08-08 12:22:02"
+"976","1","mw_compensation_training","2","6","43847","2023-08-08 12:22:02"
+"977","1","mw_inconvenience_hassle_training","1","5","43847","2023-08-08 12:22:02"
+"978","1","mw_access_cost_training","2","7","43847","2023-08-08 12:22:02"
+"979","1","mw_access_diff_training","2","7","43847","2023-08-08 12:22:02"
+"980","1","mw_attention_trust_training","2","7","16593","2023-08-08 12:25:46"
+"981","1","mw_independence_authority_training","2","7","16593","2023-08-08 12:25:46"
+"982","1","mw_comfort_breathe_training","0","7","16593","2023-08-08 12:25:46"
+"983","1","mw_independence_forced_training","1","5","16593","2023-08-08 12:25:46"
+"984","1","mw_attention_uncomfortable_training","2","7","16593","2023-08-08 12:25:46"
+"985","1","mw_compensation_training","2","7","16593","2023-08-08 12:25:46"
+"986","1","mw_access_cost_training","2","7","16593","2023-08-08 12:25:46"
+"987","1","mw_access_diff_training","2","7","16593","2023-08-08 12:25:46"
+"988","1","mw_inconvenience_hassle_training","1","6","16593","2023-08-08 12:25:46"
+"989","1","mw_efficacy_health_training","1","7","16593","2023-08-08 12:25:46"
+"990","1","mw_inconvenience_remember_training","1","5","16593","2023-08-08 12:25:46"
+"991","1","mw_appearance_training","2","7","16593","2023-08-08 12:25:46"
+"992","1","mw_efficacy_eff_training","1","7","16593","2023-08-08 12:25:46"
+"993","1","mw_comfort_hot_training","2","4","16593","2023-08-08 12:25:46"
+"994","2","mw_comfort_breathe_training","2","7","16593","2023-08-08 12:27:22"
+"995","2","mw_efficacy_eff_training","1","4","16593","2023-08-08 12:27:22"
+"996","2","mw_efficacy_health_training","1","2","16593","2023-08-08 12:27:22"
+"997","2","mw_access_cost_training","2","7","16593","2023-08-08 12:27:22"
+"998","2","mw_attention_trust_training","2","7","16593","2023-08-08 12:27:22"
+"999","2","mw_inconvenience_remember_training","2","7","16593","2023-08-08 12:27:22"
+"1000","2","mw_independence_authority_training","2","7","16593","2023-08-08 12:27:22"
+"1001","2","mw_comfort_hot_training","2","7","16593","2023-08-08 12:27:22"
+"1002","2","mw_appearance_training","2","7","16593","2023-08-08 12:27:22"
+"1003","2","mw_access_diff_training","2","7","16593","2023-08-08 12:27:22"
+"1004","2","mw_attention_uncomfortable_training","2","7","16593","2023-08-08 12:27:22"
+"1005","2","mw_independence_forced_training","2","7","16593","2023-08-08 12:27:22"
+"1006","2","mw_compensation_training","0","5","16593","2023-08-08 12:27:22"
+"1007","2","mw_inconvenience_hassle_training","2","7","16593","2023-08-08 12:27:22"
+"1008","3","mw_access_cost_training","2","7","16593","2023-08-08 12:28:38"
+"1009","3","mw_comfort_breathe_training","2","7","16593","2023-08-08 12:28:38"
+"1010","3","mw_inconvenience_remember_training","2","7","16593","2023-08-08 12:28:38"
+"1011","3","mw_efficacy_eff_training","1","1","16593","2023-08-08 12:28:39"
+"1012","3","mw_attention_uncomfortable_training","2","7","16593","2023-08-08 12:28:39"
+"1013","3","mw_efficacy_health_training","1","1","16593","2023-08-08 12:28:39"
+"1014","3","mw_independence_forced_training","2","7","16593","2023-08-08 12:28:39"
+"1015","3","mw_compensation_training","1","5","16593","2023-08-08 12:28:39"
+"1016","3","mw_attention_trust_training","2","7","16593","2023-08-08 12:28:39"
+"1017","3","mw_access_diff_training","2","7","16593","2023-08-08 12:28:39"
+"1018","3","mw_independence_authority_training","2","7","16593","2023-08-08 12:28:39"
+"1019","3","mw_inconvenience_hassle_training","2","7","16593","2023-08-08 12:28:39"
+"1020","3","mw_appearance_training","2","7","16593","2023-08-08 12:28:39"
+"1021","3","mw_comfort_hot_training","2","7","16593","2023-08-08 12:28:39"
+"1022","4","mw_efficacy_health_training","2","7","16593","2023-08-08 12:29:50"
+"1023","4","mw_comfort_breathe_training","2","7","16593","2023-08-08 12:29:50"
+"1024","4","mw_independence_authority_training","2","4","16593","2023-08-08 12:29:50"
+"1025","4","mw_comfort_hot_training","2","7","16593","2023-08-08 12:29:50"
+"1026","4","mw_independence_forced_training","0","7","16593","2023-08-08 12:29:50"
+"1027","4","mw_appearance_training","0","2","16593","2023-08-08 12:29:51"
+"1028","4","mw_inconvenience_hassle_training","0","4","16593","2023-08-08 12:29:51"
+"1029","4","mw_efficacy_eff_training","2","7","16593","2023-08-08 12:29:51"
+"1030","4","mw_attention_trust_training","0","7","16593","2023-08-08 12:29:51"
+"1031","4","mw_compensation_training","2","7","16593","2023-08-08 12:29:51"
+"1032","4","mw_access_cost_training","2","7","16593","2023-08-08 12:29:51"
+"1033","4","mw_attention_uncomfortable_training","0","7","16593","2023-08-08 12:29:51"
+"1034","4","mw_inconvenience_remember_training","0","4","16593","2023-08-08 12:29:51"
+"1035","4","mw_access_diff_training","0","7","16593","2023-08-08 12:29:51"
+"1036","5","mw_efficacy_eff_training","1","6","16593","2023-08-08 12:31:04"
+"1037","5","mw_compensation_training","2","5","16593","2023-08-08 12:31:04"
+"1038","5","mw_comfort_breathe_training","2","7","16593","2023-08-08 12:31:04"
+"1039","5","mw_independence_authority_training","2","7","16593","2023-08-08 12:31:04"
+"1040","5","mw_appearance_training","2","7","16593","2023-08-08 12:31:04"
+"1041","5","mw_efficacy_health_training","1","7","16593","2023-08-08 12:31:04"
+"1042","5","mw_inconvenience_hassle_training","2","7","16593","2023-08-08 12:31:04"
+"1043","5","mw_inconvenience_remember_training","2","7","16593","2023-08-08 12:31:04"
+"1044","5","mw_attention_uncomfortable_training","2","7","16593","2023-08-08 12:31:04"
+"1045","5","mw_independence_forced_training","2","7","16593","2023-08-08 12:31:04"
+"1046","5","mw_access_cost_training","2","7","16593","2023-08-08 12:31:04"
+"1047","5","mw_comfort_hot_training","2","7","16593","2023-08-08 12:31:04"
+"1048","5","mw_access_diff_training","2","7","16593","2023-08-08 12:31:04"
+"1049","5","mw_attention_trust_training","2","7","16593","2023-08-08 12:31:04"
+"1050","1","mw_efficacy_health_training","1","7","37474","2023-08-08 13:43:36"
+"1051","1","mw_comfort_breathe_training","0","7","37474","2023-08-08 13:43:36"
+"1052","1","mw_access_diff_training","2","4","37474","2023-08-08 13:43:36"
+"1053","1","mw_inconvenience_remember_training","2","7","37474","2023-08-08 13:43:36"
+"1054","1","mw_access_cost_training","2","7","37474","2023-08-08 13:43:36"
+"1055","1","mw_efficacy_eff_training","1","7","37474","2023-08-08 13:43:36"
+"1056","1","mw_comfort_hot_training","2","7","37474","2023-08-08 13:43:36"
+"1057","1","mw_appearance_training","2","7","37474","2023-08-08 13:43:36"
+"1058","1","mw_compensation_training","2","7","37474","2023-08-08 13:43:36"
+"1059","1","mw_inconvenience_hassle_training","1","4","37474","2023-08-08 13:43:36"
+"1060","1","mw_independence_authority_training","2","7","37474","2023-08-08 13:43:36"
+"1061","1","mw_attention_trust_training","2","7","37474","2023-08-08 13:43:36"
+"1062","1","mw_attention_uncomfortable_training","2","7","37474","2023-08-08 13:43:36"
+"1063","1","mw_independence_forced_training","2","7","37474","2023-08-08 13:43:36"
+"1064","2","mw_efficacy_health_training","2","7","37474","2023-08-08 13:48:07"
+"1065","2","mw_access_diff_training","2","7","37474","2023-08-08 13:48:07"
+"1066","2","mw_comfort_breathe_training","2","7","37474","2023-08-08 13:48:07"
+"1067","2","mw_comfort_hot_training","2","7","37474","2023-08-08 13:48:07"
+"1068","2","mw_efficacy_eff_training","1","5","37474","2023-08-08 13:48:07"
+"1069","2","mw_access_cost_training","2","7","37474","2023-08-08 13:48:07"
+"1070","2","mw_compensation_training","2","5","37474","2023-08-08 13:48:07"
+"1071","2","mw_inconvenience_remember_training","2","7","37474","2023-08-08 13:48:07"
+"1072","2","mw_attention_uncomfortable_training","2","7","37474","2023-08-08 13:48:07"
+"1073","2","mw_independence_forced_training","2","7","37474","2023-08-08 13:48:07"
+"1074","2","mw_inconvenience_hassle_training","2","7","37474","2023-08-08 13:48:07"
+"1075","2","mw_attention_trust_training","2","7","37474","2023-08-08 13:48:07"
+"1076","2","mw_appearance_training","2","7","37474","2023-08-08 13:48:07"
+"1077","2","mw_independence_authority_training","2","7","37474","2023-08-08 13:48:07"
+"1078","3","mw_comfort_hot_training","2","7","37474","2023-08-08 14:04:03"
+"1079","3","mw_efficacy_eff_training","1","6","37474","2023-08-08 14:04:03"
+"1080","3","mw_access_cost_training","2","7","37474","2023-08-08 14:04:03"
+"1081","3","mw_access_diff_training","2","7","37474","2023-08-08 14:04:03"
+"1082","3","mw_independence_forced_training","0","4","37474","2023-08-08 14:04:03"
+"1083","3","mw_comfort_breathe_training","2","7","37474","2023-08-08 14:04:03"
+"1084","3","mw_attention_trust_training","2","7","37474","2023-08-08 14:04:03"
+"1085","3","mw_inconvenience_hassle_training","2","7","37474","2023-08-08 14:04:03"
+"1086","3","mw_independence_authority_training","0","4","37474","2023-08-08 14:04:03"
+"1087","3","mw_appearance_training","2","7","37474","2023-08-08 14:04:03"
+"1088","3","mw_compensation_training","2","7","37474","2023-08-08 14:04:03"
+"1089","3","mw_efficacy_health_training","1","7","37474","2023-08-08 14:04:03"
+"1090","3","mw_attention_uncomfortable_training","2","7","37474","2023-08-08 14:04:03"
+"1091","3","mw_inconvenience_remember_training","0","6","37474","2023-08-08 14:04:03"
+"1092","4","mw_comfort_breathe_training","2","7","37474","2023-08-08 14:09:19"
+"1093","4","mw_compensation_training","2","7","37474","2023-08-08 14:09:19"
+"1094","4","mw_efficacy_eff_training","0","4","37474","2023-08-08 14:09:19"
+"1095","4","mw_attention_trust_training","0","7","37474","2023-08-08 14:09:19"
+"1096","4","mw_independence_forced_training","0","6","37474","2023-08-08 14:09:19"
+"1097","4","mw_appearance_training","0","7","37474","2023-08-08 14:09:19"
+"1098","4","mw_inconvenience_remember_training","2","7","37474","2023-08-08 14:09:19"
+"1099","4","mw_access_diff_training","0","7","37474","2023-08-08 14:09:19"
+"1100","4","mw_efficacy_health_training","2","4","37474","2023-08-08 14:09:19"
+"1101","4","mw_attention_uncomfortable_training","0","7","37474","2023-08-08 14:09:19"
+"1102","4","mw_comfort_hot_training","2","7","37474","2023-08-08 14:09:19"
+"1103","4","mw_access_cost_training","2","4","37474","2023-08-08 14:09:19"
+"1104","4","mw_independence_authority_training","0","5","37474","2023-08-08 14:09:19"
+"1105","4","mw_inconvenience_hassle_training","0","7","37474","2023-08-08 14:09:19"
+"1106","5","mw_compensation_training","2","7","37474","2023-08-08 14:11:31"
+"1107","5","mw_comfort_breathe_training","2","7","37474","2023-08-08 14:11:31"
+"1108","5","mw_access_cost_training","2","7","37474","2023-08-08 14:11:31"
+"1109","5","mw_comfort_hot_training","2","7","37474","2023-08-08 14:11:31"
+"1110","5","mw_independence_authority_training","2","7","37474","2023-08-08 14:11:31"
+"1111","5","mw_independence_forced_training","2","7","37474","2023-08-08 14:11:31"
+"1112","5","mw_appearance_training","2","7","37474","2023-08-08 14:11:31"
+"1113","5","mw_efficacy_eff_training","1","5","37474","2023-08-08 14:11:31"
+"1114","5","mw_efficacy_health_training","1","6","37474","2023-08-08 14:11:31"
+"1115","5","mw_attention_trust_training","2","7","37474","2023-08-08 14:11:31"
+"1116","5","mw_inconvenience_remember_training","2","7","37474","2023-08-08 14:11:31"
+"1117","5","mw_attention_uncomfortable_training","2","7","37474","2023-08-08 14:11:31"
+"1118","5","mw_access_diff_training","0","5","37474","2023-08-08 14:11:31"
+"1119","5","mw_inconvenience_hassle_training","1","6","37474","2023-08-08 14:11:31"
+"1120","1","mw_appearance_training","2","4","44186","2023-08-22 12:26:09"
+"1121","1","mw_efficacy_health_training","1","7","44186","2023-08-22 12:26:09"
+"1122","1","mw_attention_trust_training","2","7","44186","2023-08-22 12:26:09"
+"1123","1","mw_comfort_breathe_training","0","4","44186","2023-08-22 12:26:09"
+"1124","1","mw_attention_uncomfortable_training","2","7","44186","2023-08-22 12:26:09"
+"1125","1","mw_inconvenience_hassle_training","1","5","44186","2023-08-22 12:26:09"
+"1126","1","mw_independence_authority_training","1","4","44186","2023-08-22 12:26:09"
+"1127","1","mw_efficacy_eff_training","1","7","44186","2023-08-22 12:26:09"
+"1128","1","mw_independence_forced_training","2","7","44186","2023-08-22 12:26:09"
+"1129","1","mw_compensation_training","2","7","44186","2023-08-22 12:26:09"
+"1130","1","mw_comfort_hot_training","2","4","44186","2023-08-22 12:26:09"
+"1131","1","mw_access_cost_training","2","7","44186","2023-08-22 12:26:10"
+"1132","1","mw_access_diff_training","2","4","44186","2023-08-22 12:26:10"
+"1133","1","mw_inconvenience_remember_training","1","5","44186","2023-08-22 12:26:10"
+"1134","2","mw_efficacy_eff_training","2","7","44186","2023-08-22 12:28:51"
+"1135","2","mw_attention_trust_training","2","7","44186","2023-08-22 12:28:51"
+"1136","2","mw_comfort_breathe_training","2","7","44186","2023-08-22 12:28:51"
+"1137","2","mw_attention_uncomfortable_training","2","7","44186","2023-08-22 12:28:51"
+"1138","2","mw_independence_authority_training","2","7","44186","2023-08-22 12:28:51"
+"1139","2","mw_appearance_training","2","7","44186","2023-08-22 12:28:51"
+"1140","2","mw_access_diff_training","2","7","44186","2023-08-22 12:28:51"
+"1141","2","mw_independence_forced_training","2","7","44186","2023-08-22 12:28:51"
+"1142","2","mw_efficacy_health_training","2","7","44186","2023-08-22 12:28:51"
+"1143","2","mw_inconvenience_remember_training","2","7","44186","2023-08-22 12:28:51"
+"1144","2","mw_access_cost_training","2","7","44186","2023-08-22 12:28:51"
+"1145","2","mw_compensation_training","2","7","44186","2023-08-22 12:28:51"
+"1146","2","mw_inconvenience_hassle_training","2","7","44186","2023-08-22 12:28:51"
+"1147","2","mw_comfort_hot_training","2","7","44186","2023-08-22 12:28:51"
+"1148","3","mw_access_diff_training","2","7","44186","2023-08-22 12:30:33"
+"1149","3","mw_inconvenience_remember_training","2","7","44186","2023-08-22 12:30:33"
+"1150","3","mw_comfort_breathe_training","2","7","44186","2023-08-22 12:30:33"
+"1151","3","mw_independence_forced_training","2","7","44186","2023-08-22 12:30:33"
+"1152","3","mw_independence_authority_training","2","7","44186","2023-08-22 12:30:33"
+"1153","3","mw_appearance_training","2","7","44186","2023-08-22 12:30:33"
+"1154","3","mw_inconvenience_hassle_training","2","7","44186","2023-08-22 12:30:33"
+"1155","3","mw_access_cost_training","2","7","44186","2023-08-22 12:30:33"
+"1156","3","mw_attention_trust_training","2","7","44186","2023-08-22 12:30:33"
+"1157","3","mw_compensation_training","2","7","44186","2023-08-22 12:30:33"
+"1158","3","mw_attention_uncomfortable_training","2","7","44186","2023-08-22 12:30:33"
+"1159","3","mw_efficacy_eff_training","2","7","44186","2023-08-22 12:30:33"
+"1160","3","mw_efficacy_health_training","2","7","44186","2023-08-22 12:30:33"
+"1161","3","mw_comfort_hot_training","2","7","44186","2023-08-22 12:30:33"
+"1162","4","mw_compensation_training","2","7","44186","2023-08-22 12:32:41"
+"1163","4","mw_independence_forced_training","0","5","44186","2023-08-22 12:32:41"
+"1164","4","mw_attention_trust_training","0","7","44186","2023-08-22 12:32:41"
+"1165","4","mw_inconvenience_hassle_training","0","7","44186","2023-08-22 12:32:41"
+"1166","4","mw_inconvenience_remember_training","2","7","44186","2023-08-22 12:32:41"
+"1167","4","mw_efficacy_health_training","2","7","44186","2023-08-22 12:32:41"
+"1168","4","mw_independence_authority_training","0","7","44186","2023-08-22 12:32:41"
+"1169","4","mw_efficacy_eff_training","2","7","44186","2023-08-22 12:32:41"
+"1170","4","mw_comfort_hot_training","2","7","44186","2023-08-22 12:32:41"
+"1171","4","mw_access_cost_training","2","7","44186","2023-08-22 12:32:42"
+"1172","4","mw_comfort_breathe_training","2","7","44186","2023-08-22 12:32:42"
+"1173","4","mw_attention_uncomfortable_training","0","7","44186","2023-08-22 12:32:42"
+"1174","4","mw_access_diff_training","0","7","44186","2023-08-22 12:32:42"
+"1175","4","mw_appearance_training","0","7","44186","2023-08-22 12:32:42"
+"1176","5","mw_comfort_breathe_training","2","7","44186","2023-08-22 12:34:18"
+"1177","5","mw_attention_uncomfortable_training","2","7","44186","2023-08-22 12:34:18"
+"1178","5","mw_access_diff_training","2","7","44186","2023-08-22 12:34:18"
+"1179","5","mw_independence_forced_training","2","7","44186","2023-08-22 12:34:18"
+"1180","5","mw_independence_authority_training","2","7","44186","2023-08-22 12:34:18"
+"1181","5","mw_access_cost_training","2","7","44186","2023-08-22 12:34:18"
+"1182","5","mw_attention_trust_training","2","7","44186","2023-08-22 12:34:18"
+"1183","5","mw_efficacy_eff_training","1","7","44186","2023-08-22 12:34:18"
+"1184","5","mw_inconvenience_hassle_training","2","7","44186","2023-08-22 12:34:18"
+"1185","5","mw_comfort_hot_training","2","7","44186","2023-08-22 12:34:18"
+"1186","5","mw_appearance_training","2","7","44186","2023-08-22 12:34:18"
+"1187","5","mw_efficacy_health_training","0","7","44186","2023-08-22 12:34:18"
+"1188","5","mw_inconvenience_remember_training","2","7","44186","2023-08-22 12:34:18"
+"1189","5","mw_compensation_training","2","7","44186","2023-08-22 12:34:18"
+"1190","1","mw_appearance_training","2","7","28031","2023-09-27 11:14:56"
+"1191","1","mw_efficacy_eff_training","1","7","28031","2023-09-27 11:14:56"
+"1192","1","mw_comfort_hot_training","2","7","28031","2023-09-27 11:14:56"
+"1193","1","mw_attention_trust_training","2","7","28031","2023-09-27 11:14:56"
+"1194","1","mw_comfort_breathe_training","0","7","28031","2023-09-27 11:14:56"
+"1195","1","mw_attention_uncomfortable_training","2","7","28031","2023-09-27 11:14:56"
+"1196","1","mw_compensation_training","2","7","28031","2023-09-27 11:14:56"
+"1197","1","mw_efficacy_health_training","1","6","28031","2023-09-27 11:14:56"
+"1198","1","mw_inconvenience_remember_training","2","7","28031","2023-09-27 11:14:56"
+"1199","1","mw_access_diff_training","2","7","28031","2023-09-27 11:14:56"
+"1200","1","mw_access_cost_training","2","7","28031","2023-09-27 11:14:56"
+"1201","1","mw_independence_authority_training","2","7","28031","2023-09-27 11:14:56"
+"1202","1","mw_inconvenience_hassle_training","0","4","28031","2023-09-27 11:14:56"
+"1203","1","mw_independence_forced_training","2","7","28031","2023-09-27 11:14:56"
+"1204","2","mw_comfort_breathe_training","2","7","28031","2023-09-27 11:26:43"
+"1205","2","mw_inconvenience_remember_training","2","7","28031","2023-09-27 11:26:43"
+"1206","2","mw_independence_authority_training","2","6","28031","2023-09-27 11:26:43"
+"1207","2","mw_access_cost_training","2","7","28031","2023-09-27 11:26:43"
+"1208","2","mw_compensation_training","0","5","28031","2023-09-27 11:26:43"
+"1209","2","mw_independence_forced_training","2","6","28031","2023-09-27 11:26:43"
+"1210","2","mw_efficacy_eff_training","1","5","28031","2023-09-27 11:26:43"
+"1211","2","mw_efficacy_health_training","2","6","28031","2023-09-27 11:26:43"
+"1212","2","mw_appearance_training","2","7","28031","2023-09-27 11:26:43"
+"1213","2","mw_access_diff_training","2","7","28031","2023-09-27 11:26:43"
+"1214","2","mw_comfort_hot_training","2","7","28031","2023-09-27 11:26:43"
+"1215","2","mw_attention_trust_training","2","7","28031","2023-09-27 11:26:43"
+"1216","2","mw_attention_uncomfortable_training","2","7","28031","2023-09-27 11:26:43"
+"1217","2","mw_inconvenience_hassle_training","2","7","28031","2023-09-27 11:26:43"
+"1218","1","mw_comfort_hot_training","2","7","80651","2023-09-27 11:28:42"
+"1219","1","mw_efficacy_eff_training","1","7","80651","2023-09-27 11:28:42"
+"1220","1","mw_efficacy_health_training","1","7","80651","2023-09-27 11:28:42"
+"1221","1","mw_access_diff_training","2","4","80651","2023-09-27 11:28:42"
+"1222","1","mw_access_cost_training","2","4","80651","2023-09-27 11:28:42"
+"1223","1","mw_comfort_breathe_training","0","5","80651","2023-09-27 11:28:42"
+"1224","1","mw_independence_authority_training","2","7","80651","2023-09-27 11:28:42"
+"1225","1","mw_independence_forced_training","1","3","80651","2023-09-27 11:28:42"
+"1226","1","mw_compensation_training","2","7","80651","2023-09-27 11:28:42"
+"1227","1","mw_attention_uncomfortable_training","2","7","80651","2023-09-27 11:28:42"
+"1228","1","mw_appearance_training","2","7","80651","2023-09-27 11:28:42"
+"1229","1","mw_inconvenience_hassle_training","1","5","80651","2023-09-27 11:28:42"
+"1230","1","mw_attention_trust_training","2","7","80651","2023-09-27 11:28:42"
+"1231","1","mw_inconvenience_remember_training","2","7","80651","2023-09-27 11:28:42"
+"1232","3","mw_independence_authority_training","2","7","28031","2023-09-27 11:29:54"
+"1233","3","mw_comfort_breathe_training","2","7","28031","2023-09-27 11:29:54"
+"1234","3","mw_access_cost_training","2","7","28031","2023-09-27 11:29:54"
+"1235","3","mw_compensation_training","2","7","28031","2023-09-27 11:29:54"
+"1236","3","mw_efficacy_health_training","1","6","28031","2023-09-27 11:29:54"
+"1237","3","mw_inconvenience_hassle_training","2","7","28031","2023-09-27 11:29:54"
+"1238","3","mw_appearance_training","2","7","28031","2023-09-27 11:29:54"
+"1239","3","mw_comfort_hot_training","2","7","28031","2023-09-27 11:29:54"
+"1240","3","mw_access_diff_training","2","7","28031","2023-09-27 11:29:54"
+"1241","3","mw_inconvenience_remember_training","2","7","28031","2023-09-27 11:29:54"
+"1242","3","mw_independence_forced_training","2","7","28031","2023-09-27 11:29:54"
+"1243","3","mw_attention_uncomfortable_training","2","7","28031","2023-09-27 11:29:54"
+"1244","3","mw_efficacy_eff_training","1","6","28031","2023-09-27 11:29:54"
+"1245","3","mw_attention_trust_training","2","7","28031","2023-09-27 11:29:54"
+"1246","2","mw_efficacy_eff_training","1","5","80651","2023-09-27 11:32:50"
+"1247","2","mw_inconvenience_hassle_training","2","5","80651","2023-09-27 11:32:50"
+"1248","2","mw_comfort_breathe_training","2","7","80651","2023-09-27 11:32:50"
+"1249","2","mw_efficacy_health_training","1","5","80651","2023-09-27 11:32:50"
+"1250","2","mw_comfort_hot_training","2","7","80651","2023-09-27 11:32:50"
+"1251","2","mw_access_cost_training","2","5","80651","2023-09-27 11:32:50"
+"1252","2","mw_attention_trust_training","2","5","80651","2023-09-27 11:32:50"
+"1253","2","mw_compensation_training","1","5","80651","2023-09-27 11:32:50"
+"1254","2","mw_attention_uncomfortable_training","2","5","80651","2023-09-27 11:32:50"
+"1255","2","mw_appearance_training","2","5","80651","2023-09-27 11:32:50"
+"1256","2","mw_inconvenience_remember_training","2","5","80651","2023-09-27 11:32:50"
+"1257","2","mw_independence_authority_training","2","5","80651","2023-09-27 11:32:50"
+"1258","2","mw_access_diff_training","2","5","80651","2023-09-27 11:32:50"
+"1259","2","mw_independence_forced_training","2","5","80651","2023-09-27 11:32:50"
+"1260","4","mw_inconvenience_remember_training","2","7","28031","2023-09-27 11:33:05"
+"1261","4","mw_efficacy_eff_training","2","7","28031","2023-09-27 11:33:05"
+"1262","4","mw_attention_uncomfortable_training","0","7","28031","2023-09-27 11:33:05"
+"1263","4","mw_comfort_breathe_training","2","7","28031","2023-09-27 11:33:05"
+"1264","4","mw_access_cost_training","2","7","28031","2023-09-27 11:33:05"
+"1265","4","mw_comfort_hot_training","2","7","28031","2023-09-27 11:33:05"
+"1266","4","mw_efficacy_health_training","2","7","28031","2023-09-27 11:33:05"
+"1267","4","mw_appearance_training","0","6","28031","2023-09-27 11:33:05"
+"1268","4","mw_compensation_training","2","7","28031","2023-09-27 11:33:05"
+"1269","4","mw_independence_forced_training","0","7","28031","2023-09-27 11:33:05"
+"1270","4","mw_independence_authority_training","0","7","28031","2023-09-27 11:33:05"
+"1271","4","mw_access_diff_training","0","7","28031","2023-09-27 11:33:05"
+"1272","4","mw_inconvenience_hassle_training","0","5","28031","2023-09-27 11:33:05"
+"1273","4","mw_attention_trust_training","0","7","28031","2023-09-27 11:33:05"
+"1274","3","mw_inconvenience_remember_training","0","4","80651","2023-09-27 11:38:03"
+"1275","3","mw_comfort_breathe_training","2","6","80651","2023-09-27 11:38:03"
+"1276","3","mw_access_diff_training","2","5","80651","2023-09-27 11:38:03"
+"1277","3","mw_efficacy_eff_training","1","5","80651","2023-09-27 11:38:03"
+"1278","3","mw_comfort_hot_training","2","6","80651","2023-09-27 11:38:03"
+"1279","3","mw_efficacy_health_training","1","5","80651","2023-09-27 11:38:03"
+"1280","3","mw_inconvenience_hassle_training","2","5","80651","2023-09-27 11:38:03"
+"1281","3","mw_appearance_training","2","5","80651","2023-09-27 11:38:03"
+"1282","3","mw_attention_uncomfortable_training","2","5","80651","2023-09-27 11:38:03"
+"1283","3","mw_compensation_training","2","5","80651","2023-09-27 11:38:03"
+"1284","3","mw_access_cost_training","2","5","80651","2023-09-27 11:38:03"
+"1285","3","mw_independence_authority_training","2","5","80651","2023-09-27 11:38:03"
+"1286","3","mw_attention_trust_training","2","5","80651","2023-09-27 11:38:03"
+"1287","3","mw_independence_forced_training","2","5","80651","2023-09-27 11:38:03"
+"1288","4","mw_attention_uncomfortable_training","0","5","80651","2023-09-27 11:40:01"
+"1289","4","mw_appearance_training","0","6","80651","2023-09-27 11:40:01"
+"1290","4","mw_independence_forced_training","0","7","80651","2023-09-27 11:40:01"
+"1291","4","mw_comfort_breathe_training","2","5","80651","2023-09-27 11:40:01"
+"1292","4","mw_independence_authority_training","0","5","80651","2023-09-27 11:40:01"
+"1293","4","mw_efficacy_eff_training","0","4","80651","2023-09-27 11:40:01"
+"1294","4","mw_attention_trust_training","0","7","80651","2023-09-27 11:40:01"
+"1295","4","mw_access_diff_training","0","7","80651","2023-09-27 11:40:01"
+"1296","4","mw_efficacy_health_training","0","5","80651","2023-09-27 11:40:01"
+"1297","4","mw_inconvenience_remember_training","2","5","80651","2023-09-27 11:40:01"
+"1298","4","mw_access_cost_training","2","5","80651","2023-09-27 11:40:01"
+"1299","4","mw_compensation_training","1","5","80651","2023-09-27 11:40:01"
+"1300","4","mw_inconvenience_hassle_training","0","6","80651","2023-09-27 11:40:01"
+"1301","4","mw_comfort_hot_training","2","5","80651","2023-09-27 11:40:01"
+"1302","5","mw_attention_uncomfortable_training","2","5","80651","2023-09-27 11:41:50"
+"1303","5","mw_comfort_breathe_training","2","6","80651","2023-09-27 11:41:50"
+"1304","5","mw_attention_trust_training","2","5","80651","2023-09-27 11:41:50"
+"1305","5","mw_independence_authority_training","2","5","80651","2023-09-27 11:41:50"
+"1306","5","mw_appearance_training","2","5","80651","2023-09-27 11:41:50"
+"1307","5","mw_comfort_hot_training","2","6","80651","2023-09-27 11:41:50"
+"1308","5","mw_access_cost_training","2","5","80651","2023-09-27 11:41:50"
+"1309","5","mw_independence_forced_training","2","5","80651","2023-09-27 11:41:50"
+"1310","5","mw_efficacy_eff_training","1","5","80651","2023-09-27 11:41:50"
+"1311","5","mw_compensation_training","2","5","80651","2023-09-27 11:41:50"
+"1312","5","mw_access_diff_training","1","5","80651","2023-09-27 11:41:50"
+"1313","5","mw_inconvenience_hassle_training","1","4","80651","2023-09-27 11:41:50"
+"1314","5","mw_inconvenience_remember_training","2","5","80651","2023-09-27 11:41:50"
+"1315","5","mw_efficacy_health_training","1","6","80651","2023-09-27 11:41:50"
+"1316","5","mw_comfort_breathe_training","2","7","28031","2023-09-27 11:42:46"
+"1317","5","mw_attention_trust_training","2","7","28031","2023-09-27 11:42:46"
+"1318","5","mw_access_cost_training","2","7","28031","2023-09-27 11:42:46"
+"1319","5","mw_inconvenience_remember_training","2","7","28031","2023-09-27 11:42:46"
+"1320","5","mw_comfort_hot_training","2","7","28031","2023-09-27 11:42:46"
+"1321","5","mw_inconvenience_hassle_training","2","7","28031","2023-09-27 11:42:46"
+"1322","5","mw_attention_uncomfortable_training","2","7","28031","2023-09-27 11:42:46"
+"1323","5","mw_compensation_training","2","7","28031","2023-09-27 11:42:46"
+"1324","5","mw_independence_authority_training","2","7","28031","2023-09-27 11:42:46"
+"1325","5","mw_independence_forced_training","2","7","28031","2023-09-27 11:42:46"
+"1326","5","mw_access_diff_training","2","7","28031","2023-09-27 11:42:46"
+"1327","5","mw_appearance_training","2","7","28031","2023-09-27 11:42:46"
+"1328","5","mw_efficacy_health_training","0","5","28031","2023-09-27 11:42:46"
+"1329","5","mw_efficacy_eff_training","1","5","28031","2023-09-27 11:42:46"
+"1330","1","mw_access_cost_training","2","7","48093","2023-09-27 12:37:06"
+"1331","1","mw_access_diff_training","2","7","48093","2023-09-27 12:37:06"
+"1332","1","mw_efficacy_health_training","1","5","48093","2023-09-27 12:37:06"
+"1333","1","mw_efficacy_eff_training","1","7","48093","2023-09-27 12:37:06"
+"1334","1","mw_comfort_hot_training","2","4","48093","2023-09-27 12:37:06"
+"1335","1","mw_comfort_breathe_training","2","7","48093","2023-09-27 12:37:06"
+"1336","1","mw_inconvenience_remember_training","2","6","48093","2023-09-27 12:37:06"
+"1337","1","mw_attention_trust_training","2","6","48093","2023-09-27 12:37:06"
+"1338","1","mw_compensation_training","2","7","48093","2023-09-27 12:37:06"
+"1339","1","mw_attention_uncomfortable_training","1","5","48093","2023-09-27 12:37:06"
+"1340","1","mw_inconvenience_hassle_training","0","5","48093","2023-09-27 12:37:06"
+"1341","1","mw_appearance_training","2","6","48093","2023-09-27 12:37:06"
+"1342","1","mw_independence_forced_training","2","5","48093","2023-09-27 12:37:06"
+"1343","1","mw_independence_authority_training","2","5","48093","2023-09-27 12:37:06"
+"1344","2","mw_efficacy_eff_training","1","6","48093","2023-09-27 12:46:35"
+"1345","2","mw_comfort_breathe_training","2","5","48093","2023-09-27 12:46:35"
+"1346","2","mw_access_diff_training","1","5","48093","2023-09-27 12:46:35"
+"1347","2","mw_access_cost_training","2","5","48093","2023-09-27 12:46:35"
+"1348","2","mw_comfort_hot_training","2","6","48093","2023-09-27 12:46:35"
+"1349","2","mw_efficacy_health_training","1","5","48093","2023-09-27 12:46:35"
+"1350","2","mw_inconvenience_hassle_training","2","5","48093","2023-09-27 12:46:35"
+"1351","2","mw_compensation_training","0","5","48093","2023-09-27 12:46:35"
+"1352","2","mw_attention_uncomfortable_training","1","5","48093","2023-09-27 12:46:35"
+"1353","2","mw_inconvenience_remember_training","2","6","48093","2023-09-27 12:46:35"
+"1354","2","mw_appearance_training","2","5","48093","2023-09-27 12:46:35"
+"1355","2","mw_independence_forced_training","0","5","48093","2023-09-27 12:46:35"
+"1356","2","mw_attention_trust_training","2","5","48093","2023-09-27 12:46:35"
+"1357","2","mw_independence_authority_training","1","5","48093","2023-09-27 12:46:35"
+"1358","3","mw_access_diff_training","2","7","48093","2023-09-27 12:49:17"
+"1359","3","mw_comfort_hot_training","2","6","48093","2023-09-27 12:49:17"
+"1360","3","mw_comfort_breathe_training","2","5","48093","2023-09-27 12:49:17"
+"1361","3","mw_efficacy_health_training","2","7","48093","2023-09-27 12:49:17"
+"1362","3","mw_access_cost_training","2","7","48093","2023-09-27 12:49:17"
+"1363","3","mw_efficacy_eff_training","2","6","48093","2023-09-27 12:49:17"
+"1364","3","mw_independence_authority_training","2","5","48093","2023-09-27 12:49:17"
+"1365","3","mw_appearance_training","2","7","48093","2023-09-27 12:49:17"
+"1366","3","mw_independence_forced_training","0","5","48093","2023-09-27 12:49:17"
+"1367","3","mw_inconvenience_hassle_training","0","5","48093","2023-09-27 12:49:17"
+"1368","3","mw_attention_trust_training","2","5","48093","2023-09-27 12:49:17"
+"1369","3","mw_compensation_training","0","2","48093","2023-09-27 12:49:17"
+"1370","3","mw_inconvenience_remember_training","0","5","48093","2023-09-27 12:49:17"
+"1371","3","mw_attention_uncomfortable_training","2","5","48093","2023-09-27 12:49:17"
+"1372","4","mw_comfort_breathe_training","2","6","48093","2023-09-27 12:50:38"
+"1373","4","mw_access_cost_training","0","6","48093","2023-09-27 12:50:38"
+"1374","4","mw_access_diff_training","0","7","48093","2023-09-27 12:50:38"
+"1375","4","mw_comfort_hot_training","2","7","48093","2023-09-27 12:50:38"
+"1376","4","mw_efficacy_eff_training","2","7","48093","2023-09-27 12:50:38"
+"1377","4","mw_efficacy_health_training","0","2","48093","2023-09-27 12:50:38"
+"1378","4","mw_inconvenience_hassle_training","0","5","48093","2023-09-27 12:50:38"
+"1379","4","mw_compensation_training","2","7","48093","2023-09-27 12:50:38"
+"1380","4","mw_inconvenience_remember_training","2","7","48093","2023-09-27 12:50:38"
+"1381","4","mw_attention_trust_training","0","7","48093","2023-09-27 12:50:38"
+"1382","4","mw_appearance_training","0","7","48093","2023-09-27 12:50:38"
+"1383","4","mw_attention_uncomfortable_training","0","7","48093","2023-09-27 12:50:38"
+"1384","4","mw_independence_forced_training","0","5","48093","2023-09-27 12:50:38"
+"1385","4","mw_independence_authority_training","0","6","48093","2023-09-27 12:50:38"
+"1386","5","mw_comfort_hot_training","2","6","48093","2023-09-27 12:52:32"
+"1387","5","mw_access_cost_training","2","6","48093","2023-09-27 12:52:32"
+"1388","5","mw_efficacy_health_training","1","7","48093","2023-09-27 12:52:32"
+"1389","5","mw_access_diff_training","2","7","48093","2023-09-27 12:52:32"
+"1390","5","mw_comfort_breathe_training","2","5","48093","2023-09-27 12:52:32"
+"1391","5","mw_efficacy_eff_training","1","7","48093","2023-09-27 12:52:32"
+"1392","5","mw_compensation_training","2","7","48093","2023-09-27 12:52:32"
+"1393","5","mw_inconvenience_remember_training","2","7","48093","2023-09-27 12:52:32"
+"1394","5","mw_inconvenience_hassle_training","2","7","48093","2023-09-27 12:52:32"
+"1395","5","mw_attention_trust_training","2","7","48093","2023-09-27 12:52:32"
+"1396","5","mw_attention_uncomfortable_training","2","6","48093","2023-09-27 12:52:32"
+"1397","5","mw_independence_forced_training","2","7","48093","2023-09-27 12:52:32"
+"1398","5","mw_appearance_training","2","6","48093","2023-09-27 12:52:32"
+"1399","5","mw_independence_authority_training","2","7","48093","2023-09-27 12:52:32"
+"1400","1","mw_comfort_breathe_training","0","7","40617","2023-09-27 13:13:13"
+"1401","1","mw_attention_trust_training","2","4","40617","2023-09-27 13:13:13"
+"1402","1","mw_comfort_hot_training","2","7","40617","2023-09-27 13:13:13"
+"1403","1","mw_independence_authority_training","2","6","40617","2023-09-27 13:13:13"
+"1404","1","mw_independence_forced_training","2","4","40617","2023-09-27 13:13:13"
+"1405","1","mw_efficacy_eff_training","2","4","40617","2023-09-27 13:13:13"
+"1406","1","mw_inconvenience_hassle_training","2","4","40617","2023-09-27 13:13:13"
+"1407","1","mw_attention_uncomfortable_training","2","6","40617","2023-09-27 13:13:13"
+"1408","1","mw_access_cost_training","2","7","40617","2023-09-27 13:13:13"
+"1409","1","mw_inconvenience_remember_training","2","4","40617","2023-09-27 13:13:13"
+"1410","1","mw_access_diff_training","2","7","40617","2023-09-27 13:13:13"
+"1411","1","mw_compensation_training","2","7","40617","2023-09-27 13:13:13"
+"1412","1","mw_appearance_training","2","7","40617","2023-09-27 13:13:13"
+"1413","1","mw_efficacy_health_training","1","7","40617","2023-09-27 13:13:13"
+"1414","2","mw_attention_uncomfortable_training","2","6","40617","2023-09-27 13:16:52"
+"1415","2","mw_comfort_breathe_training","2","6","40617","2023-09-27 13:16:52"
+"1416","2","mw_independence_authority_training","2","4","40617","2023-09-27 13:16:52"
+"1417","2","mw_attention_trust_training","2","7","40617","2023-09-27 13:16:52"
+"1418","2","mw_independence_forced_training","2","4","40617","2023-09-27 13:16:52"
+"1419","2","mw_inconvenience_remember_training","2","4","40617","2023-09-27 13:16:52"
+"1420","2","mw_inconvenience_hassle_training","2","4","40617","2023-09-27 13:16:52"
+"1421","2","mw_compensation_training","2","4","40617","2023-09-27 13:16:52"
+"1422","2","mw_appearance_training","2","7","40617","2023-09-27 13:16:52"
+"1423","2","mw_access_cost_training","2","7","40617","2023-09-27 13:16:52"
+"1424","2","mw_comfort_hot_training","2","7","40617","2023-09-27 13:16:52"
+"1425","2","mw_access_diff_training","2","4","40617","2023-09-27 13:16:52"
+"1426","2","mw_efficacy_eff_training","2","4","40617","2023-09-27 13:16:52"
+"1427","2","mw_efficacy_health_training","2","4","40617","2023-09-27 13:16:52"
+"1428","3","mw_access_cost_training","2","6","40617","2023-09-27 13:19:02"
+"1429","3","mw_efficacy_eff_training","2","3","40617","2023-09-27 13:19:02"
+"1430","3","mw_access_diff_training","2","5","40617","2023-09-27 13:19:02"
+"1431","3","mw_comfort_breathe_training","2","4","40617","2023-09-27 13:19:02"
+"1432","3","mw_appearance_training","2","6","40617","2023-09-27 13:19:02"
+"1433","3","mw_efficacy_health_training","1","4","40617","2023-09-27 13:19:02"
+"1434","3","mw_comfort_hot_training","2","7","40617","2023-09-27 13:19:02"
+"1435","3","mw_inconvenience_hassle_training","2","4","40617","2023-09-27 13:19:02"
+"1436","3","mw_inconvenience_remember_training","2","5","40617","2023-09-27 13:19:02"
+"1437","3","mw_compensation_training","2","4","40617","2023-09-27 13:19:02"
+"1438","3","mw_attention_trust_training","2","6","40617","2023-09-27 13:19:02"
+"1439","3","mw_attention_uncomfortable_training","2","6","40617","2023-09-27 13:19:02"
+"1440","3","mw_independence_forced_training","2","5","40617","2023-09-27 13:19:02"
+"1441","3","mw_independence_authority_training","2","6","40617","2023-09-27 13:19:02"
+"1442","4","mw_comfort_breathe_training","2","6","40617","2023-09-27 13:20:42"
+"1443","4","mw_independence_forced_training","2","7","40617","2023-09-27 13:20:42"
+"1444","4","mw_efficacy_health_training","2","6","40617","2023-09-27 13:20:42"
+"1445","4","mw_independence_authority_training","2","6","40617","2023-09-27 13:20:42"
+"1446","4","mw_attention_trust_training","0","7","40617","2023-09-27 13:20:42"
+"1447","4","mw_appearance_training","0","5","40617","2023-09-27 13:20:42"
+"1448","4","mw_comfort_hot_training","2","6","40617","2023-09-27 13:20:42"
+"1449","4","mw_attention_uncomfortable_training","1","7","40617","2023-09-27 13:20:42"
+"1450","4","mw_efficacy_eff_training","2","7","40617","2023-09-27 13:20:42"
+"1451","4","mw_compensation_training","2","4","40617","2023-09-27 13:20:42"
+"1452","4","mw_access_cost_training","2","7","40617","2023-09-27 13:20:42"
+"1453","4","mw_inconvenience_hassle_training","2","4","40617","2023-09-27 13:20:42"
+"1454","4","mw_access_diff_training","2","7","40617","2023-09-27 13:20:42"
+"1455","4","mw_inconvenience_remember_training","2","4","40617","2023-09-27 13:20:42"
+"1456","5","mw_comfort_breathe_training","2","6","40617","2023-09-27 13:22:12"
+"1457","5","mw_independence_authority_training","2","7","40617","2023-09-27 13:22:12"
+"1458","5","mw_access_diff_training","2","7","40617","2023-09-27 13:22:12"
+"1459","5","mw_access_cost_training","2","7","40617","2023-09-27 13:22:12"
+"1460","5","mw_compensation_training","2","6","40617","2023-09-27 13:22:12"
+"1461","5","mw_inconvenience_hassle_training","2","6","40617","2023-09-27 13:22:12"
+"1462","5","mw_inconvenience_remember_training","2","7","40617","2023-09-27 13:22:12"
+"1463","5","mw_independence_forced_training","2","7","40617","2023-09-27 13:22:12"
+"1464","5","mw_attention_uncomfortable_training","2","7","40617","2023-09-27 13:22:12"
+"1465","5","mw_appearance_training","2","6","40617","2023-09-27 13:22:12"
+"1466","5","mw_efficacy_eff_training","0","7","40617","2023-09-27 13:22:12"
+"1467","5","mw_comfort_hot_training","2","7","40617","2023-09-27 13:22:12"
+"1468","5","mw_attention_trust_training","2","7","40617","2023-09-27 13:22:12"
+"1469","5","mw_efficacy_health_training","0","5","40617","2023-09-27 13:22:12"
+"1470","1","mw_comfort_breathe_training","0","6","10164","2023-09-28 11:15:16"
+"1471","1","mw_access_cost_training","2","6","10164","2023-09-28 11:15:16"
+"1472","1","mw_appearance_training","2","6","10164","2023-09-28 11:15:16"
+"1473","1","mw_access_diff_training","2","6","10164","2023-09-28 11:15:16"
+"1474","1","mw_inconvenience_hassle_training","0","5","10164","2023-09-28 11:15:16"
+"1475","1","mw_attention_uncomfortable_training","0","4","10164","2023-09-28 11:15:16"
+"1476","1","mw_compensation_training","2","6","10164","2023-09-28 11:15:16"
+"1477","1","mw_inconvenience_remember_training","2","5","10164","2023-09-28 11:15:16"
+"1478","1","mw_attention_trust_training","2","6","10164","2023-09-28 11:15:16"
+"1479","1","mw_comfort_hot_training","2","6","10164","2023-09-28 11:15:17"
+"1480","1","mw_efficacy_health_training","1","7","10164","2023-09-28 11:15:17"
+"1481","1","mw_efficacy_eff_training","1","7","10164","2023-09-28 11:15:17"
+"1482","1","mw_independence_authority_training","2","5","10164","2023-09-28 11:15:17"
+"1483","1","mw_independence_forced_training","2","5","10164","2023-09-28 11:15:17"
+"1484","2","mw_comfort_breathe_training","2","7","10164","2023-09-28 11:17:36"
+"1485","2","mw_inconvenience_hassle_training","0","5","10164","2023-09-28 11:17:36"
+"1486","2","mw_comfort_hot_training","2","7","10164","2023-09-28 11:17:36"
+"1487","2","mw_inconvenience_remember_training","0","5","10164","2023-09-28 11:17:36"
+"1488","2","mw_appearance_training","2","7","10164","2023-09-28 11:17:36"
+"1489","2","mw_access_diff_training","2","7","10164","2023-09-28 11:17:36"
+"1490","2","mw_independence_forced_training","0","7","10164","2023-09-28 11:17:36"
+"1491","2","mw_independence_authority_training","2","4","10164","2023-09-28 11:17:36"
+"1492","2","mw_efficacy_health_training","0","5","10164","2023-09-28 11:17:36"
+"1493","2","mw_attention_trust_training","2","7","10164","2023-09-28 11:17:36"
+"1494","2","mw_access_cost_training","2","7","10164","2023-09-28 11:17:36"
+"1495","2","mw_compensation_training","0","4","10164","2023-09-28 11:17:36"
+"1496","2","mw_attention_uncomfortable_training","0","5","10164","2023-09-28 11:17:36"
+"1497","2","mw_efficacy_eff_training","1","5","10164","2023-09-28 11:17:36"
+"1498","3","mw_attention_uncomfortable_training","2","6","10164","2023-09-28 11:20:07"
+"1499","3","mw_independence_forced_training","0","6","10164","2023-09-28 11:20:07"
+"1500","3","mw_access_cost_training","2","6","10164","2023-09-28 11:20:07"
+"1501","3","mw_comfort_breathe_training","2","5","10164","2023-09-28 11:20:07"
+"1502","3","mw_compensation_training","2","5","10164","2023-09-28 11:20:07"
+"1503","3","mw_efficacy_eff_training","1","5","10164","2023-09-28 11:20:07"
+"1504","3","mw_inconvenience_hassle_training","0","6","10164","2023-09-28 11:20:07"
+"1505","3","mw_independence_authority_training","0","5","10164","2023-09-28 11:20:07"
+"1506","3","mw_access_diff_training","2","6","10164","2023-09-28 11:20:07"
+"1507","3","mw_attention_trust_training","2","5","10164","2023-09-28 11:20:07"
+"1508","3","mw_inconvenience_remember_training","0","6","10164","2023-09-28 11:20:07"
+"1509","3","mw_efficacy_health_training","1","5","10164","2023-09-28 11:20:07"
+"1510","3","mw_comfort_hot_training","2","5","10164","2023-09-28 11:20:07"
+"1511","3","mw_appearance_training","2","5","10164","2023-09-28 11:20:07"
+"1512","4","mw_appearance_training","0","7","10164","2023-09-28 11:21:30"
+"1513","4","mw_comfort_breathe_training","2","7","10164","2023-09-28 11:21:30"
+"1514","4","mw_independence_authority_training","0","7","10164","2023-09-28 11:21:30"
+"1515","4","mw_compensation_training","2","6","10164","2023-09-28 11:21:30"
+"1516","4","mw_attention_trust_training","0","7","10164","2023-09-28 11:21:30"
+"1517","4","mw_inconvenience_remember_training","0","6","10164","2023-09-28 11:21:30"
+"1518","4","mw_access_cost_training","2","5","10164","2023-09-28 11:21:30"
+"1519","4","mw_attention_uncomfortable_training","0","6","10164","2023-09-28 11:21:30"
+"1520","4","mw_independence_forced_training","0","6","10164","2023-09-28 11:21:30"
+"1521","4","mw_efficacy_health_training","2","6","10164","2023-09-28 11:21:30"
+"1522","4","mw_inconvenience_hassle_training","0","6","10164","2023-09-28 11:21:30"
+"1523","4","mw_access_diff_training","0","7","10164","2023-09-28 11:21:30"
+"1524","4","mw_comfort_hot_training","2","7","10164","2023-09-28 11:21:30"
+"1525","4","mw_efficacy_eff_training","2","6","10164","2023-09-28 11:21:30"
+"1526","5","mw_appearance_training","2","7","10164","2023-09-28 11:22:50"
+"1527","5","mw_inconvenience_hassle_training","2","6","10164","2023-09-28 11:22:50"
+"1528","5","mw_independence_forced_training","2","5","10164","2023-09-28 11:22:50"
+"1529","5","mw_independence_authority_training","2","5","10164","2023-09-28 11:22:50"
+"1530","5","mw_access_cost_training","1","5","10164","2023-09-28 11:22:50"
+"1531","5","mw_comfort_breathe_training","2","7","10164","2023-09-28 11:22:50"
+"1532","5","mw_attention_trust_training","2","7","10164","2023-09-28 11:22:50"
+"1533","5","mw_compensation_training","1","5","10164","2023-09-28 11:22:50"
+"1534","5","mw_attention_uncomfortable_training","2","6","10164","2023-09-28 11:22:50"
+"1535","5","mw_efficacy_health_training","1","7","10164","2023-09-28 11:22:50"
+"1536","5","mw_inconvenience_remember_training","2","7","10164","2023-09-28 11:22:50"
+"1537","5","mw_comfort_hot_training","2","7","10164","2023-09-28 11:22:50"
+"1538","5","mw_access_diff_training","2","6","10164","2023-09-28 11:22:50"
+"1539","5","mw_efficacy_eff_training","1","7","10164","2023-09-28 11:22:50"
+"1540","1","mw_comfort_breathe_training","0","7","15542","2023-09-28 11:48:22"
+"1541","1","mw_compensation_training","2","7","15542","2023-09-28 11:48:22"
+"1542","1","mw_access_cost_training","2","7","15542","2023-09-28 11:48:22"
+"1543","1","mw_efficacy_health_training","1","6","15542","2023-09-28 11:48:22"
+"1544","1","mw_access_diff_training","2","7","15542","2023-09-28 11:48:22"
+"1545","1","mw_efficacy_eff_training","1","7","15542","2023-09-28 11:48:22"
+"1546","1","mw_inconvenience_hassle_training","1","6","15542","2023-09-28 11:48:22"
+"1547","1","mw_attention_uncomfortable_training","2","7","15542","2023-09-28 11:48:22"
+"1548","1","mw_appearance_training","2","7","15542","2023-09-28 11:48:22"
+"1549","1","mw_comfort_hot_training","2","7","15542","2023-09-28 11:48:22"
+"1550","1","mw_attention_trust_training","2","7","15542","2023-09-28 11:48:22"
+"1551","1","mw_independence_forced_training","2","7","15542","2023-09-28 11:48:22"
+"1552","1","mw_independence_authority_training","2","7","15542","2023-09-28 11:48:22"
+"1553","1","mw_inconvenience_remember_training","2","7","15542","2023-09-28 11:48:22"
+"1554","2","mw_access_diff_training","2","6","15542","2023-09-28 11:52:27"
+"1555","2","mw_comfort_breathe_training","2","7","15542","2023-09-28 11:52:27"
+"1556","2","mw_efficacy_eff_training","1","6","15542","2023-09-28 11:52:27"
+"1557","2","mw_access_cost_training","2","7","15542","2023-09-28 11:52:27"
+"1558","2","mw_comfort_hot_training","2","7","15542","2023-09-28 11:52:27"
+"1559","2","mw_efficacy_health_training","1","6","15542","2023-09-28 11:52:27"
+"1560","2","mw_inconvenience_hassle_training","2","7","15542","2023-09-28 11:52:27"
+"1561","2","mw_inconvenience_remember_training","2","6","15542","2023-09-28 11:52:27"
+"1562","2","mw_attention_trust_training","2","7","15542","2023-09-28 11:52:27"
+"1563","2","mw_appearance_training","2","7","15542","2023-09-28 11:52:27"
+"1564","2","mw_compensation_training","2","6","15542","2023-09-28 11:52:27"
+"1565","2","mw_attention_uncomfortable_training","2","7","15542","2023-09-28 11:52:27"
+"1566","2","mw_independence_authority_training","2","7","15542","2023-09-28 11:52:27"
+"1567","2","mw_independence_forced_training","2","6","15542","2023-09-28 11:52:27"
+"1568","3","mw_comfort_breathe_training","2","7","15542","2023-09-28 11:54:40"
+"1569","3","mw_comfort_hot_training","2","7","15542","2023-09-28 11:54:40"
+"1570","3","mw_efficacy_eff_training","1","7","15542","2023-09-28 11:54:40"
+"1571","3","mw_efficacy_health_training","1","6","15542","2023-09-28 11:54:40"
+"1572","3","mw_access_diff_training","2","7","15542","2023-09-28 11:54:40"
+"1573","3","mw_access_cost_training","2","7","15542","2023-09-28 11:54:40"
+"1574","3","mw_inconvenience_remember_training","2","7","15542","2023-09-28 11:54:40"
+"1575","3","mw_compensation_training","2","7","15542","2023-09-28 11:54:40"
+"1576","3","mw_inconvenience_hassle_training","2","7","15542","2023-09-28 11:54:40"
+"1577","3","mw_appearance_training","2","7","15542","2023-09-28 11:54:40"
+"1578","3","mw_attention_trust_training","2","7","15542","2023-09-28 11:54:40"
+"1579","3","mw_attention_uncomfortable_training","2","7","15542","2023-09-28 11:54:40"
+"1580","3","mw_independence_forced_training","0","6","15542","2023-09-28 11:54:40"
+"1581","3","mw_independence_authority_training","2","7","15542","2023-09-28 11:54:40"
+"1582","4","mw_comfort_breathe_training","2","7","15542","2023-09-28 11:57:04"
+"1583","4","mw_comfort_hot_training","2","7","15542","2023-09-28 11:57:04"
+"1584","4","mw_efficacy_eff_training","2","7","15542","2023-09-28 11:57:04"
+"1585","4","mw_efficacy_health_training","2","7","15542","2023-09-28 11:57:04"
+"1586","4","mw_access_diff_training","0","7","15542","2023-09-28 11:57:04"
+"1587","4","mw_compensation_training","2","7","15542","2023-09-28 11:57:04"
+"1588","4","mw_inconvenience_remember_training","0","6","15542","2023-09-28 11:57:04"
+"1589","4","mw_appearance_training","0","7","15542","2023-09-28 11:57:04"
+"1590","4","mw_access_cost_training","0","5","15542","2023-09-28 11:57:04"
+"1591","4","mw_attention_trust_training","0","7","15542","2023-09-28 11:57:04"
+"1592","4","mw_inconvenience_hassle_training","0","7","15542","2023-09-28 11:57:04"
+"1593","4","mw_independence_forced_training","0","7","15542","2023-09-28 11:57:04"
+"1594","4","mw_attention_uncomfortable_training","0","7","15542","2023-09-28 11:57:04"
+"1595","4","mw_independence_authority_training","2","7","15542","2023-09-28 11:57:04"
+"1596","5","mw_comfort_breathe_training","2","7","15542","2023-09-28 11:59:36"
+"1597","5","mw_efficacy_health_training","1","6","15542","2023-09-28 11:59:36"
+"1598","5","mw_attention_uncomfortable_training","2","7","15542","2023-09-28 11:59:36"
+"1599","5","mw_comfort_hot_training","2","7","15542","2023-09-28 11:59:36"
+"1600","5","mw_access_diff_training","1","6","15542","2023-09-28 11:59:36"
+"1601","5","mw_efficacy_eff_training","1","7","15542","2023-09-28 11:59:36"
+"1602","5","mw_compensation_training","1","6","15542","2023-09-28 11:59:36"
+"1603","5","mw_access_cost_training","1","6","15542","2023-09-28 11:59:36"
+"1604","5","mw_inconvenience_hassle_training","2","7","15542","2023-09-28 11:59:36"
+"1605","5","mw_independence_forced_training","2","7","15542","2023-09-28 11:59:36"
+"1606","5","mw_inconvenience_remember_training","2","7","15542","2023-09-28 11:59:36"
+"1607","5","mw_appearance_training","2","7","15542","2023-09-28 11:59:36"
+"1608","5","mw_attention_trust_training","2","7","15542","2023-09-28 11:59:36"
+"1609","5","mw_independence_authority_training","2","7","15542","2023-09-28 11:59:36"
