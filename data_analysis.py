@@ -6,39 +6,13 @@ from datetime import date, timedelta
 from sklearn.metrics import cohen_kappa_score
 from statsmodels.stats.inter_rater import fleiss_kappa, aggregate_raters
 import xml.etree.ElementTree as ET
-from data_collector import NYT, FOX, TUCKER_CARLSON, SEAN_HANNITY, LAURA_INGRAHAM, HUFF_POST, BREITBART, DAILY_KOS, VOX, media_id_to_name, MC_SEP, POST_ACCOUNTS_IDS
+from data_collector import NYT, FOX, TUCKER_CARLSON, SEAN_HANNITY, LAURA_INGRAHAM, HUFF_POST, BREITBART, DAILY_KOS, VOX, media_id_to_name, MC_SEP, POST_ACCOUNTS_IDS, add_dates_to_opinion_transcripts
 
 # Pulled from https://stackoverflow.com/questions/1060279/iterating-through-a-range-of-dates-in-python
 
 def daterange(start_date, end_date):
   for n in range(int((end_date - start_date).days)):
     yield start_date + timedelta(n)
-
-def combine_coding_rounds():
-  data_path = './labeled-data/'
-  sub_paths = [ 'round1', 'round2', 'round3' ]
-  training_df = pd.DataFrame(columns=['id','article_id','attribute','code','confidence','session_id','datetime'])
-  code_df = pd.DataFrame(columns=['id','article_id','attribute','code','confidence','session_id','datetime'])
-
-  training_dfs = [training_df]
-  code_dfs = [code_df]
-
-  for sub_path in sub_paths:
-    file_path = f'{data_path}/{sub_path}'
-    training_round_df = pd.read_csv(f'{file_path}/mask_wearing_training_codes.csv')
-    codes_round_df = pd.read_csv(f'{file_path}/mask_wearing_codes.csv')
-
-    if 'Unnamed: 0' in training_round_df.columns:
-      training_round_df.drop(columns=['Unnamed: 0'], inplace=True)
-    if 'Unnamed: 0' in codes_round_df.columns:
-      codes_round_df.drop(columns=['Unnamed: 0'], inplace=True)
-    
-    training_dfs.append(training_round_df)
-    code_dfs.append(codes_round_df)
-
-  training_combined_df = pd.concat(training_dfs)
-  code_combined_df = pd.concat(code_dfs)
-  return { 'training': training_combined_df, 'codes': code_combined_df } 
 
 def label_training_agreement_analysis(mask_training_codes_df):
   agreement_codes = {
@@ -532,12 +506,14 @@ def ratings_across_categories_for_paragraph(mask_codes_df, article_id):
   Returns a dataframe containing all ratings for a given article_id (paragraph).
   This reports the rating across all categories (attributes).
   '''
+  print(f'rating for article id {article_id}')
   agreement_cols = mask_codes_df['attribute'].unique()
   codes_for_article = mask_codes_df[mask_codes_df['article_id'] == article_id]
   coders = codes_for_article['session_id'].unique()
   table = pd.DataFrame(columns=agreement_cols)
   for coder in coders:
-    table.loc[len(table)] = [ codes_for_article[(codes_for_article['session_id'] == coder) & (codes_for_article['attribute'] == col)].iloc[0]['code'] for col in agreement_cols ]
+    session_attribute_code = lambda codes_for_article, col: codes_for_article[(codes_for_article['session_id'] == coder) & (codes_for_article['attribute'] == col)]
+    table.loc[len(table)] = [ session_attribute_code(codes_for_article, col).iloc[0]['code'] if len(session_attribute_code(codes_for_article, col)) > 0 else -1 for col in agreement_cols ]
   return table
 
 def inter_rater_agreement_for_category(mask_codes_df, article_id, attribute):
@@ -567,11 +543,37 @@ def inter_rater_agreement_across_attributes_histogram(mask_codes_df):
 
   plt.show()
 
+def combine_coding_rounds():
+  data_path = './labeled-data/'
+  sub_paths = [ 'round1', 'round2', 'round3', 'round4' ]
+  training_df = pd.DataFrame(columns=['id','article_id','attribute','code','confidence','session_id','datetime'])
+  code_df = pd.DataFrame(columns=['id','article_id','attribute','code','confidence','session_id','datetime'])
+
+  training_dfs = [training_df]
+  code_dfs = [code_df]
+
+  for sub_path in sub_paths:
+    file_path = f'{data_path}/{sub_path}'
+    training_round_df = pd.read_csv(f'{file_path}/mask_wearing_training_codes.csv')
+    codes_round_df = pd.read_csv(f'{file_path}/mask_wearing_codes.csv')
+
+    if 'Unnamed: 0' in training_round_df.columns:
+      training_round_df.drop(columns=['Unnamed: 0'], inplace=True)
+    if 'Unnamed: 0' in codes_round_df.columns:
+      codes_round_df.drop(columns=['Unnamed: 0'], inplace=True)
+    
+    training_dfs.append(training_round_df)
+    code_dfs.append(codes_round_df)
+
+  training_combined_df = pd.concat(training_dfs)
+  code_combined_df = pd.concat(code_dfs)
+  return { 'training': training_combined_df, 'codes': code_combined_df } 
+
 def mask_wearing_codes_df():
   combined_codes_df = combine_coding_rounds()
   mask_codes_df = combined_codes_df['codes']
-  articles_db_df = pd.read_csv('./labeled-data/round1/articles_mask.csv')
-  mask_codes_df = mask_codes_df.merge(articles_db_df[['id','native_id']], left_on='article_id',right_on='id')
+  articles_db_df = pd.read_csv('./labeled-data/round4/articles_mask.csv')
+  mask_codes_df = mask_codes_df.merge(articles_db_df[['id','native_id']], left_on='article_id',right_on='id', how='left')
   mask_codes_df.drop(columns=['id_y'], inplace=True)
   mask_codes_df.rename(columns={'id_x': 'id'}, inplace=True)
   return mask_codes_df
@@ -585,7 +587,13 @@ def articles_df():
   # Read in article data
   kos_vox_df = pd.read_csv('./news-data/df_csvs/kos-vox-w-article.csv')
   fox_nyt_breit_df = pd.read_csv('./news-data/df_csvs/covid-or-mask_w-article.csv', sep=MC_SEP)
-  articles_df = pd.concat([kos_vox_df, fox_nyt_breit_df])
+  carlson_df = pd.read_csv('./news-data/df_csvs/carlson-mask.csv')
+  carlson_df_with_dates = add_dates_to_opinion_transcripts(carlson_df)
+  hannity_df = pd.read_csv('./news-data/df_csvs/hannity-mask.csv')
+  hannity_df_with_dates = add_dates_to_opinion_transcripts(hannity_df)
+  ingraham_df = pd.read_csv('./news-data/df_csvs/ingraham-mask.csv')
+  ingraham_df_with_dates = add_dates_to_opinion_transcripts(ingraham_df)
+  articles_df = pd.concat([kos_vox_df, fox_nyt_breit_df, carlson_df_with_dates, hannity_df_with_dates, ingraham_df_with_dates])
   articles_df.drop(columns=['Unnamed: 0','Unnamed: 0.1'], inplace=True)
   return articles_df
 
@@ -726,7 +734,7 @@ def code_format_pseudo_label_df(pseudo_labels):
 # OPINION ANALYSIS
 ##################
 
-REP_MEDIA_OUTLETS = [BREITBART, FOX]
+REP_MEDIA_OUTLETS = [BREITBART, FOX, TUCKER_CARLSON, LAURA_INGRAHAM, SEAN_HANNITY]
 MOD_MEDIA_OUTLETS = [NYT, FOX]
 DEM_MEDIA_OUTLETS = [NYT, VOX, DAILY_KOS]
 
