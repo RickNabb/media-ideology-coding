@@ -489,6 +489,54 @@ def graph_label_confidence_distribution_per_category(mask_codes_df):
 
     plt.show()
 
+def graph_article_belief_over_time(mask_codes_df, articles_db_df):
+  '''
+  
+  Note: mask_codes_df should have resolved all codes already, so that
+  there are not multiple sets of codes per article
+  '''
+  date_df = pd.DataFrame(columns=['0','1','2','3','4','5','6'])
+  articles_no_nan = articles_db_df.dropna(subset=['publish_date'])
+  start_date = date(2020, 4, 6)
+  end_date = date(2020, 6, 8)
+  for day in daterange(start_date, end_date):
+    articles_for_date = articles_no_nan[articles_no_nan['publish_date'].str.contains(str(day))]['stories_id']
+    codes_for_date = mask_codes_df[mask_codes_df['native_id'].isin(articles_for_date)]
+    num_beliefs = np.zeros(7)
+    for article_id in codes_for_date['article_id'].unique():
+      article_rows = codes_for_date[codes_for_date['article_id']==article_id]
+      attribute_code_pairs = { row[1]['attribute']: row[1]['code'] for row in article_rows.iterrows() }
+      article_belief = article_belief_value(attribute_code_pairs)
+      num_beliefs[article_belief] += 1
+
+    date_df.loc[len(date_df)] = num_beliefs
+
+  dates = list(daterange(start_date, end_date))
+  x = np.arange(len(dates))
+  width = 1
+  bottom = np.zeros(len(x))
+
+  fig,ax = plt.subplots(figsize=(8,4))
+  rgb_to_hex = lambda rgb: '%02x%02x%02x' % tuple(rgb)
+  resolution = 7
+  line_color = lambda key: f"#{rgb_to_hex([ 255 - round((255/(resolution-1))*int(key)), 0, round((255/(resolution-1)) * int(key)) ])}"
+  belief_and_colors = { str(bel): line_color(bel) for bel in range(7) }
+
+  for belief in date_df.columns:
+    beliefs_over_dates = date_df[belief]
+    rects = ax.bar(x, beliefs_over_dates, width, bottom=bottom, label=belief, color=belief_and_colors[belief])
+    ax.bar_label(rects, padding=3)
+    bottom += beliefs_over_dates
+
+  # bar_labels = [ 'Rep', 'Mod', 'Dem' ]
+  ax.set_xticks(x)
+  ax.set_xticklabels(dates, fontsize=8, rotation=45)
+  ax.set_xlabel('Date')
+  ax.set_ylabel('Number of encoded beliefs per date')
+  ax.legend()
+
+  plt.show()
+
 def ratings_for_category_for_paragraph(mask_codes_df, article_id, attribute):
   '''
   Returns a dataframe containing all ratings for a given article_id (paragraph).
@@ -776,6 +824,8 @@ def graph_opinion_timeseries(rep_timeseries, mod_timeseries, dem_timeseries):
 
   plt.show()
 
+# def opinion_change_naive_linear_for_media(article_codes)
+
 def opinion_change_naive_linear(article_codes):
   '''
   :param article_codes: Attribute code pairs for a given article
@@ -792,9 +842,9 @@ def article_belief_value(article_codes):
     code_polarity = OPINION_CHANGE_POLARITY_BY_ATTR[attr][code]
     if code_polarity == 1:
       pos_codes += 1
-    else:
+    elif code_polarity == -1:
       neg_codes += 1
-  return (3 + 3 * ((pos - neg) / (pos + neg))) 
+  return (3 + round(3 * ((pos_codes - neg_codes) / (1 + pos_codes + neg_codes))))
 
 def curr_sigmoid_p(exponent, translation):
   '''
@@ -806,7 +856,7 @@ def curr_sigmoid_p(exponent, translation):
   :param exponent: An exponent factor in the sigmoid function.
   :param translation: A translation factor in the sigmoid function.
   '''
-  return lambda message_distance: (1 / (1 + math.exp(exponent * (message_distance - translation))))
+  return lambda message_distance: sigmoid_contagion_p(message_distance, exponent, translation)
 
 def sigmoid_contagion_p(message_distance, exponent, translation):
   '''
@@ -831,9 +881,96 @@ def opinion_change_dissonant(population_opinion, article_belief, beta_fn):
   new_opinion = (adopters * article_belief) + (same * population_opinion)
   return new_opinion
 
+def opinion_change_dissonant_by_media(dem_opinion, rep_opinion, mod_opinion, article_belief, beta_fn, media_id):
+  next_rep = rep_opinion
+  next_dem = dem_opinion
+  next_mod = mod_opinion
+  if media_id in REP_MEDIA_OUTLETS:
+    next_rep = opinion_change_dissonant(rep_opinion, article_belief, beta_fn)
+  if media_id in DEM_MEDIA_OUTLETS:
+    next_dem = opinion_change_dissonant(dem_opinion, article_belief, beta_fn)
+  if media_id in MOD_MEDIA_OUTLETS:
+    next_mod = opinion_change_dissonant(mod_opinion, article_belief, beta_fn)
+  return next_rep, next_mod, next_dem
 
+OPINION_CHANGE_METHODS = {
+  'NAIVE_LINEAR': 0,
+  'DISSONANT': 1
+}
 
-def naive_opinion_change_simulation(mask_wearing_codes, articles_df, opinion_fn):
+def initialize_population_opinion(poll_percent):
+  '''
+  :param poll_percent: The percent of individuals who are represented in
+  the poll as having the poll belief.
+
+  Assumptions: Since this is using a 'belief' 0-6, we assume that anything
+  >= 4 is believing; anything <= 3 is not counted in the poll percent
+  '''
+  poll_population = np.round(np.random.uniform(4, 6, poll_percent))
+  nonpoll_population = np.round(np.random.uniform(0, 3, 100-poll_percent))
+  return np.concatenate((poll_population, nonpoll_population))
+
+def opinion_change_simulation_population(mask_wearing_codes, articles_df, opinion_change_method):
+  # Seed initial data for 3 groups
+  rep_opinion_timeseries = [initialize_population_opinion(round(REP_STARTING_OPINION))]
+  mod_opinion_timeseries = [initialize_population_opinion(round(MOD_STARTING_OPINION))]
+  dem_opinion_timeseries = [initialize_population_opinion(round(DEM_STARTING_OPINION))]
+
+  # Progress through codes over time and increment based on codes
+  articles_no_nan = articles_df.dropna(subset=['publish_date'])
+  start_date = date(2020, 4, 6)
+  end_date = date(2020, 6, 8)
+  for day in daterange(start_date, end_date):
+    print(f'Evaluating {day}')
+    next_rep = rep_opinion_timeseries[-1]
+    next_mod = mod_opinion_timeseries[-1]
+    next_dem = dem_opinion_timeseries[-1]
+
+    articles_for_date = articles_no_nan[articles_no_nan['publish_date'].str.contains(str(day))]['stories_id']
+    codes_for_date = mask_wearing_codes[mask_wearing_codes['native_id'].isin(articles_for_date)]
+    resolved_codes = resolve_multiple_codes_per_paragraph(codes_for_date)
+    # print(f'multi-coded pars: {resolved_codes}')
+
+    # Paragraphs w/ more than one code
+    for article_id in resolved_codes:
+      native_id = mask_wearing_codes[mask_wearing_codes['article_id'] == article_id]['native_id'].iloc[0]
+      media_id = articles_df[articles_df['stories_id'] == native_id]['media_id'].iloc[0]
+      if opinion_change_method == OPINION_CHANGE_METHODS['NAIVE_LINEAR']:
+        print('not implemented')
+      elif opinion_change_method == OPINION_CHANGE_METHODS['DISSONANT']:
+        article_belief = article_belief_value(codes_for_article_pairs)
+        dissonance_fn = curr_sigmoid_p(4, 1)
+        next_rep, next_mod, next_dem = opinion_change_dissonant_by_media(next_dem, next_rep, next_mod, article_belief, dissonance_fn, media_id)
+    
+    # Non-multi-coded paragraphs
+    single_coded_pars = codes_for_date[~codes_for_date['article_id'].isin(resolved_codes)]
+    non_multicoded_ids = single_coded_pars['article_id'].unique()
+    # print(f'single-coded pars: {single_coded_pars}')
+    for article_id in non_multicoded_ids:
+      native_id = mask_wearing_codes[mask_wearing_codes['article_id'] == article_id]['native_id'].iloc[0]
+      media_id = articles_df[articles_df['stories_id'] == native_id]['media_id'].iloc[0]
+      codes_for_article = single_coded_pars[single_coded_pars['article_id']==article_id]
+      # Format: { attr: code }
+      codes_for_article_pairs = { row[1]['attribute']: row[1]['code'] for row in codes_for_article.iterrows() }
+      if opinion_change_method == OPINION_CHANGE_METHODS['NAIVE_LINEAR']:
+        print('not implemented')
+      elif opinion_change_method == OPINION_CHANGE_METHODS['DISSONANT']:
+        article_belief = article_belief_value(codes_for_article_pairs)
+        dissonance_fn = curr_sigmoid_p(4, 1)
+        next_rep, next_mod, next_dem = opinion_change_dissonant_by_media(next_dem, next_rep, next_mod, article_belief, dissonance_fn, media_id)
+    
+    rep_opinion_timeseries.append(next_rep)
+    mod_opinion_timeseries.append(next_mod)
+    dem_opinion_timeseries.append(next_dem)
+
+  # Return timeseries for each category
+  poll_value = lambda population_belief: (population_belief >= 4).sum()
+  rep_value_timeseries = np.array([ poll_value(population_belief) for population_belief in rep_opinion_timeseries ])
+  mod_value_timeseries = np.array([ poll_value(population_belief) for population_belief in mod_opinion_timeseries ])
+  dem_value_timeseries = np.array([ poll_value(population_belief) for population_belief in dem_opinion_timeseries ])
+  return { 'rep': rep_value_timeseries, 'mod': mod_value_timeseries, 'dem': dem_value_timeseries }
+
+def opinion_change_simulation_single_value(mask_wearing_codes, articles_df, opinion_change_method):
   # Seed initial data for 3 groups
   rep_opinion_timeseries = [REP_STARTING_OPINION]
   mod_opinion_timeseries = [MOD_STARTING_OPINION]
@@ -863,8 +1000,17 @@ def naive_opinion_change_simulation(mask_wearing_codes, articles_df, opinion_fn)
       native_id = mask_wearing_codes[mask_wearing_codes['article_id'] == article_id]['native_id'].iloc[0]
       media_id = articles_df[articles_df['stories_id'] == native_id]['media_id'].iloc[0]
 
-      rep_diff, mod_diff, dem_diff = opinion_fn(resolved_codes[article_id], media_id)
-
+      if opinion_change_method == OPINION_CHANGE_METHODS['NAIVE_LINEAR']:
+        opinion_change = opinion_change_naive_linear(resolved_codes[article_id])
+        if media_id in REP_MEDIA_OUTLETS:
+          rep_diff += opinion_change
+        if media_id in MOD_MEDIA_OUTLETS:
+          mod_diff += opinion_change
+        if media_id in DEM_MEDIA_OUTLETS:
+          dem_diff += opinion_change
+        # rep_diff, mod_diff, dem_diff = opinion_fn(resolved_codes[article_id], media_id)
+      elif opinion_change_method == OPINION_CHANGE_METHODS['DISSONANT']:
+        print('not implemented')
     
     # Non-multi-coded paragraphs
     single_coded_pars = codes_for_date[~codes_for_date['article_id'].isin(resolved_codes)]
