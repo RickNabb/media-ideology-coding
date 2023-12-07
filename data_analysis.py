@@ -706,7 +706,7 @@ def label_analysis():
   # Read in label data
   mask_training_codes_df = mask_wearing_training_codes_df()
   mask_codes_df = mask_wearing_codes_df()
-  articles_db_df = pd.read_csv('./labeled-data/round1/articles_mask.csv')
+  articles_db_df = pd.read_csv('./labeled-data/round4/articles_mask.csv')
   articles_all_df = articles_df()
 
   training_agreement_scores = label_training_agreement_analysis(mask_training_codes_df)
