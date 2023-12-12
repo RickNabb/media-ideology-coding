@@ -506,7 +506,7 @@ def graph_article_belief_over_time(mask_codes_df, articles_db_df):
     for article_id in codes_for_date['article_id'].unique():
       article_rows = codes_for_date[codes_for_date['article_id']==article_id]
       attribute_code_pairs = { row[1]['attribute']: row[1]['code'] for row in article_rows.iterrows() }
-      article_belief = article_belief_value(attribute_code_pairs)
+      article_belief = paragraph_belief_value(attribute_code_pairs)
       num_beliefs[article_belief] += 1
 
     date_df.loc[len(date_df)] = num_beliefs
@@ -835,7 +835,7 @@ def opinion_change_naive_linear(article_codes):
     total_change += OPINION_CHANGE_POLARITY_BY_ATTR[attr][code]
   return total_change
 
-def article_belief_value(article_codes):
+def paragraph_belief_value(article_codes):
   pos_codes = 0
   neg_codes = 0
   for attr, code in article_codes.items():
@@ -845,6 +845,20 @@ def article_belief_value(article_codes):
     elif code_polarity == -1:
       neg_codes += 1
   return (3 + round(3 * ((pos_codes - neg_codes) / (1 + pos_codes + neg_codes))))
+
+def article_belief_value(paragraph_belief_values):
+  return round(np.array(paragraph_belief_values).mean()) if len(paragraph_belief_values) > 0 else -1
+
+def paragraph_belief_values(mask_wearing_df):
+  codes_by_paragraph = { article_id: { row[1]['attribute']: row[1]['code'] for row in mask_wearing_df[mask_wearing_df['article_id'] == article_id][['attribute','code']].iterrows() } for article_id in mask_wearing_df['article_id'].unique() }
+  beliefs_by_paragraph = { article_id: paragraph_belief_value(codes) for article_id,codes in codes_by_paragraph.items() }
+  return beliefs_by_paragraph
+
+def article_belief_values(beliefs_by_paragraph, mask_wearing_df):
+  article_ids = mask_wearing_df['native_id'].unique() 
+  paragraph_ids_for_article_id = { article_id: mask_wearing_df[mask_wearing_df['native_id'] == article_id]['article_id'].unique() for article_id in article_ids }
+  beliefs_by_article = { article_id: article_belief_value([ paragraph_belief for paragraph_id,paragraph_belief in beliefs_by_paragraph.items() if paragraph_id in paragraph_ids_for_article_id[article_id]]) for article_id in mask_wearing_df['native_id'].unique() }
+  return { article_id: val for article_id, val in beliefs_by_article.items() if val != -1 }
 
 def curr_sigmoid_p(exponent, translation):
   '''
@@ -938,7 +952,7 @@ def opinion_change_simulation_population(mask_wearing_codes, articles_df, opinio
       if opinion_change_method == OPINION_CHANGE_METHODS['NAIVE_LINEAR']:
         print('not implemented')
       elif opinion_change_method == OPINION_CHANGE_METHODS['DISSONANT']:
-        article_belief = article_belief_value(codes_for_article_pairs)
+        article_belief = paragraph_belief_value(codes_for_article_pairs)
         dissonance_fn = curr_sigmoid_p(4, 1)
         next_rep, next_mod, next_dem = opinion_change_dissonant_by_media(next_dem, next_rep, next_mod, article_belief, dissonance_fn, media_id)
     
@@ -955,7 +969,7 @@ def opinion_change_simulation_population(mask_wearing_codes, articles_df, opinio
       if opinion_change_method == OPINION_CHANGE_METHODS['NAIVE_LINEAR']:
         print('not implemented')
       elif opinion_change_method == OPINION_CHANGE_METHODS['DISSONANT']:
-        article_belief = article_belief_value(codes_for_article_pairs)
+        article_belief = paragraph_belief_value(codes_for_article_pairs)
         dissonance_fn = curr_sigmoid_p(4, 1)
         next_rep, next_mod, next_dem = opinion_change_dissonant_by_media(next_dem, next_rep, next_mod, article_belief, dissonance_fn, media_id)
     
