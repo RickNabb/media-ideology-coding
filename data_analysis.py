@@ -7,7 +7,7 @@ from datetime import date, timedelta
 from sklearn.metrics import cohen_kappa_score
 from statsmodels.stats.inter_rater import fleiss_kappa, aggregate_raters
 import xml.etree.ElementTree as ET
-from data_collector import NYT, FOX, TUCKER_CARLSON, SEAN_HANNITY, LAURA_INGRAHAM, HUFF_POST, BREITBART, DAILY_KOS, VOX, media_id_to_name, MC_SEP, POST_ACCOUNTS_IDS, add_dates_to_opinion_transcripts
+from data_collector import NYT, FOX, TUCKER_CARLSON, SEAN_HANNITY, LAURA_INGRAHAM, HUFF_POST, BREITBART, DAILY_KOS, VOX, media_id_to_name, MC_SEP, POST_ACCOUNTS_IDS, add_dates_to_opinion_transcripts, rows_within_time_range
 
 # Pulled from https://stackoverflow.com/questions/1060279/iterating-through-a-range-of-dates-in-python
 
@@ -80,7 +80,7 @@ def percent_paragraphs_labeled_for_labeled_stories(mask_codes_df, articles_db_df
   return sorted(article_percentages.items(), key=lambda item: item[1])
 
 def label_date_range_analysis(mask_codes_df, articles_df):
-  outlets = [FOX, NYT, BREITBART, VOX, DAILY_KOS]
+  outlets = [FOX, NYT, BREITBART, VOX, DAILY_KOS, TUCKER_CARLSON, SEAN_HANNITY, LAURA_INGRAHAM]
   cols = ['date'] + list(mask_codes_df['attribute'].unique()) + [ media_id_to_name[outlet] for outlet in outlets ] + ['total_labels']
 
   articles_no_nan = articles_df.dropna(subset=['publish_date'])
@@ -170,7 +170,7 @@ def graph_media_outlets_across_dates(label_date_range_results):
   plt.show()
 
 def graph_media_outlets_total_across_dates(articles_df):
-  outlets = [FOX, NYT, BREITBART, VOX, DAILY_KOS]
+  outlets = [FOX, NYT, BREITBART, VOX, DAILY_KOS, TUCKER_CARLSON, LAURA_INGRAHAM, SEAN_HANNITY]
   articles_no_nan = articles_df.dropna(subset=['publish_date'])
   # Article id = stories_id
 
@@ -243,7 +243,7 @@ def graph_percent_paragraphs_at_least_one_code_across_dates(mask_wearing_df, art
   plt.show()
 
 def graph_media_outlet_total_distribution(label_date_range_results):
-  outlets = [FOX, NYT, BREITBART, VOX, DAILY_KOS]
+  outlets = [FOX, NYT, BREITBART, VOX, DAILY_KOS, TUCKER_CARLSON, LAURA_INGRAHAM, SEAN_HANNITY]
 
   fig,ax = plt.subplots(figsize=(8,4))
 
@@ -257,7 +257,7 @@ def graph_media_outlet_total_distribution(label_date_range_results):
   plt.show()
 
 def graph_articles_per_outlet_distribution(articles_db_df):
-  outlets = [FOX, NYT, BREITBART, VOX, DAILY_KOS]
+  outlets = [FOX, NYT, BREITBART, VOX, DAILY_KOS, TUCKER_CARLSON, LAURA_INGRAHAM, SEAN_HANNITY]
 
   fig,ax = plt.subplots(figsize=(8,4))
 
@@ -460,7 +460,7 @@ def graph_paragraphs_partisanship_over_time(articles_df, articles_db_df):
   ax.set_xticks(dates)
   ax.set_xticklabels([f'{date.month}-{date.day}' for date in dates], rotation=-45, ha='left', fontsize=6)
   ax.set_xlabel('Date')
-  ax.set_ylabel('Number of articles per partisan media diet')
+  ax.set_ylabel('Number of paragraphs per partisan media diet')
   ax.legend()
 
   plt.show()
@@ -535,6 +535,25 @@ def graph_article_belief_over_time(mask_codes_df, articles_db_df):
   ax.set_ylabel('Number of encoded beliefs per date')
   ax.legend()
 
+  plt.show()
+
+def graph_labeled_paragraphs_per_category(mask_codes_df):
+  labeled_paragraphs_per_category = num_paragraphs_labeled_per_category(mask_codes_df)
+  fig,axs = plt.subplots(4, 4, figsize=(8,4), sharex=True, sharey=True)
+  i = 0
+  for category, label_distribution in labeled_paragraphs_per_category.items():
+    x = sorted(label_distribution)
+    y = [ label_distribution[el] for el in x ]
+    ax = axs[i // 4][i % 4]
+    ax.bar(x, y)
+    ax.set_xticks(x)
+    ax.set_xticklabels(x)
+    ax.set_title(f'`{category}`')
+    i += 1
+  # plt.grid(False)
+  # plt.tick_params(labelcolor='none', top=False, bottom=False, left=False, right=False)
+  fig.supxlabel('Label')
+  fig.supylabel(f'Number of labeled paragraphs')
   plt.show()
 
 def ratings_for_category_for_paragraph(mask_codes_df, article_id, attribute):
@@ -646,6 +665,12 @@ def articles_df():
   articles_df.drop(columns=['Unnamed: 0','Unnamed: 0.1'], inplace=True)
   return articles_df
 
+def focused_articles_df(article_df):
+  columns = ['stories_id','article_data','publish_date','media_id','word_count','title']
+  focused_df = article_df[columns]
+  df_for_dates = rows_within_time_range(focused_df, '2020-04-01','2020-06-14')
+  return df_for_dates
+
 def high_quality_codes_across_categories(mask_wearing_df):
   article_ids = mask_wearing_df['article_id'].unique()
   high_quality_paragraphs = []
@@ -714,6 +739,28 @@ def label_analysis():
   percent_articles_labeled = percent_paragraphs_labeled_for_labeled_stories(mask_codes_df, articles_db_df)
 
   return (training_agreement_scores, date_range_results, percent_articles_labeled)
+
+def analyze_date_range(mask_wearing_df, article_db_df, article_df, start_date, end_date):
+  mw_with_date = mask_wearing_df.merge(article_df[['stories_id','title','publish_date','article_data_raw','media_name']],left_on='native_id',right_on='stories_id',how='left')
+  mw_for_dates = rows_within_time_range(mw_with_date, start_date, end_date)
+  pars_for_mw_stories = article_db_df[article_db_df['id'].isin(mw_for_dates['article_id'].unique())]
+  return mw_for_dates, pars_for_mw_stories
+
+def analysis_for_text_and_codes(mask_wearing_df, article_db_df, article_df, start_date, end_date):
+  mw_for_dates, pars_for_mw_stories = analyze_date_range(mask_wearing_df, article_db_df, article_df, start_date, end_date)
+  article_based_data = { article_id: {
+    'title': mw_for_dates[mw_for_dates['native_id'] == article_id]['title'].iloc[0],
+    'publish_date': mw_for_dates[mw_for_dates['native_id'] == article_id]['publish_date'].iloc[0],
+    'media_name': mw_for_dates[mw_for_dates['native_id'] == article_id]['media_name'].iloc[0],
+    'paragraphs': [
+      {
+        'text': pars_for_mw_stories[pars_for_mw_stories['id'] == par_id]['post'].iloc[0],
+        'codes': { row[1]['attribute']: row[1]['code'] for row in mw_for_dates[mw_for_dates['article_id'] == par_id][['attribute','code']].iterrows() }
+      }
+      for par_id in pars_for_mw_stories[pars_for_mw_stories['native_id'] == article_id]['id'].unique()
+    ]
+  } for article_id in mw_for_dates['native_id'].unique() }
+  return article_based_data
 
 ##################
 # PSEUDO-LABEL ANALYSIS
@@ -826,7 +873,7 @@ def graph_opinion_timeseries(rep_timeseries, mod_timeseries, dem_timeseries):
 
 # def opinion_change_naive_linear_for_media(article_codes)
 
-def opinion_change_naive_linear(article_codes):
+def opinion_change_naive_linear_paragraph(article_codes):
   '''
   :param article_codes: Attribute code pairs for a given article
   '''
@@ -834,6 +881,25 @@ def opinion_change_naive_linear(article_codes):
   for attr, code in article_codes.items():
     total_change += OPINION_CHANGE_POLARITY_BY_ATTR[attr][code]
   return total_change
+
+def opinion_change_naive_linear_article(article_codes):
+  '''
+  :param article_codes: Attribute code pairs for a given article
+  '''
+  change_value = paragraph_belief_value_zero_one(article_codes)
+  if change_value == 0.5:
+    return 0
+  elif change_value > 0.5:
+    return 1
+  else:
+    return -1
+
+def opinion_change_naive_mean(prev_opinion, article_codes):
+  '''
+  :param article_codes: Attribute code pairs for a given article
+  '''
+  change_value = paragraph_belief_value_zero_one(article_codes)
+  return (prev_opinion + (change_value * 100)) / 2
 
 def paragraph_belief_value(article_codes):
   pos_codes = 0
@@ -845,6 +911,17 @@ def paragraph_belief_value(article_codes):
     elif code_polarity == -1:
       neg_codes += 1
   return (3 + round(3 * ((pos_codes - neg_codes) / (1 + pos_codes + neg_codes))))
+
+def paragraph_belief_value_zero_one(article_codes):
+  pos_codes = 0
+  neg_codes = 0
+  for attr, code in article_codes.items():
+    code_polarity = OPINION_CHANGE_POLARITY_BY_ATTR[attr][code]
+    if code_polarity == 1:
+      pos_codes += 1
+    elif code_polarity == -1:
+      neg_codes += 1
+  return ((len(article_codes) / 2) + (0.5 * pos_codes) - (0.5 * neg_codes)) / len(article_codes)
 
 def article_belief_value(paragraph_belief_values):
   return round(np.array(paragraph_belief_values).mean()) if len(paragraph_belief_values) > 0 else -1
@@ -908,8 +985,10 @@ def opinion_change_dissonant_by_media(dem_opinion, rep_opinion, mod_opinion, art
   return next_rep, next_mod, next_dem
 
 OPINION_CHANGE_METHODS = {
-  'NAIVE_LINEAR': 0,
-  'DISSONANT': 1
+  'NAIVE_LINEAR_PARAGRAPH': 0,
+  'DISSONANT': 1,
+  'NAIVE_MEAN': 2,
+  'NAIVE_LINEAR_ARTICLE': 3,
 }
 
 def initialize_population_opinion(poll_percent):
@@ -949,7 +1028,7 @@ def opinion_change_simulation_population(mask_wearing_codes, articles_df, opinio
     for article_id in resolved_codes:
       native_id = mask_wearing_codes[mask_wearing_codes['article_id'] == article_id]['native_id'].iloc[0]
       media_id = articles_df[articles_df['stories_id'] == native_id]['media_id'].iloc[0]
-      if opinion_change_method == OPINION_CHANGE_METHODS['NAIVE_LINEAR']:
+      if opinion_change_method == OPINION_CHANGE_METHODS['NAIVE_LINEAR_PARAGRAPH']:
         print('not implemented')
       elif opinion_change_method == OPINION_CHANGE_METHODS['DISSONANT']:
         article_belief = paragraph_belief_value(codes_for_article_pairs)
@@ -966,7 +1045,7 @@ def opinion_change_simulation_population(mask_wearing_codes, articles_df, opinio
       codes_for_article = single_coded_pars[single_coded_pars['article_id']==article_id]
       # Format: { attr: code }
       codes_for_article_pairs = { row[1]['attribute']: row[1]['code'] for row in codes_for_article.iterrows() }
-      if opinion_change_method == OPINION_CHANGE_METHODS['NAIVE_LINEAR']:
+      if opinion_change_method == OPINION_CHANGE_METHODS['NAIVE_LINEAR_PARAGRAPH']:
         print('not implemented')
       elif opinion_change_method == OPINION_CHANGE_METHODS['DISSONANT']:
         article_belief = paragraph_belief_value(codes_for_article_pairs)
@@ -1000,10 +1079,6 @@ def opinion_change_simulation_single_value(mask_wearing_codes, articles_df, opin
     next_mod = mod_opinion_timeseries[-1]
     next_dem = dem_opinion_timeseries[-1]
 
-    rep_diff = 0
-    mod_diff = 0
-    dem_diff = 0
-
     articles_for_date = articles_no_nan[articles_no_nan['publish_date'].str.contains(str(day))]['stories_id']
     codes_for_date = mask_wearing_codes[mask_wearing_codes['native_id'].isin(articles_for_date)]
     resolved_codes = resolve_multiple_codes_per_paragraph(codes_for_date)
@@ -1014,39 +1089,69 @@ def opinion_change_simulation_single_value(mask_wearing_codes, articles_df, opin
       native_id = mask_wearing_codes[mask_wearing_codes['article_id'] == article_id]['native_id'].iloc[0]
       media_id = articles_df[articles_df['stories_id'] == native_id]['media_id'].iloc[0]
 
-      if opinion_change_method == OPINION_CHANGE_METHODS['NAIVE_LINEAR']:
-        opinion_change = opinion_change_naive_linear(resolved_codes[article_id])
+      if opinion_change_method == OPINION_CHANGE_METHODS['NAIVE_LINEAR_PARAGRAPH']:
+        opinion_change = opinion_change_naive_linear_paragraph(resolved_codes[article_id])
         if media_id in REP_MEDIA_OUTLETS:
-          rep_diff += opinion_change
+          next_rep += opinion_change
         if media_id in MOD_MEDIA_OUTLETS:
-          mod_diff += opinion_change
+          next_mod += opinion_change
         if media_id in DEM_MEDIA_OUTLETS:
-          dem_diff += opinion_change
-        # rep_diff, mod_diff, dem_diff = opinion_fn(resolved_codes[article_id], media_id)
+          next_dem += opinion_change
+      elif opinion_change_method == OPINION_CHANGE_METHODS['NAIVE_LINEAR_ARTICLE']:
+        opinion_change = opinion_change_naive_linear_article(resolved_codes[article_id])
+        if media_id in REP_MEDIA_OUTLETS:
+          next_rep += opinion_change
+        if media_id in MOD_MEDIA_OUTLETS:
+          next_mod += opinion_change
+        if media_id in DEM_MEDIA_OUTLETS:
+          next_dem += opinion_change
       elif opinion_change_method == OPINION_CHANGE_METHODS['DISSONANT']:
         print('not implemented')
+      elif opinion_change_method == OPINION_CHANGE_METHODS['NAIVE_MEAN']:
+        if media_id in REP_MEDIA_OUTLETS:
+          next_rep = opinion_change_naive_mean(next_rep, resolved_codes[article_id])
+        if media_id in MOD_MEDIA_OUTLETS:
+          next_mod = opinion_change_naive_mean(next_mod, resolved_codes[article_id])
+        if media_id in DEM_MEDIA_OUTLETS:
+          next_dem = opinion_change_naive_mean(next_dem, resolved_codes[article_id])
     
     # Non-multi-coded paragraphs
     single_coded_pars = codes_for_date[~codes_for_date['article_id'].isin(resolved_codes)]
+    non_multicoded_ids = single_coded_pars['article_id'].unique()
     # print(f'single-coded pars: {single_coded_pars}')
-    for row in single_coded_pars.iterrows():
-      attr = row[1]['attribute']
-      code = row[1]['code']
-      native_id = row[1]['native_id']
+    for article_id in non_multicoded_ids:
+      native_id = mask_wearing_codes[mask_wearing_codes['article_id'] == article_id]['native_id'].iloc[0]
       media_id = articles_df[articles_df['stories_id'] == native_id]['media_id'].iloc[0]
-      opinion_change = OPINION_CHANGE_POLARITY_BY_ATTR[attr][code]
-      if media_id in REP_MEDIA_OUTLETS:
-        rep_diff += opinion_change
-      if media_id in MOD_MEDIA_OUTLETS:
-        mod_diff += opinion_change
-      if media_id in DEM_MEDIA_OUTLETS:
-        dem_diff += opinion_change
-    
-    # print(f'dem diff: {dem_diff}')
-
-    next_rep += rep_diff
-    next_mod += mod_diff
-    next_dem += dem_diff
+      codes_for_article = single_coded_pars[single_coded_pars['article_id']==article_id]
+      # Format: { attr: code }
+      codes_for_article_pairs = { row[1]['attribute']: row[1]['code'] for row in codes_for_article.iterrows() }
+      if opinion_change_method == OPINION_CHANGE_METHODS['NAIVE_LINEAR_PARAGRAPH']:
+        opinion_change = opinion_change_naive_linear_paragraph(codes_for_article_pairs)
+        if media_id in REP_MEDIA_OUTLETS:
+          next_rep += opinion_change
+        if media_id in MOD_MEDIA_OUTLETS:
+          next_mod += opinion_change
+        if media_id in DEM_MEDIA_OUTLETS:
+          next_dem += opinion_change
+      elif opinion_change_method == OPINION_CHANGE_METHODS['NAIVE_LINEAR_ARTICLE']:
+        opinion_change = opinion_change_naive_linear_article(codes_for_article_pairs)
+        if media_id in REP_MEDIA_OUTLETS:
+          next_rep += opinion_change
+        if media_id in MOD_MEDIA_OUTLETS:
+          next_mod += opinion_change
+        if media_id in DEM_MEDIA_OUTLETS:
+          next_dem += opinion_change
+      elif opinion_change_method == OPINION_CHANGE_METHODS['DISSONANT']:
+        article_belief = paragraph_belief_value(codes_for_article_pairs)
+        dissonance_fn = curr_sigmoid_p(4, 1)
+        next_rep, next_mod, next_dem = opinion_change_dissonant_by_media(next_dem, next_rep, next_mod, article_belief, dissonance_fn, media_id)
+      elif opinion_change_method == OPINION_CHANGE_METHODS['NAIVE_MEAN']:
+        if media_id in REP_MEDIA_OUTLETS:
+          next_rep = opinion_change_naive_mean(next_rep, codes_for_article_pairs)
+        if media_id in MOD_MEDIA_OUTLETS:
+          next_mod = opinion_change_naive_mean(next_mod, codes_for_article_pairs)
+        if media_id in DEM_MEDIA_OUTLETS:
+          next_dem = opinion_change_naive_mean(next_dem, codes_for_article_pairs)
     
     rep_opinion_timeseries.append(next_rep)
     mod_opinion_timeseries.append(next_mod)
