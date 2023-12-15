@@ -1,4 +1,8 @@
 node_modules
 news-data/df_csvs
 news-data/mediacloud
+labeled-data/pseudo-labeled
+labeled-data/public
+labeled-data/*.json
+paper-figures/
 
