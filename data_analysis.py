@@ -1279,6 +1279,119 @@ def opinion_change_simulation_single_value(mask_wearing_codes, articles_df, opin
   # Return timeseries for each category
   return { 'rep': rep_opinion_timeseries, 'mod': mod_opinion_timeseries, 'dem': dem_opinion_timeseries }
 
+def compare_timeseries_by_direction(series1, series2, delta):
+  num_divisions = len(series1) / delta
+  # Another way to slice the arrays that does not contain overlapping sets
+  # series1_by_delta = np.array_split(series1, num_divisions)
+  # series2_by_delta = np.array_split(series2, num_divisions)
+
+  # Note: This slice at the end [:len(series)-delta] is necessary
+  # because this combinatorics makes delta-1 lists too small as it collides
+  # with the end
+  series1_by_delta = np.array([ series1[i:i+delta+1] for i in range(len(series1)) ][:len(series1)-delta])
+  series2_by_delta = np.array([ series2[i:i+delta+1] for i in range(len(series2)) ][:len(series2)-delta])
+  series1_rates = np.array([ (bucket[-1] - bucket[0]) / delta  for bucket in series1_by_delta ])
+  series2_rates = np.array([ (bucket[-1] - bucket[0]) / delta for bucket in series2_by_delta ])
+  section_matches = np.array([ ((series1_rates[i] * series2_rates[i]) > 0 or abs((series1_rates[i] - series2_rates[i])) <= 1) for i in range(len(series1_rates)) ])
+  return section_matches
+
+def graph_timeseries_comparison_by_direction(empirical_series, simulated_series, color):
+  matches = compare_timeseries_by_direction(empirical_series, simulated_series, 1)
+  matches = np.append(matches, matches[-1])
+  fig,ax = plt.subplots(figsize=(12,4))
+  start_date = date(2020, 4, 6)
+  end_date = date(2020, 6, 9)
+  dates = list(daterange(start_date, end_date))
+
+  ax.plot(dates, empirical_series, color=color)
+  ax.plot(dates, simulated_series, color=color, linestyle='dashed')
+  ax.fill_between(dates, 0, 1, where=matches, color=color, alpha=0.5, transform=ax.get_xaxis_transform())
+  ax.set_ybound(30, 100)
+  ax.set_xticks(dates)
+  ax.set_xticklabels([f'{date.month}-{date.day}' for date in dates], rotation=-45, ha='left', fontsize=10)
+  ax.set_xlabel('Date')
+  ax.set_ylabel('% Support for Wearing Masks')
+  plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=7))
+  plt.gcf().autofmt_xdate()
+
+  plt.show()
+
+def graph_opinion_timeseries_against_gallup(gallup_data, simulated_data):
+  series = ['dem','mod','rep']
+  series_to_color = { 'dem': 'blue', 'mod': 'purple', 'rep': 'red' }
+  series_to_label = { 'dem': 'Democrat', 'mod': 'Moderate', 'rep': 'Republican' }
+  fig,axs = plt.subplots(3, 1, figsize=(12,5), sharex=True, sharey=True)
+  start_date = date(2020, 4, 6)
+  end_date = date(2020, 6, 9)
+  dates = list(daterange(start_date, end_date))
+
+  for i in range(3):
+    data = series[i]
+    empirical_series = gallup_data[data]
+    simulated_series = simulated_data[data]
+    matches = compare_timeseries_by_direction(empirical_series, simulated_series, 1)
+    matches = np.append(matches, matches[-1])
+    ax = axs[i]
+    ax.plot(dates, empirical_series, color=series_to_color[data], label=f'Gallup {series_to_label[data]}')
+    ax.plot(dates, simulated_series, color=series_to_color[data], linestyle='dashed', label=f'Simulated {series_to_label[data]}')
+    ax.fill_between(dates, 0, 1, where=matches, color=series_to_color[data], alpha=0.5, transform=ax.get_xaxis_transform())
+    ax.set_ybound(30, 100)
+    ax.set_xticks(dates)
+    ax.set_xticklabels([f'{date.month}-{date.day}' for date in dates], rotation=-45, ha='left', fontsize=10)
+    ax.set_xlabel('Date')
+  fig.supylabel('% Support for Wearing Masks')
+  fig.legend(loc='upper center', ncol=6, mode='expand')
+  plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=7))
+  plt.gcf().autofmt_xdate()
+
+  plt.show()
+
+def graph_focus_sections_analyzed(gallup_data, simulated_data):
+  series = ['dem','mod','rep']
+  series_to_color = { 'dem': 'blue', 'mod': 'purple', 'rep': 'red' }
+  series_to_label = { 'dem': 'Democrat', 'mod': 'Moderate', 'rep': 'Republican' }
+  start_date = date(2020, 4, 6)
+  end_date = date(2020, 6, 9)
+  dates = list(daterange(start_date, end_date))
+
+  date_focus_ranges = [
+    [date(2020,4,15), date(2020,4,22)],
+    [date(2020,5,12), date(2020,5,19)],
+    [date(2020,5,21), date(2020,6,8)]
+  ]
+
+  for focus_range in date_focus_ranges:
+    fig,axs = plt.subplots(2,1,figsize=(12,4), sharex=True)
+    fill_ranges = ~np.array([ date >= focus_range[0] and date <= focus_range[1] for date in dates ])
+    empirical_ax = axs[0]
+    simulated_ax = axs[1]
+    for data in series:
+      empirical_series = gallup_data[data]
+      simulated_series = simulated_data[data]
+      empirical_ax.plot(dates, empirical_series, color=series_to_color[data], label=f'Gallup {series_to_label[data]}', zorder=1)
+      simulated_ax.plot(dates, simulated_series, color=series_to_color[data], linestyle='dashed', label=f'Simulated {series_to_label[data]}', zorder=1)
+
+    empirical_ax.set_xticks(dates)
+    empirical_ax.set_xticklabels([f'{date.month}-{date.day}' for date in dates], rotation=-45, ha='left', fontsize=10)
+    empirical_ax.fill_between(dates, 0, 1, where=fill_ranges, color='white', alpha=0.8, transform=empirical_ax.get_xaxis_transform(), zorder=2)
+    empirical_ax.axvline(x=focus_range[0])
+    empirical_ax.set_ybound(30, 100)
+
+    simulated_ax.set_xticks(dates)
+    simulated_ax.set_xticklabels([f'{date.month}-{date.day}' for date in dates], rotation=-45, ha='left', fontsize=10)
+    simulated_ax.fill_between(dates, 0, 1, where=fill_ranges, color='white', alpha=0.8, transform=simulated_ax.get_xaxis_transform(), zorder=2)
+    simulated_ax.axvline(x=focus_range[0])
+    simulated_ax.set_ybound(40, 70)
+
+    fig.supxlabel('Date')
+    fig.supylabel('% Support for Wearing Masks')
+    # fig.legend(loc='upper center', ncol=6, mode='expand')
+    plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=7))
+    plt.gcf().autofmt_xdate()
+
+    plt.show()
+
+
 def resolve_multiple_codes_per_paragraph(mask_wearing_codes):
   '''
   This function resolves multiple annotations for paragraphs into one
