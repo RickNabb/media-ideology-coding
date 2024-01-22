@@ -1118,6 +1118,22 @@ def initialize_population_opinion(poll_percent):
   nonpoll_population = np.round(np.random.uniform(0, 3, 100-poll_percent))
   return np.concatenate((poll_population, nonpoll_population))
 
+def initialize_population_opinion_normal(starting_opinion, samples):
+  '''
+  NOTE: The values calculated in opinions_to_mean were done with software
+  to calculate where the mean should fall so that P(X>=5) for a normal
+  with std deviation 0.5 would yield the starting opinion probability.
+
+  For an example of performing this for the Rep initial value, go to:
+  https://www.wolframalpha.com/input?i=1-0.4312+%3D+0.5%281%2Berf%28%28x-0%29%2F%280.5*sqrt%282%29%29%29%29
+  '''
+  opinions_to_mean = {
+    DEM_STARTING_OPINION: 5+0.1973,
+    MOD_STARTING_OPINION: 5-0.0176,
+    REP_STARTING_OPINION: 5-0.0867
+  }
+  return np.random.normal(opinions_to_mean[starting_opinion], 0.5, samples)
+
 def opinion_change_simulation_population(mask_wearing_codes, articles_df, opinion_change_method):
   # Seed initial data for 3 groups
   rep_opinion_timeseries = [initialize_population_opinion(round(REP_STARTING_OPINION))]
