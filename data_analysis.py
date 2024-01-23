@@ -5,6 +5,7 @@ import matplotlib.dates as mdates
 from matplotlib.colors import LinearSegmentedColormap
 import random
 import math
+import datetime
 from datetime import date, timedelta
 from sklearn.metrics import cohen_kappa_score
 from statsmodels.stats.inter_rater import fleiss_kappa, aggregate_raters
@@ -1020,16 +1021,17 @@ def message_format_beliefs_over_time(mask_wearing_df, articles_all_df):
   :mask_wearing_df: The codes df
   :articles_all_df: A dataframe with mediacloud data for each article.
   '''
+  convert_datetime = lambda date_str: datetime.datetime.strptime(date_str.split(' ')[0], '%Y-%m-%d')
   article_beliefs = article_belief_values_for_codes(mask_wearing_df)
   native_ids = list(article_beliefs.keys())
   message_data = pd.DataFrame(columns=['native_id','belief','step','media_id'])
-  timestamps = articles_all_df[articles_all_df['native_id'].isin(native_ids)]['timestamp'].unique()
-  min_timestamp = date(min(timestamps))
+  timestamps = articles_all_df[articles_all_df['stories_id'].isin(native_ids)]['publish_date'].unique()
+  min_timestamp = convert_datetime(min(timestamps))
 
-  for native_id, bel in article_beliefs:
-    step = date(articles_all_df[article_all_df['native_id']==native_id]['timestamp'][0]) - min_timestamp
+  for native_id, bel in article_beliefs.items():
+    step = (convert_datetime(articles_all_df[articles_all_df['stories_id']==native_id]['publish_date'].iloc[0]) - min_timestamp).days
     # Or something like this
-    media_id = articles_all_df[articles_all_df['native_id']==native_id]['media_name'][0]
+    media_id = articles_all_df[articles_all_df['stories_id']==native_id]['media_name'].iloc[0]
     message_data.loc[len(message_data)] = [ native_id, bel, step, media_id ]
   return message_data
 
