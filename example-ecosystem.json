@@ -1,0 +1,1 @@
+[{"id": "MIN", "brain": {"ID": 500, "alpha": 1.0, "beta": 1.0, "malleable": ["A"], "prior": [], "cont_tokens": {}, "A": 0}}, {"id": "MID", "brain": {"ID": 501, "alpha": 1.0, "beta": 1.0, "malleable": ["A"], "prior": [], "cont_tokens": {}, "A": 3}}, {"id": "MAX", "brain": {"ID": 502, "alpha": 1.0, "beta": 1.0, "malleable": ["A"], "prior": [], "cont_tokens": {}, "A": 6}}]
