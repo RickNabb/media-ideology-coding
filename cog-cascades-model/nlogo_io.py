@@ -133,9 +133,12 @@ def write_message_data(path, filename, bel_over_time, messages_heard, messages_b
   with open(f'{path}/{filename}_messages_sent.json', 'w', encoding='utf-8') as f:
     json.dump(messages_sent, f, ensure_ascii=False)
 
-def read_cit_init_per_group(filename):
+def read_json_file(filename):
   data = None
   with open(filename, 'r') as f:
     data = json.load(f)
   f.close()
   return data
+
+def read_cit_init_per_group(filename):
+  return read_json_file(filename)

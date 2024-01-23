@@ -7,3 +7,5 @@ labeled-data/*.json
 paper-figures/
 cog-cascades-model/__pycache__
 __pycache__
+cog-cascades-model/*.tmp.nlogo
+

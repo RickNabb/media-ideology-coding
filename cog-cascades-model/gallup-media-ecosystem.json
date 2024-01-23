@@ -1,0 +1,114 @@
+[
+  {
+    "id": "CARLSON",
+    "brain": {
+      "ID": 1000,
+      "alpha": 1.0,
+      "beta": 1.0,
+      "malleable": [
+        "A"
+      ],
+      "prior": [],
+      "cont_tokens": {},
+      "A": 0
+    }
+  },
+  {
+    "id": "INGRAHAM",
+    "brain": {
+      "ID": 1001,
+      "alpha": 1.0,
+      "beta": 1.0,
+      "malleable": [
+        "A"
+      ],
+      "prior": [],
+      "cont_tokens": {},
+      "A": 0
+    }
+  },
+  {
+    "id": "HANNITY",
+    "brain": {
+      "ID": 1002,
+      "alpha": 1.0,
+      "beta": 1.0,
+      "malleable": [
+        "A"
+      ],
+      "prior": [],
+      "cont_tokens": {},
+      "A": 0
+    }
+  },
+  {
+    "id": "FOX",
+    "brain": {
+      "ID": 1003,
+      "alpha": 1.0,
+      "beta": 1.0,
+      "malleable": [
+        "A"
+      ],
+      "prior": [],
+      "cont_tokens": {},
+      "A": 0
+    }
+  },
+  {
+    "id": "BREITBART",
+    "brain": {
+      "ID": 1004,
+      "alpha": 1.0,
+      "beta": 1.0,
+      "malleable": [
+        "A"
+      ],
+      "prior": [],
+      "cont_tokens": {},
+      "A": 0
+    }
+  },
+  {
+    "id": "NYT",
+    "brain": {
+      "ID": 1005,
+      "alpha": 1.0,
+      "beta": 1.0,
+      "malleable": [
+        "A"
+      ],
+      "prior": [],
+      "cont_tokens": {},
+      "A": 0
+    }
+  },
+  {
+    "id": "VOX",
+    "brain": {
+      "ID": 1006,
+      "alpha": 1.0,
+      "beta": 1.0,
+      "malleable": [
+        "A"
+      ],
+      "prior": [],
+      "cont_tokens": {},
+      "A": 0
+    }
+  },
+  {
+    "id": "KOS",
+    "brain": {
+      "ID": 1007,
+      "alpha": 1.0,
+      "beta": 1.0,
+      "malleable": [
+        "A"
+      ],
+      "prior": [],
+      "cont_tokens": {},
+      "A": 0
+    }
+  }
+]

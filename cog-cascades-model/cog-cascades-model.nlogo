@@ -112,15 +112,7 @@ to setup
   ifelse not load-graph? [
     create-agents
     connect-agents
-    if citizen-citizen-trust? [
-      initialize-citizen-citizen-memory
-    ]
-    ifelse citizen-media-trust? [
-      connect-media-initial-zeta
-      initialize-citizen-media-memory
-    ] [
-      connect-media-epsilon
-    ]
+    connect-media
   ] [
     read-graph
     if citizen-citizen-trust? [
@@ -133,7 +125,7 @@ to setup
 
   ;; Load message data sets to be used by influencer agents
   if media-agents? and institution-tactic = "predetermined" [
-    set messages-over-time load-messages-over-time (word messages-data-path "/") (word message-file ".json")
+    set messages-over-time load-messages-over-time messages-data-file
   ]
 
   ;; Layout turtles
@@ -209,7 +201,7 @@ to create-citizenz
   ]
   if citizen-init-type = "per-group" [
     let beliefs citizen-priors
-    let per-group-mapping py:runresult(word "read_cit_init_per_group('" citizen-init-per-group-file "')")
+    let per-group-mapping py:runresult(word "read_json_file('" citizen-init-per-group-file "')")
     let base-id 0
     let total-n 0
     foreach per-group-mapping [ group ->
@@ -336,6 +328,7 @@ to-report initial-belief-dist [ agent-set dist-type en beliefs ]
 end
 
 to create-media
+  show "test"
   if media-agents? [
     if media-ecosystem = "distribution" [
       ;; Generate list of agent initial beliefs for the specified distribution in the interface
@@ -355,7 +348,7 @@ to create-media
       ]
     ]
     if media-ecosystem = "predetermined" [
-      let ecosystem load-media-ecosystem (word media-ecosystem-path "/") (word media-ecosystem-file ".json")
+      let ecosystem load-media-ecosystem media-ecosystem-file
       foreach ecosystem [ m ->
         create-medias 1 [
           set idee (dict-value m "id")
@@ -433,6 +426,37 @@ to connect-agents
 
   ; Remove isolates
   ask citizens with [ empty? sort social-friend-neighbors ] [ show "removed isolate" ]
+end
+
+to connect-media
+  ifelse media-connection-type = "per-group" [
+    let media-group-mapping py:runresult(word "read_json_file('" media-connection-file "')")
+    show media-group-mapping
+    foreach media-group-mapping [ media-entry ->
+      let media-id item 0 media-entry
+      let groupz item 1 media-entry
+
+      let med item 0 sort medias with [ idee = media-id ]
+      show med
+
+      foreach groupz [ group ->
+        let group-cits citizens with [ member? group groups ]
+        ask group-cits [
+          create-subscriber-from med [ set weight media-citizen-influence ]
+        ]
+      ]
+    ]
+  ][
+    if citizen-citizen-trust? [
+      initialize-citizen-citizen-memory
+    ]
+    ifelse citizen-media-trust? [
+      connect-media-initial-zeta
+      initialize-citizen-media-memory
+    ] [
+      connect-media-epsilon
+    ]
+  ]
 end
 
 to connect-media-epsilon
@@ -1442,21 +1466,21 @@ to-report normal-dist [ maxx mu sigma en ]
   )
 end
 
-to-report load-messages-over-time [ path filename ]
-  if not file-exists? (word path "/" belief-resolution "/" media-ecosystem-file) [
-    error "Messaging directory does not exist for current resolution and ecosystem type"
-  ]
+to-report load-messages-over-time [ filename ]
+;  if not file-exists? (word path "/" belief-resolution "/" media-ecosystem-file) [
+;    error "Messaging directory does not exist for current resolution and ecosystem type"
+;  ]
   report py:runresult(
-    word "read_message_over_time_data('" path "/" belief-resolution "/" media-ecosystem-file "/" filename "')"
+    word "read_message_over_time_data('" filename "')"
   )
 end
 
-to-report load-media-ecosystem [ path filename ]
-  if not file-exists? (word path "/" belief-resolution) [
-    error "Media ecosystem directory does not exist for current resolution"
-  ]
+to-report load-media-ecosystem [ filename ]
+;  if not file-exists? (word path "/" belief-resolution) [
+;    error "Media ecosystem directory does not exist for current resolution"
+;  ]
   report py:runresult(
-    word "read_media_ecosystem_data('" path "/" belief-resolution "/" filename "')"
+    word "read_media_ecosystem_data('" filename "')"
   )
 end
 
@@ -2387,10 +2411,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-395
-424
 505
-457
+400
+615
+433
 epsilon
 epsilon
 0
@@ -2440,9 +2464,9 @@ Number of citizens
 1
 
 TEXTBOX
-398
+335
 362
-579
+516
 390
 Connection Parameters
 12
@@ -2488,7 +2512,7 @@ N
 N
 0
 1000
-200.0
+300.0
 10
 1
 NIL
@@ -3058,10 +3082,10 @@ Kronecker
 INPUTBOX
 25
 484
-241
+323
 544
-messages-data-path
-D:/school/grad-school/Tufts/research/cog-contagion-media-ecosystem/messaging-data/
+messages-data-file
+./gallup-messages-data.json
 1
 0
 String
@@ -3080,16 +3104,6 @@ message-repeats
 1
 NIL
 HORIZONTAL
-
-CHOOSER
-247
-485
-386
-530
-message-file
-message-file
-"default" "50-50" "gradual"
-2
 
 PLOT
 1873
@@ -3247,15 +3261,15 @@ CHOOSER
 media-ecosystem
 media-ecosystem
 "predetermined" "distribution"
-1
+0
 
 INPUTBOX
 29
 675
-286
+288
 735
-media-ecosystem-path
-D:/school/grad-school/Tufts/research/cog-contagion-media-ecosystem/ecosystems/
+media-ecosystem-file
+./gallup-media-ecosystem.json
 1
 0
 String
@@ -3271,10 +3285,10 @@ media-ecosystem-dist
 2
 
 SLIDER
-483
-593
-633
-626
+334
+669
+484
+702
 media-dist-normal-mean
 media-dist-normal-mean
 0
@@ -3286,10 +3300,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-483
-633
-635
-666
+334
+709
+486
+742
 media-dist-normal-std
 media-dist-normal-std
 0
@@ -3314,16 +3328,6 @@ media-ecosystem-n
 1
 NIL
 HORIZONTAL
-
-CHOOSER
-290
-678
-432
-723
-media-ecosystem-file
-media-ecosystem-file
-"one-min" "one-mid" "one-max" "two-polarized" "two-mid" "three-polarized" "three-mid"
-6
 
 PLOT
 1449
@@ -3498,9 +3502,9 @@ citizen-citizen-trust?
 -1000
 
 SWITCH
-512
+449
 503
-664
+601
 536
 citizen-media-trust?
 citizen-media-trust?
@@ -3527,9 +3531,9 @@ PENS
 "default" 1.0 0 -16777216 true "" ";plot 1 / (1 + (item 0 graph-homophily))"
 
 SLIDER
-397
+334
 503
-510
+447
 536
 zeta-media
 zeta-media
@@ -3562,19 +3566,9 @@ How many messages\nto send per tick
 1
 
 TEXTBOX
-398
-390
-586
-418
-Belief dist threshold for\nconnection (no trust)
-11
-0.0
-1
-
-TEXTBOX
-397
+334
 468
-585
+522
 496
 Trust threshold for\nconnection
 11
@@ -3602,10 +3596,10 @@ Media distribution parameters
 1
 
 TEXTBOX
-485
-569
-604
-592
+336
+645
+455
+668
 If normal distribution
 11
 0.0
@@ -3748,7 +3742,28 @@ INPUTBOX
 1408
 474
 citizen-init-per-group-file
-./gallup-media-diets.json
+./gallup-cit-init-dist.json
+1
+0
+String
+
+CHOOSER
+345
+412
+496
+457
+media-connection-type
+media-connection-type
+"per-group" "epsilon"
+0
+
+INPUTBOX
+505
+439
+654
+499
+media-connection-file
+./gallup-media-connections.json
 1
 0
 String

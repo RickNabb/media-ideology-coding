@@ -1,0 +1,10 @@
+{
+  "CARLSON": [ "REP" ],
+  "INGRAHAM": [ "REP" ],
+  "HANNITY": [ "REP" ],
+  "BREITBART": [ "REP" ],
+  "FOX": [ "REP", "MOD" ],
+  "NYT": [ "MOD", "DEM" ],
+  "VOX": [ "DEM" ],
+  "KOS": [ "DEM" ]
+}

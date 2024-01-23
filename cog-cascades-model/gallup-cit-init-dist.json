@@ -1,0 +1,20 @@
+{
+  "DEM": {
+    "n": 100,
+    "beliefs": {
+      "MASK": [ "normal", 5, 0.5 ]
+    }
+  },
+  "REP": {
+    "n": 100,
+    "beliefs": {
+      "MASK": [ "normal", 1, 0.5 ]
+    }
+  },
+  "MOD": {
+    "n": 100,
+    "beliefs": {
+      "MASK": [ "normal", 3, 0.5 ]
+    }
+  }
+}
