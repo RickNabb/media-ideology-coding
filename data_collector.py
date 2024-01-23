@@ -9,7 +9,7 @@ Author: Nick Rabb
 nicholas.rabb@tufts.edu
 '''
 
-from facebook_scraper import get_posts
+# from facebook_scraper import get_posts
 import json
 import pandas as pd
 from bs4 import BeautifulSoup

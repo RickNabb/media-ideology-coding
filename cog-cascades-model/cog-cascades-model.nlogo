@@ -44,6 +44,8 @@ citizens-own [
   messages-believed
   ;; Trust
   agent-messages-memory
+  ;; Groups
+  groups
 ]
 
 medias-own [
@@ -169,6 +171,7 @@ to setup-py
 ;  py:run "import mag as MAG"
   py:run "from nlogo_graphs import *"
   py:run "from nlogo_io import *"
+  py:run "from belief_initialization import *"
 end
 
 to create-agents
@@ -185,21 +188,78 @@ to create-citizenz
     set en array_shape kronecker-seed ^ kronecker-k
   ]
 
-  ;; Generate list of agent initial beliefs for the specified distribution in the interface
-  let prior-vals (initial-belief-dist citizens citizen-init-dist en citizen-priors)
-  let malleable-vals (initial-belief-dist citizens citizen-init-dist en citizen-malleables)
+  if citizen-init-type = "whole-population" [
+    ;; Generate list of agent initial beliefs for the specified distribution in the interface
+    let prior-vals (initial-belief-dist citizens citizen-init-dist en citizen-priors)
+    let malleable-vals (initial-belief-dist citizens citizen-init-dist en citizen-malleables)
 
-  ;; Create them all at once to speed up the process
-  create-citizens en [
-    set id read-from-string (substring (word "" self) 9 (position ")" (word "" self)))
-    set brain create-agent-brain id citizen-priors citizen-malleables (item id prior-vals) (item id malleable-vals)
-    set messages-heard []
-    set messages-believed []
-    set agent-messages-memory []
+    ;; Create them all at once to speed up the process
+    create-citizens en [
+      set id read-from-string (substring (word "" self) 9 (position ")" (word "" self)))
+      set brain create-agent-brain id citizen-priors citizen-malleables (item id prior-vals) (item id malleable-vals)
+      set messages-heard []
+      set messages-believed []
+      set agent-messages-memory []
+      set groups []
 
-    set size 0.5
-    setxy random-xcor random-ycor
-    set id id + 1
+      set size 0.5
+      setxy random-xcor random-ycor
+      set id id + 1
+    ]
+  ]
+  if citizen-init-type = "per-group" [
+    let beliefs citizen-priors
+    let per-group-mapping py:runresult(word "read_cit_init_per_group('" citizen-init-per-group-file "')")
+    let base-id 0
+    let total-n 0
+    foreach per-group-mapping [ group ->
+      let group-name item 0 group
+      let group-properties item 1 group
+
+      set en dict-value group-properties "n"
+      set total-n total-n + en
+      let init-per-belief dict-value group-properties "beliefs"
+
+      ; A map of [ bel: list-of-belief-vals ] for size group-en
+      let dists-per-belief []
+
+      foreach init-per-belief [ belief-init ->
+        let belief-name item 0 belief-init
+        let init-type item 1 belief-init
+
+        let dist-type item 0 init-type
+
+        let belief-list []
+        if dist-type = "uniform" [
+          set belief-list uniform-dist (belief-resolution) en
+        ]
+        if dist-type = "normal" [
+          set belief-list normal-dist (belief-resolution - 1) (item 1 init-type) (item 2 init-type) en
+        ]
+        if dist-type = "polarized" [
+          let l normal-dist (belief-resolution - 1) 1 0.5 (ceiling (en / 2))
+          let r normal-dist (belief-resolution - 1) (belief-resolution - 2) 0.5 (floor (en / 2))
+          foreach r [ el -> set l (lput el l) ]
+          set belief-list l
+        ]
+        set dists-per-belief (lput (list group-name belief-list) dists-per-belief)
+      ]
+
+      let per-cit-beliefs (distribute-beliefs-per-citizen dists-per-belief)
+      create-citizens en [
+        set id read-from-string (substring (word "" self) 9 (position ")" (word "" self)))
+        set brain create-agent-brain id citizen-priors citizen-malleables [] (item (id - base-id) per-cit-beliefs)
+        set messages-heard []
+        set messages-believed []
+        set agent-messages-memory []
+        set groups (list group-name)
+
+        set size 0.5
+        setxy random-xcor random-ycor
+      ]
+      set base-id (base-id + en)
+    ]
+    set N total-n
   ]
 end
 
@@ -1327,6 +1387,12 @@ end
 ; PY MESSAGING FILE
 ;;;;;;;;;;;;;;;
 
+to-report distribute-beliefs-per-citizen [ distributions-per-belief ]
+  report py:runresult(
+    word "distribute_beliefs_per_citizen(" (list-as-py-dict-rec distributions-per-belief true false) "," (list-as-py-array citizen-malleables true) ")"
+  )
+end
+
 ;; NOTE: For procedures that simply report back what comes from a python function, please refer
 ;; to the python function itself for function details.
 
@@ -1341,6 +1407,16 @@ to-report uniform-dist-multiple [ maxx en k ]
   )
 end
 
+;; Return a series of samples drawn from a uniform distribution from [0, maxx]
+;; where each of en samples has 1 entry.
+;; @param maxx - The maximum to draw from.
+;; @param en - The number of samples to draw.
+to-report uniform-dist [ maxx en ]
+  report py:runresult(
+    word "uniform_dist(" maxx "," en ")"
+  )
+end
+
 ;; Return a series of samples drawn from a normal distribution from [0, maxx]
 ;; with mean mu, std sigma; where each of en samples has k entries.
 ;; @param maxx - The maximum to draw from.
@@ -1351,6 +1427,18 @@ end
 to-report normal-dist-multiple [ maxx mu sigma en k ]
   report py:runresult(
     word "normal_dist_multiple(" maxx "," mu "," sigma "," en "," k ")"
+  )
+end
+
+;; Return a series of samples drawn from a normal distribution from [0, maxx]
+;; with mean mu, std sigma; where each of en samples has k entries.
+;; @param maxx - The maximum to draw from.
+;; @param mu - The mean of the distribution.
+;; @param sigma - The std deviation of the distribution.
+;; @param en - The number of samples to draw.
+to-report normal-dist [ maxx mu sigma en ]
+  report py:runresult(
+    word "normal_dist(" maxx "," mu "," sigma "," en ")"
   )
 end
 
@@ -3072,9 +3160,9 @@ Citizen Parameters
 1
 
 CHOOSER
-679
+856
 414
-817
+994
 459
 citizen-init-dist
 citizen-init-dist
@@ -3082,19 +3170,19 @@ citizen-init-dist
 0
 
 TEXTBOX
-680
+857
 389
-830
+1007
 412
-Initial belief distribution
+Initial belief dist whole pop
 12
 0.0
 1
 
 SLIDER
-840
+1017
 415
-968
+1145
 448
 cit-init-normal-mean
 cit-init-normal-mean
@@ -3107,9 +3195,9 @@ NIL
 HORIZONTAL
 
 SLIDER
-840
+1017
 454
-970
+1147
 487
 cit-init-normal-std
 cit-init-normal-std
@@ -3554,9 +3642,9 @@ TEXTBOX
 1
 
 TEXTBOX
-842
+1019
 394
-1030
+1207
 417
 Parameters for normal dist
 11
@@ -3644,25 +3732,25 @@ cits-hear-from-path?
 1
 -1000
 
-TEXTBOX
-997
-395
-1185
-418
-Parameters for set dist
-11
-0.0
+CHOOSER
+679
+416
+844
+461
+citizen-init-type
+citizen-init-type
+"whole-population" "per-group"
 1
 
 INPUTBOX
-994
-419
-1201
-533
-citizen-init-dist-by-type
-DEM: 100\nMOD: 100\nREP: 100
+1157
+414
+1408
+474
+citizen-init-per-group-file
+./gallup-media-diets.json
 1
-1
+0
 String
 
 @#$#@#$#@

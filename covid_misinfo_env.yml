@@ -4,7 +4,9 @@ dependencies:
   - python==3.8
   # - facebook_scraper
   - spacy
-  # - stanza
+  - stanza
+  - beautifulsoup4
+  - requests
   - ipython
   - numpy
   - scipy

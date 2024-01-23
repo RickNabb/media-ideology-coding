@@ -5,4 +5,5 @@ labeled-data/pseudo-labeled
 labeled-data/public
 labeled-data/*.json
 paper-figures/
-
+cog-cascades-model/__pycache__
+__pycache__
