@@ -2228,10 +2228,10 @@ to-report tuple-list-as-py-dict [ l key-quotes? val-quotes? ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-1029
-14
-1336
-322
+880
+35
+1187
+343
 -1
 -1
 9.061
@@ -2715,10 +2715,10 @@ D:/school/grad-school/Tufts/research/cog-cascades-trust/simulation-data/
 String
 
 PLOT
-1485
-13
-1859
-301
+1754
+35
+2046
+258
 percent-agent-beliefs
 Steps
 % of Agents
@@ -3106,10 +3106,10 @@ NIL
 HORIZONTAL
 
 PLOT
-1873
-17
-2246
-172
+1453
+864
+1826
+1019
 polarization
 NIL
 NIL
@@ -3513,10 +3513,10 @@ citizen-media-trust?
 -1000
 
 PLOT
-1874
-177
-2251
-339
+1454
+1024
+1831
+1186
 homophily
 NIL
 NIL
@@ -3698,10 +3698,10 @@ matrix-trust-conn?
 -1000
 
 PLOT
-1877
-348
-2251
-546
+1457
+1195
+1831
+1393
 fragmentation
 NIL
 NIL
@@ -3767,6 +3767,26 @@ media-connection-file
 1
 0
 String
+
+PLOT
+1198
+34
+1739
+256
+supportive-opinion-per-group
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"dem" 1.0 0 -13345367 true "" "plot count citizens with [ (dict-value brain \"A\") >= 5 and member? \"DEM\" groups ]"
+"mod" 1.0 0 -8630108 true "" "plot count citizens with [ (dict-value brain \"A\") >= 5 and member? \"MOD\" groups ]"
+"rep" 1.0 0 -5298144 true "" "plot count citizens with [ (dict-value brain \"A\") >= 5 and member? \"REP\" groups ]"
 
 @#$#@#$#@
 ## WHAT IS IT?
