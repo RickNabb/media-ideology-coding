@@ -1012,6 +1012,50 @@ def opinion_change_naive_mean(prev_opinion, article_codes):
   avg_change_value = total_change_value / len(article_codes)
   return (prev_opinion + (avg_change_value * 100)) / 2
 
+def message_format_beliefs_over_time(mask_wearing_df, articles_all_df):
+  '''
+  Format codes into message format so they can be used in a cognitive
+  cascade simulation.
+
+  :mask_wearing_df: The codes df
+  :articles_all_df: A dataframe with mediacloud data for each article.
+  '''
+  article_beliefs = article_belief_values_for_codes(mask_wearing_df)
+  native_ids = list(article_beliefs.keys())
+  message_data = pd.DataFrame(columns=['native_id','belief','step','media_id'])
+  timestamps = articles_all_df[articles_all_df['native_id'].isin(native_ids)]['timestamp'].unique()
+  min_timestamp = date(min(timestamps))
+
+  for native_id, bel in article_beliefs:
+    step = date(articles_all_df[article_all_df['native_id']==native_id]['timestamp'][0]) - min_timestamp
+    # Or something like this
+    media_id = articles_all_df[articles_all_df['native_id']==native_id]['media_name'][0]
+    message_data.loc[len(message_data)] = [ native_id, bel, step, media_id ]
+  return message_data
+
+def article_belief_values_for_codes(mask_wearing_df):
+  article_ids = mask_wearing_df['native_id'].unique()
+  article_belief_values = { article_id: article_belief_value_for_id(article_id, mask_wearing_df) for article_id in article_ids }
+  return article_belief_values
+
+def article_belief_value_for_id(native_id, mask_wearing_df):
+  '''
+  Returns the 0-6 belief value for a given whole entire, consisting
+  of several paragraphs (article_id designated by native_id).
+
+  :param native_id: Note, this is the full article id
+  '''
+  article_rows = mask_wearing_df[mask_wearing_df['native_id'] == native_id]
+  paragraph_ids = article_rows['article_id'].unique()
+  paragraph_attr_code_pairs = {
+    par_id: {
+      row[1]['attribute']: row[1]['code'] for row in article_rows[article_rows['article_id']==par_id].iterrows()
+    }
+    for par_id in paragraph_ids
+  }
+  belief_value = article_belief_value([ paragraph_belief_value(attr_code_pair) for attr_code_pair in paragraph_attr_code_pairs.values() ])
+  return belief_value
+
 def paragraph_belief_value(article_codes):
   pos_codes = 0
   neg_codes = 0
