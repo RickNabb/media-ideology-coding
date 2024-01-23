@@ -328,7 +328,6 @@ to-report initial-belief-dist [ agent-set dist-type en beliefs ]
 end
 
 to create-media
-  show "test"
   if media-agents? [
     if media-ecosystem = "distribution" [
       ;; Generate list of agent initial beliefs for the specified distribution in the interface
@@ -431,13 +430,11 @@ end
 to connect-media
   ifelse media-connection-type = "per-group" [
     let media-group-mapping py:runresult(word "read_json_file('" media-connection-file "')")
-    show media-group-mapping
     foreach media-group-mapping [ media-entry ->
       let media-id item 0 media-entry
       let groupz item 1 media-entry
 
       let med item 0 sort medias with [ idee = media-id ]
-      show med
 
       foreach groupz [ group ->
         let group-cits citizens with [ member? group groups ]
@@ -2697,7 +2694,7 @@ tick-end
 tick-end
 30
 1000
-100.0
+73.0
 1
 1
 NIL
@@ -3085,7 +3082,7 @@ INPUTBOX
 323
 544
 messages-data-file
-./gallup-messages-data.json
+./gallup-media-messages.json
 1
 0
 String
@@ -3241,7 +3238,7 @@ CHOOSER
 institution-tactic
 institution-tactic
 "predetermined" "broadcast-brain" "appeal-mean" "appeal-mode" "appeal-median" "max-reach-no-chain"
-1
+0
 
 TEXTBOX
 28

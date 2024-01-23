@@ -1013,6 +1013,34 @@ def opinion_change_naive_mean(prev_opinion, article_codes):
   avg_change_value = total_change_value / len(article_codes)
   return (prev_opinion + (avg_change_value * 100)) / 2
 
+def message_df_to_nlogo_message_file(message_df):
+  '''
+  Convert a message dataframe into the specific JSON format that is used in the cognitive
+  cascade netlogo simulation for predetermined message files.
+  '''
+  belief = 'A'
+  media_id_to_ecosystem_name = {
+    'TuckerCarlson': 'CARLSON',
+    'SeanHannity': 'HANNITY',
+    'LauraIngraham': 'INGRAHAM',
+    'Breitbart': 'BREITBART',
+    'Fox News': 'FOX',
+    'New York Times': 'NYT',
+    'Vox': 'VOX',
+    'Daily Kos': 'KOS'
+  }
+  message_df.sort_values(by='step', inplace=True)
+  message_json = {
+    'start': 0,
+    'stop': max(message_df['step'])+1
+  }
+  for step in message_df['step'].unique():
+    messages_at_step = message_df[message_df['step']==step]
+    message_json[str(step)] = {
+      media_id_to_ecosystem_name[media]: [ { belief: bel } for bel in messages_at_step[messages_at_step['media_id'] == media]['belief'] ] for media in messages_at_step['media_id'].unique()
+    }
+  return message_json
+
 def message_format_beliefs_over_time(mask_wearing_df, articles_all_df):
   '''
   Format codes into message format so they can be used in a cognitive
@@ -1030,7 +1058,6 @@ def message_format_beliefs_over_time(mask_wearing_df, articles_all_df):
 
   for native_id, bel in article_beliefs.items():
     step = (convert_datetime(articles_all_df[articles_all_df['stories_id']==native_id]['publish_date'].iloc[0]) - min_timestamp).days
-    # Or something like this
     media_id = articles_all_df[articles_all_df['stories_id']==native_id]['media_name'].iloc[0]
     message_data.loc[len(message_data)] = [ native_id, bel, step, media_id ]
   return message_data
