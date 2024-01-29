@@ -2,19 +2,19 @@
   "DEM": {
     "n": 100,
     "beliefs": {
-      "MASK": [ "normal", 5, 0.5 ]
+      "MASK": [ "normal", 5.1973, 0.5 ]
     }
   },
   "REP": {
     "n": 100,
     "beliefs": {
-      "MASK": [ "normal", 1, 0.5 ]
+      "MASK": [ "normal", 4.9822, 0.5 ]
     }
   },
   "MOD": {
     "n": 100,
     "beliefs": {
-      "MASK": [ "normal", 3, 0.5 ]
+      "MASK": [ "normal", 4.9133, 0.5 ]
     }
   }
 }
