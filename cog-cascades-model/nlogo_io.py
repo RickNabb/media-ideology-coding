@@ -8,8 +8,8 @@ def nlogo_list_to_arr(list_str):
     return [ el.replace('[', '').strip().split(' ') for el in list_str[1:len(list_str)-1].split(']') ]
 
 def nlogo_replace_agents(string, types):
-    for type in types:
-        string = string.replace(f'({type} ', f'{type}_')
+    for t in types:
+      string = string.replace(f'({t} ', f'{t}_')
     return string.replace(')','')
 
 '''
@@ -61,30 +61,31 @@ def nlogo_parse_chunk(chunk):
     return pieces
 
 def save_graph(path, cit, cit_social, media, media_sub):
-    cit_arr = nlogo_list_to_arr(nlogo_replace_agents(cit, [ 'citizen' ]))
-    cit_social_arr = nlogo_list_to_arr(nlogo_replace_agents(cit_social, [ 'citizen' ]))
-    media_arr = nlogo_list_to_arr(nlogo_replace_agents(media, [ 'media' ]))
-    media_sub_arr = nlogo_list_to_arr(nlogo_replace_agents(media_sub, [ 'media', 'citizen' ]))
+  cit_arr = nlogo_list_to_arr(nlogo_replace_agents(cit, [ 'citizen' ]))
+  cit_social_arr = nlogo_list_to_arr(nlogo_replace_agents(cit_social, [ 'citizen' ]))
+  media_arr = nlogo_list_to_arr(nlogo_replace_agents(media, [ 'media' ]))
+  media_sub_arr = nlogo_list_to_arr(nlogo_replace_agents(media_sub, [ 'media', 'citizen' ]))
 
-    f = open(path, 'w')
-    f.write(f'CITIZENS {len(cit_arr)-1}\n')
-    for c in filter(lambda el: len(el) > 1, cit_arr):
-        f.write(f'{c[0].replace("citizen_","")},{c[1]}\n')
+  f = open(path, 'w')
+  f.write(f'CITIZENS {len(cit_arr)-1}\n')
+  for c in filter(lambda el: len(el) > 1, cit_arr):
+    cit_id = c[0].replace("citizen_","")
+    f.write(f'{cit_id},{c[1]},{c[3]}\n')
 
-    f.write(f'CITIZEN_SOCIAL_LINKS {len(cit_social_arr)-1}\n')
-    for c in filter(lambda el: len(el) > 1, cit_social_arr):
-        f.write(f'{c[0].replace("citizen_","")},{c[1].replace("citizen_","")}\n')
+  f.write(f'CITIZEN_SOCIAL_LINKS {len(cit_social_arr)-1}\n')
+  for c in filter(lambda el: len(el) > 1, cit_social_arr):
+    f.write(f'{c[0].replace("citizen_","")},{c[1].replace("citizen_","")}\n')
 
-    f.write(f'MEDIA {len(media_arr)-1}\n')
-    for c in filter(lambda el: len(el) > 1, media_arr):
-        f.write(f'{c[0].replace("media_","")},{c[1]}\n')
+  f.write(f'MEDIA {len(media_arr)-1}\n')
+  for c in filter(lambda el: len(el) > 1, media_arr):
+    f.write(f'{c[0].replace("media_","")},{c[1]}\n')
 
-    f.write(f'MEDIA_SUB_LINKS {len(media_sub_arr)-1}\n')
-    for c in filter(lambda el: len(el) > 1, media_sub_arr):
-        ordered = sorted(c)
-        f.write(f'{ordered[0].replace("citizen_","")},{ordered[1].replace("media_","")}\n')
+  f.write(f'MEDIA_SUB_LINKS {len(media_sub_arr)-1}\n')
+  for c in filter(lambda el: len(el) > 1, media_sub_arr):
+    ordered = sorted(c)
+    f.write(f'{ordered[0].replace("citizen_","")},{ordered[1].replace("media_","")}\n')
 
-    f.close()
+  f.close()
 
 def read_subrange(lines, into):
     for line in lines:

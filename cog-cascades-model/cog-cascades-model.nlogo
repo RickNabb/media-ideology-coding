@@ -551,77 +551,6 @@ end
 ;; PROCS
 ;;;;;;;;;;;;;;;;;
 
-;; For runs of the cognitive contagion simulations, set function parameters according to the type of
-;; function being used.
-;; NOTE: These are only used with BehaviorSpace simulations!!
-to set-cognitive-contagion-params
-  if cognitive-fn = "linear-gullible" [
-    set cognitive-scalar? true
-    set cognitive-exponent? false
-    set cognitive-translate? true
-    set cognitive-scalar 0
-    set cognitive-translate 1
-  ]
-  if cognitive-fn = "linear-mid" [
-    set cognitive-scalar? true
-    set cognitive-exponent? false
-    set cognitive-translate? true
-    set cognitive-scalar 1
-    set cognitive-translate 1
-  ]
-  if cognitive-fn = "linear-stubborn" [
-    set cognitive-scalar? true
-    set cognitive-exponent? false
-    set cognitive-translate? true
-    set cognitive-translate 10
-    set cognitive-scalar 20
-  ]
-  if cognitive-fn = "threshold-gullible" [
-    set cognitive-scalar? false
-    set cognitive-exponent? false
-    set cognitive-translate? true
-    set cognitive-translate 6
-  ]
-  if cognitive-fn = "threshold-mid" [
-    set cognitive-scalar? false
-    set cognitive-exponent? false
-    set cognitive-translate? true
-    set cognitive-translate 3
-  ]
-  if cognitive-fn = "threshold-stubborn" [
-    set cognitive-scalar? false
-    set cognitive-exponent? false
-    set cognitive-translate? true
-    set cognitive-translate 1
-  ]
-  ;; Threshold t
-  let t 1
-  if cognitive-fn = "sigmoid-gullible" [
-    set t belief-resolution
-    set cognitive-scalar? false
-    set cognitive-exponent? true
-    set cognitive-translate? true
-    set cognitive-exponent 1
-    set cognitive-translate t + 1
-  ]
-  if cognitive-fn = "sigmoid-mid" [
-    set t (belief-resolution * 2 / 7)
-    set cognitive-scalar? false
-    set cognitive-exponent? true
-    set cognitive-translate? true
-    set cognitive-exponent 2
-    set cognitive-translate t + 1
-  ]
-  if cognitive-fn = "sigmoid-stubborn" [
-    set t ceiling (belief-resolution / 7)
-    set cognitive-scalar? false
-    set cognitive-exponent? true
-    set cognitive-translate? true
-    set cognitive-exponent 4
-    set cognitive-translate t + 1
-  ]
-end
-
 ;; Calculate the distances between the brain of cit and its neighbors.
 ;;
 ;; @param cit - The citizen to calculate the distance for.
@@ -1235,19 +1164,20 @@ end
 ;; This will save all the agents with their state variables, the social connections between citizen agents,
 ;; and the influencer agents state and subscribers.
 to save-graph
-  ;; TODO: Find some way to get the prior & malleable attributes into a list rather than hardcoding
-  let cit-ip ([(list self (dict-value brain "A") (dict-value brain "ID"))] of citizens)
-;  let cit-social [[self] of both-ends] of social-friends
+ ;; TODO: Find some way to get the prior & malleable attributes into a list rather than hardcoding
+  let cit-ip []
   let cit-social []
   foreach sort citizens [ cit ->
+    ; For now, only use item 0 of 'groups,' but modify in the future to support multiple groups
+    set cit-ip (lput (list cit (dict-value ([brain] of cit) "A") (dict-value ([brain] of cit) "ID") (item 0 ([groups] of cit))) cit-ip)
     foreach sort [ out-social-friend-neighbors ] of cit [ nb ->
       set cit-social (lput (list cit nb) cit-social)
     ]
   ]
-  let media-ip ([(list self (dict-value brain "A"))] of medias)
-;  let media-sub [[self] of both-ends] of subscribers
+  let media-ip []
   let media-sub []
   foreach sort medias [ m ->
+    set media-ip (lput (list m (dict-value ([brain] of m) "A")) media-ip)
     foreach sort [ subscriber-neighbors ] of m [ sub ->
       set media-sub (lput (list m sub) media-sub)
     ]
@@ -1266,11 +1196,13 @@ to read-graph
 
   ;; id, a
   ;; TODO: Change this from being hard-coded for one belief "A" to being general
-  let i 0
   create-citizens (length citizenz) [
+    let i read-from-string (substring (word self) 9 ((length (word self)) - 1))
     let c (item i citizenz)
     let id item 0 c
-    let a item 1 c
+    let a read-from-string (item 1 c)
+    set groups (list (item 2 c))
+
     set brain create-agent-brain id citizen-priors citizen-malleables [] (list a)
     set messages-heard []
     set messages-believed []
@@ -1281,11 +1213,11 @@ to read-graph
     set i i + 1
   ]
 
-  set i 0
   create-medias (length mediaz) [
+    let i (read-from-string (substring (word self) 7 ((length (word self)) - 1))) - N
     let m (item i mediaz)
     let id item 0 m
-    let a item 1 m
+    let a read-from-string (item 1 m)
     set brain create-agent-brain (id) citizen-priors citizen-malleables [] (list a)
     set messages-heard []
     set messages-believed []
@@ -2573,7 +2505,7 @@ CHOOSER
 spread-type
 spread-type
 "simple" "complex" "cognitive"
-2
+0
 
 TEXTBOX
 302
@@ -2592,7 +2524,7 @@ SWITCH
 862
 load-graph?
 load-graph?
-1
+0
 1
 -1000
 
@@ -2602,7 +2534,7 @@ INPUTBOX
 244
 929
 load-graph-path
-D:/school/grad-school/Tufts/research/cog-cascades-trust/simulation-data/10-Mar-2023-parameter-sweep-low-res_low-media/graphs/2-appeal-mean-three-mid-polarized-0.75-0.75-10-4.csv
+D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/29-Jan-2024-simple-contagion-sweep-ER/graphs/0.5-0.75-2.csv
 1
 0
 String
@@ -2613,7 +2545,7 @@ INPUTBOX
 247
 995
 save-graph-path
-D:/school/grad-school/Tufts/research/cog-cascades-trust/simulation-data/14-Mar-2023-parameter-sweep-low-res-n-1000/graphs/0-appeal-mean-polarized-15-polarized-0.5-0.5-10-0.csv
+D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/29-Jan-2024-simple-contagion-sweep-ER/graphs/0.5-0.75-2.csv
 1
 0
 String
@@ -2635,16 +2567,6 @@ NIL
 NIL
 1
 
-CHOOSER
-687
-859
-840
-904
-cognitive-fn
-cognitive-fn
-"linear-gullible" "linear-stubborn" "linear-mid" "threshold-gullible" "threshold-mid" "threshold-stubborn" "sigmoid-gullible" "sigmoid-stubborn" "sigmoid-mid"
-7
-
 SLIDER
 830
 699
@@ -2654,7 +2576,7 @@ simple-spread-chance
 simple-spread-chance
 0
 1
-0.15
+0.75
 0.01
 1
 NIL
@@ -2706,7 +2628,7 @@ INPUTBOX
 526
 239
 sim-output-dir
-D:/school/grad-school/Tufts/research/cog-cascades-trust/simulation-data/
+D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/
 1
 0
 String
@@ -2857,7 +2779,7 @@ CHOOSER
 graph-type
 graph-type
 "erdos-renyi" "watts-strogatz" "barabasi-albert" "ba-homophilic" "mag" "facebook" "kronecker"
-2
+0
 
 SLIDER
 257
@@ -3441,7 +3363,7 @@ repetition
 repetition
 0
 10
-0.0
+2.0
 1
 1
 NIL
@@ -3784,6 +3706,16 @@ PENS
 "dem" 1.0 0 -13345367 true "" "plot count citizens with [ (dict-value brain \"A\") >= 5 and member? \"DEM\" groups ]"
 "mod" 1.0 0 -8630108 true "" "plot count citizens with [ (dict-value brain \"A\") >= 5 and member? \"MOD\" groups ]"
 "rep" 1.0 0 -5298144 true "" "plot count citizens with [ (dict-value brain \"A\") >= 5 and member? \"REP\" groups ]"
+
+CHOOSER
+687
+859
+840
+904
+cognitive-fn
+cognitive-fn
+"linear-gullible" "linear-stubborn" "linear-mid" "threshold-gullible" "threshold-mid" "threshold-stubborn" "sigmoid-gullible" "sigmoid-stubborn" "sigmoid-mid"
+7
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -4132,16 +4064,16 @@ NetLogo 6.1.1
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="static_model_parameter_sweep" repetitions="10" runMetricsEveryStep="false">
+  <experiment name="simple-contagion-param-sweep-ER" repetitions="30" runMetricsEveryStep="false">
     <setup>setup-py
-let run-dir (word sim-output-dir substring date-time-safe 11 (length date-time-safe) "-conditions-to-polarize-cognitive")
+let run-dir (word sim-output-dir substring date-time-safe 11 (length date-time-safe) "-simple-contagion-sweep-ER")
 let graphs-path (word run-dir "/graphs")
 carefully [
   if not (py:runresult (word "os.path.isdir('" graphs-path "')")) [
     py:run (word "create_nested_dirs('" graphs-path "')")
   ]
 ] [ ]
-let graph-file (word graphs-path "/" cognitive-translate "-" institution-tactic "-" media-ecosystem-dist "-" citizen-init-dist "-" epsilon "-" graph-type "-" ba-m "-" repetition ".csv")
+let graph-file (word graphs-path "/" erdos-renyi-p "-" simple-spread-chance "-" repetition ".csv")
 ifelse (py:runresult (word "os.path.isfile('" graph-file "')")) [
   set load-graph? true
   set load-graph-path graph-file
@@ -4152,7 +4084,7 @@ ifelse (py:runresult (word "os.path.isfile('" graph-file "')")) [
   setup
   save-graph
 ]
-set contagion-dir (word run-dir "/" cognitive-translate "/" institution-tactic "/" media-ecosystem-dist "/" citizen-init-dist "/" epsilon "/" graph-type "/" ba-m "/" repetition)
+set contagion-dir (word run-dir "/" erdos-renyi-p "/" simple-spread-chance "/" repetition)
 carefully [
   if not (py:runresult (word "os.path.isdir('" contagion-dir "')")) [
     py:run (word "create_nested_dirs('" contagion-dir "')")
@@ -4162,1062 +4094,97 @@ carefully [
     <final>set behavior-rand random 10000
 export-world (word contagion-dir "/" behavior-rand "_world.csv")
 export-plot "percent-agent-beliefs" (word contagion-dir "/" behavior-rand "_percent-agent-beliefs.csv")
-export-plot "homophily" (word contagion-dir "/" behavior-rand "_homophily.csv")
-export-plot "polarization" (word contagion-dir "/" behavior-rand "_polarization.csv")
-export-plot "disagreement" (word contagion-dir "/" behavior-rand "_disagreement.csv")
-export-plot "chi-sq-citizens-media" (word contagion-dir "/" behavior-rand "_chi-sq-cit-media.csv")</final>
-    <timeLimit steps="100"/>
-    <metric>count citizens</metric>
-    <enumeratedValueSet variable="belief-resolution">
-      <value value="7"/>
-    </enumeratedValueSet>
+export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand "_opinion-timeseries.csv")</final>
+    <metric>count turtles</metric>
     <enumeratedValueSet variable="tick-end">
-      <value value="100"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="matrix-spread?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="matrix-trust-conn?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-media-trust?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-citizen-trust?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="brain-type">
-      <value value="&quot;discrete&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="N">
-      <value value="250"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="contagion-on?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-fn">
-      <value value="&quot;sigmoid-stubborn&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="spread-type">
-      <value value="&quot;cognitive&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-scalar">
-      <value value="20"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-exponent">
-      <value value="4"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-translate">
-      <value value="0"/>
-      <value value="1"/>
-      <value value="2"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="institution-tactic">
-      <value value="&quot;broadcast-brain&quot;"/>
-      <value value="&quot;appeal-mean&quot;"/>
-      <value value="&quot;appeal-median&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-ecosystem">
-      <value value="&quot;distribution&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-ecosystem-dist">
-      <value value="&quot;uniform&quot;"/>
-      <value value="&quot;normal&quot;"/>
-      <value value="&quot;polarized&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-dist-normal-mean">
-      <value value="3"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-dist-normal-std">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-ecosystem-n">
-      <value value="20"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="message-repeats">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-init-dist">
-      <value value="&quot;uniform&quot;"/>
-      <value value="&quot;normal&quot;"/>
-      <value value="&quot;polarized&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cit-init-normal-mean">
-      <value value="3"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cit-init-normal-std">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="epsilon">
-      <value value="0"/>
-      <value value="1"/>
-      <value value="2"/>
+      <value value="73"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="graph-type">
-      <value value="&quot;barabasi-albert&quot;"/>
-      <value value="&quot;ba-homophilic&quot;"/>
+      <value value="&quot;erdos-renyi&quot;"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="ba-m">
-      <value value="3"/>
+    <enumeratedValueSet variable="erdos-renyi-p">
+      <value value="0.05"/>
+      <value value="0.1"/>
+      <value value="0.25"/>
+      <value value="0.5"/>
     </enumeratedValueSet>
-    <steppedValueSet variable="repetition" first="0" step="1" last="9"/>
-  </experiment>
-  <experiment name="parameter_sweep_TEST" repetitions="2" runMetricsEveryStep="false">
-    <setup>setup-py
-let run-dir (word sim-output-dir substring date-time-safe 11 (length date-time-safe) "-parameter-sweep-TEST")
-let graphs-path (word run-dir "/graphs")
-carefully [
-  if not (py:runresult (word "os.path.isdir('" graphs-path "')")) [
-    py:run (word "create_nested_dirs('" graphs-path "')")
-  ]
-] [ ]
-let graph-file (word graphs-path "/" cognitive-translate "-" institution-tactic "-" media-ecosystem-dist "-" media-ecosystem-n "-" citizen-init-dist "-" zeta-cit "-" zeta-media "-" cit-memory-len "-" repetition ".csv")
-ifelse (py:runresult (word "os.path.isfile('" graph-file "')")) [
-  set load-graph? true
-  set load-graph-path graph-file
-  setup
-] [
-  set load-graph? false
-  set save-graph-path graph-file
-  setup
-  save-graph
-]
-set contagion-dir (word run-dir "/" cognitive-translate "/" institution-tactic "/" media-ecosystem-dist "/" media-ecosystem-n "/" citizen-init-dist "/" zeta-cit "/" zeta-media "/" cit-memory-len "/" repetition)
-carefully [
-  if not (py:runresult (word "os.path.isdir('" contagion-dir "')")) [
-    py:run (word "create_nested_dirs('" contagion-dir "')")
-  ]
-] [ ]</setup>
-    <go>go</go>
-    <final>set behavior-rand random 10000
-export-world (word contagion-dir "/" behavior-rand "_world.csv")
-export-plot "percent-agent-beliefs" (word contagion-dir "/" behavior-rand "_percent-agent-beliefs.csv")
-export-plot "homophily" (word contagion-dir "/" behavior-rand "_homophily.csv")
-export-plot "polarization" (word contagion-dir "/" behavior-rand "_polarization.csv")
-export-plot "fragmentation" (word contagion-dir "/" behavior-rand "_fragmentation.csv")
-output-message-data contagion-dir behavior-rand</final>
-    <timeLimit steps="100"/>
-    <metric>count citizens</metric>
-    <enumeratedValueSet variable="belief-resolution">
-      <value value="7"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="tick-end">
-      <value value="100"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="matrix-spread?">
+    <enumeratedValueSet variable="media-agents?">
       <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="matrix-trust-conn?">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-media-trust?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-citizen-trust?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="brain-type">
-      <value value="&quot;discrete&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="N">
-      <value value="50"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-ecosystem-n">
-      <value value="20"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="graph-type">
-      <value value="&quot;barabasi-albert&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="ba-m">
-      <value value="3"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="contagion-on?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-fn">
-      <value value="&quot;sigmoid-stubborn&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="spread-type">
-      <value value="&quot;cognitive&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-scalar">
-      <value value="20"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-exponent">
-      <value value="4"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-translate">
-      <value value="0"/>
-      <value value="1"/>
-      <value value="2"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="institution-tactic">
-      <value value="&quot;broadcast-brain&quot;"/>
-      <value value="&quot;appeal-mean&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-ecosystem">
-      <value value="&quot;distribution&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-ecosystem-dist">
-      <value value="&quot;uniform&quot;"/>
-      <value value="&quot;normal&quot;"/>
-      <value value="&quot;polarized&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-dist-normal-mean">
-      <value value="3"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-dist-normal-std">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="message-repeats">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-init-dist">
-      <value value="&quot;uniform&quot;"/>
-      <value value="&quot;normal&quot;"/>
-      <value value="&quot;polarized&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cit-init-normal-mean">
-      <value value="3"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cit-init-normal-std">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <steppedValueSet variable="zeta-media" first="0.25" step="0.25" last="1"/>
-    <steppedValueSet variable="zeta-cit" first="0.25" step="0.25" last="1"/>
-    <enumeratedValueSet variable="cit-memory-len">
-      <value value="5"/>
-    </enumeratedValueSet>
-    <steppedValueSet variable="repetition" first="0" step="1" last="1"/>
-  </experiment>
-  <experiment name="parameter_sweep_TINYTEST" repetitions="2" runMetricsEveryStep="false">
-    <setup>setup-py
-let run-dir (word sim-output-dir substring date-time-safe 11 (length date-time-safe) "-parameter-sweep-TINYTEST")
-let graphs-path (word run-dir "/graphs")
-carefully [
-  if not (py:runresult (word "os.path.isdir('" graphs-path "')")) [
-    py:run (word "create_nested_dirs('" graphs-path "')")
-  ]
-] [ ]
-let graph-file (word graphs-path "/" cognitive-translate "-" institution-tactic "-" media-ecosystem-dist "-" media-ecosystem-n "-" citizen-init-dist "-" epsilon "-" cit-memory-len "-" repetition ".csv")
-ifelse (py:runresult (word "os.path.isfile('" graph-file "')")) [
-  set load-graph? true
-  set load-graph-path graph-file
-  setup
-] [
-  set load-graph? false
-  set save-graph-path graph-file
-  setup
-  save-graph
-]
-set contagion-dir (word run-dir "/" cognitive-translate "/" institution-tactic "/" media-ecosystem-dist "/" media-ecosystem-n "/" citizen-init-dist "/" epsilon "/" cit-memory-len "/" repetition)
-carefully [
-  if not (py:runresult (word "os.path.isdir('" contagion-dir "')")) [
-    py:run (word "create_nested_dirs('" contagion-dir "')")
-  ]
-] [ ]</setup>
-    <go>go</go>
-    <final>set behavior-rand random 10000
-export-world (word contagion-dir "/" behavior-rand "_world.csv")
-export-plot "percent-agent-beliefs" (word contagion-dir "/" behavior-rand "_percent-agent-beliefs.csv")
-export-plot "homophily" (word contagion-dir "/" behavior-rand "_homophily.csv")
-export-plot "polarization" (word contagion-dir "/" behavior-rand "_polarization.csv")
-export-plot "fragmentation" (word contagion-dir "/" behavior-rand "_fragmentation.csv")
-output-message-data contagion-dir behavior-rand</final>
-    <timeLimit steps="100"/>
-    <metric>count citizens</metric>
-    <enumeratedValueSet variable="belief-resolution">
-      <value value="7"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="tick-end">
-      <value value="100"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="matrix-spread?">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="matrix-trust-conn?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-media-trust?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-citizen-trust?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="brain-type">
-      <value value="&quot;discrete&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="N">
-      <value value="50"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-ecosystem-n">
-      <value value="20"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="graph-type">
-      <value value="&quot;barabasi-albert&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="ba-m">
-      <value value="3"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="contagion-on?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-fn">
-      <value value="&quot;sigmoid-stubborn&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="spread-type">
-      <value value="&quot;cognitive&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-scalar">
-      <value value="20"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-exponent">
-      <value value="4"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-translate">
-      <value value="0"/>
-      <value value="1"/>
-      <value value="2"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="institution-tactic">
-      <value value="&quot;broadcast-brain&quot;"/>
-      <value value="&quot;appeal-mean&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-ecosystem">
-      <value value="&quot;distribution&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-ecosystem-dist">
-      <value value="&quot;uniform&quot;"/>
-      <value value="&quot;normal&quot;"/>
-      <value value="&quot;polarized&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-dist-normal-mean">
-      <value value="3"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-dist-normal-std">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="message-repeats">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-init-dist">
-      <value value="&quot;uniform&quot;"/>
-      <value value="&quot;normal&quot;"/>
-      <value value="&quot;polarized&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cit-init-normal-mean">
-      <value value="3"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cit-init-normal-std">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="epsilon">
-      <value value="0"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cit-memory-len">
-      <value value="5"/>
-    </enumeratedValueSet>
-    <steppedValueSet variable="repetition" first="0" step="1" last="1"/>
-  </experiment>
-  <experiment name="parameter_sweep_low_res-translate-0" repetitions="5" runMetricsEveryStep="false">
-    <setup>setup-py
-let run-dir (word sim-output-dir substring date-time-safe 11 (length date-time-safe) "-parameter-sweep-low-res")
-let graphs-path (word run-dir "/graphs")
-carefully [
-  if not (py:runresult (word "os.path.isdir('" graphs-path "')")) [
-    py:run (word "create_nested_dirs('" graphs-path "')")
-  ]
-] [ ]
-let graph-file (word graphs-path "/" cognitive-translate "-" institution-tactic "-" media-ecosystem-dist "-" media-ecosystem-n "-" citizen-init-dist "-" zeta-cit "-" zeta-media "-" cit-memory-len "-" repetition ".csv")
-ifelse (py:runresult (word "os.path.isfile('" graph-file "')")) [
-  set load-graph? true
-  set load-graph-path graph-file
-  setup
-] [
-  set load-graph? false
-  set save-graph-path graph-file
-  setup
-  save-graph
-]
-set contagion-dir (word run-dir "/" cognitive-translate "/" institution-tactic "/" media-ecosystem-dist "/" media-ecosystem-n "/" citizen-init-dist "/" zeta-cit "/" zeta-media "/" cit-memory-len "/" repetition)
-carefully [
-  if not (py:runresult (word "os.path.isdir('" contagion-dir "')")) [
-    py:run (word "create_nested_dirs('" contagion-dir "')")
-  ]
-] [ ]</setup>
-    <go>go</go>
-    <final>set behavior-rand random 10000
-export-world (word contagion-dir "/" behavior-rand "_world.csv")
-export-plot "percent-agent-beliefs" (word contagion-dir "/" behavior-rand "_percent-agent-beliefs.csv")
-export-plot "homophily" (word contagion-dir "/" behavior-rand "_homophily.csv")
-export-plot "polarization" (word contagion-dir "/" behavior-rand "_polarization.csv")
-export-plot "fragmentation" (word contagion-dir "/" behavior-rand "_fragmentation.csv")
-output-message-data contagion-dir behavior-rand</final>
-    <timeLimit steps="100"/>
-    <metric>count citizens</metric>
-    <enumeratedValueSet variable="belief-resolution">
-      <value value="7"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="tick-end">
-      <value value="100"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="matrix-spread?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="matrix-trust-conn?">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-media-trust?">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-citizen-trust?">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cits-hear-from-path?">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="brain-type">
-      <value value="&quot;discrete&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="N">
-      <value value="50"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-ecosystem-n">
-      <value value="15"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="graph-type">
-      <value value="&quot;barabasi-albert&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="ba-m">
-      <value value="3"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="contagion-on?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-fn">
-      <value value="&quot;sigmoid-stubborn&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="spread-type">
-      <value value="&quot;cognitive&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-scalar">
-      <value value="20"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-exponent">
-      <value value="4"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-translate">
-      <value value="0"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="institution-tactic">
-      <value value="&quot;broadcast-brain&quot;"/>
-      <value value="&quot;appeal-mean&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-ecosystem">
-      <value value="&quot;distribution&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-ecosystem-dist">
-      <value value="&quot;uniform&quot;"/>
-      <value value="&quot;normal&quot;"/>
-      <value value="&quot;polarized&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-dist-normal-mean">
-      <value value="3"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-dist-normal-std">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="message-repeats">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-init-dist">
-      <value value="&quot;uniform&quot;"/>
-      <value value="&quot;normal&quot;"/>
-      <value value="&quot;polarized&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cit-init-normal-mean">
-      <value value="3"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cit-init-normal-std">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <steppedValueSet variable="zeta-media" first="0.25" step="0.25" last="0.75"/>
-    <steppedValueSet variable="zeta-cit" first="0.25" step="0.25" last="0.75"/>
-    <enumeratedValueSet variable="cit-memory-len">
-      <value value="1"/>
-      <value value="2"/>
-      <value value="10"/>
-    </enumeratedValueSet>
-    <steppedValueSet variable="repetition" first="0" step="1" last="4"/>
-  </experiment>
-  <experiment name="polarization_levels_across_graphs" repetitions="1" runMetricsEveryStep="false">
-    <setup>setup</setup>
-    <go>go</go>
-    <timeLimit steps="1"/>
-    <metric>graph-polarization "A"</metric>
-    <enumeratedValueSet variable="belief-resolution">
-      <value value="7"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="load-graph?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="tick-end">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="N">
-      <value value="50"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-ecosystem-n">
-      <value value="20"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="graph-type">
-      <value value="&quot;barabasi-albert&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="ba-m">
-      <value value="3"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-init-dist">
-      <value value="&quot;uniform&quot;"/>
-      <value value="&quot;normal&quot;"/>
-      <value value="&quot;polarized&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cit-init-normal-mean">
-      <value value="3"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cit-init-normal-std">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <steppedValueSet variable="repetition" first="0" step="1" last="99"/>
-  </experiment>
-  <experiment name="parameter_sweep_low_res-translate-1" repetitions="5" runMetricsEveryStep="false">
-    <setup>setup-py
-let run-dir (word sim-output-dir substring date-time-safe 11 (length date-time-safe) "-parameter-sweep-low-res")
-let graphs-path (word run-dir "/graphs")
-carefully [
-  if not (py:runresult (word "os.path.isdir('" graphs-path "')")) [
-    py:run (word "create_nested_dirs('" graphs-path "')")
-  ]
-] [ ]
-let graph-file (word graphs-path "/" cognitive-translate "-" institution-tactic "-" media-ecosystem-dist "-" media-ecosystem-n "-" citizen-init-dist "-" zeta-cit "-" zeta-media "-" cit-memory-len "-" repetition ".csv")
-ifelse (py:runresult (word "os.path.isfile('" graph-file "')")) [
-  set load-graph? true
-  set load-graph-path graph-file
-  setup
-] [
-  set load-graph? false
-  set save-graph-path graph-file
-  setup
-  save-graph
-]
-set contagion-dir (word run-dir "/" cognitive-translate "/" institution-tactic "/" media-ecosystem-dist "/" media-ecosystem-n "/" citizen-init-dist "/" zeta-cit "/" zeta-media "/" cit-memory-len "/" repetition)
-carefully [
-  if not (py:runresult (word "os.path.isdir('" contagion-dir "')")) [
-    py:run (word "create_nested_dirs('" contagion-dir "')")
-  ]
-] [ ]</setup>
-    <go>go</go>
-    <final>set behavior-rand random 10000
-export-world (word contagion-dir "/" behavior-rand "_world.csv")
-export-plot "percent-agent-beliefs" (word contagion-dir "/" behavior-rand "_percent-agent-beliefs.csv")
-export-plot "homophily" (word contagion-dir "/" behavior-rand "_homophily.csv")
-export-plot "polarization" (word contagion-dir "/" behavior-rand "_polarization.csv")
-export-plot "fragmentation" (word contagion-dir "/" behavior-rand "_fragmentation.csv")
-output-message-data contagion-dir behavior-rand</final>
-    <timeLimit steps="100"/>
-    <metric>count citizens</metric>
-    <enumeratedValueSet variable="belief-resolution">
-      <value value="7"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="tick-end">
-      <value value="100"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="matrix-spread?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="matrix-trust-conn?">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-media-trust?">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-citizen-trust?">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cits-hear-from-path?">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="brain-type">
-      <value value="&quot;discrete&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="N">
-      <value value="50"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-ecosystem-n">
-      <value value="15"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="graph-type">
-      <value value="&quot;barabasi-albert&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="ba-m">
-      <value value="3"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="contagion-on?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-fn">
-      <value value="&quot;sigmoid-stubborn&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="spread-type">
-      <value value="&quot;cognitive&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-scalar">
-      <value value="20"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-exponent">
-      <value value="4"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-translate">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="institution-tactic">
-      <value value="&quot;broadcast-brain&quot;"/>
-      <value value="&quot;appeal-mean&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-ecosystem">
-      <value value="&quot;distribution&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-ecosystem-dist">
-      <value value="&quot;uniform&quot;"/>
-      <value value="&quot;normal&quot;"/>
-      <value value="&quot;polarized&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-dist-normal-mean">
-      <value value="3"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-dist-normal-std">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="message-repeats">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-init-dist">
-      <value value="&quot;uniform&quot;"/>
-      <value value="&quot;normal&quot;"/>
-      <value value="&quot;polarized&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cit-init-normal-mean">
-      <value value="3"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cit-init-normal-std">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <steppedValueSet variable="zeta-media" first="0.25" step="0.25" last="0.75"/>
-    <steppedValueSet variable="zeta-cit" first="0.25" step="0.25" last="0.75"/>
-    <enumeratedValueSet variable="cit-memory-len">
-      <value value="1"/>
-      <value value="2"/>
-      <value value="10"/>
-    </enumeratedValueSet>
-    <steppedValueSet variable="repetition" first="0" step="1" last="4"/>
-  </experiment>
-  <experiment name="parameter_sweep_low_res-translate-2" repetitions="5" runMetricsEveryStep="false">
-    <setup>setup-py
-let run-dir (word sim-output-dir substring date-time-safe 11 (length date-time-safe) "-parameter-sweep-low-res")
-let graphs-path (word run-dir "/graphs")
-carefully [
-  if not (py:runresult (word "os.path.isdir('" graphs-path "')")) [
-    py:run (word "create_nested_dirs('" graphs-path "')")
-  ]
-] [ ]
-let graph-file (word graphs-path "/" cognitive-translate "-" institution-tactic "-" media-ecosystem-dist "-" media-ecosystem-n "-" citizen-init-dist "-" zeta-cit "-" zeta-media "-" cit-memory-len "-" repetition ".csv")
-ifelse (py:runresult (word "os.path.isfile('" graph-file "')")) [
-  set load-graph? true
-  set load-graph-path graph-file
-  setup
-] [
-  set load-graph? false
-  set save-graph-path graph-file
-  setup
-  save-graph
-]
-set contagion-dir (word run-dir "/" cognitive-translate "/" institution-tactic "/" media-ecosystem-dist "/" media-ecosystem-n "/" citizen-init-dist "/" zeta-cit "/" zeta-media "/" cit-memory-len "/" repetition)
-carefully [
-  if not (py:runresult (word "os.path.isdir('" contagion-dir "')")) [
-    py:run (word "create_nested_dirs('" contagion-dir "')")
-  ]
-] [ ]</setup>
-    <go>go</go>
-    <final>set behavior-rand random 10000
-export-world (word contagion-dir "/" behavior-rand "_world.csv")
-export-plot "percent-agent-beliefs" (word contagion-dir "/" behavior-rand "_percent-agent-beliefs.csv")
-export-plot "homophily" (word contagion-dir "/" behavior-rand "_homophily.csv")
-export-plot "polarization" (word contagion-dir "/" behavior-rand "_polarization.csv")
-export-plot "fragmentation" (word contagion-dir "/" behavior-rand "_fragmentation.csv")
-output-message-data contagion-dir behavior-rand</final>
-    <timeLimit steps="100"/>
-    <metric>count citizens</metric>
-    <enumeratedValueSet variable="belief-resolution">
-      <value value="7"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="tick-end">
-      <value value="100"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="matrix-spread?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="matrix-trust-conn?">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-media-trust?">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-citizen-trust?">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cits-hear-from-path?">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="brain-type">
-      <value value="&quot;discrete&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="N">
-      <value value="50"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-ecosystem-n">
-      <value value="15"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="graph-type">
-      <value value="&quot;barabasi-albert&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="ba-m">
-      <value value="3"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="contagion-on?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-fn">
-      <value value="&quot;sigmoid-stubborn&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="spread-type">
-      <value value="&quot;cognitive&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-scalar">
-      <value value="20"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-exponent">
-      <value value="4"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-translate">
-      <value value="2"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="institution-tactic">
-      <value value="&quot;broadcast-brain&quot;"/>
-      <value value="&quot;appeal-mean&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-ecosystem">
-      <value value="&quot;distribution&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-ecosystem-dist">
-      <value value="&quot;uniform&quot;"/>
-      <value value="&quot;normal&quot;"/>
-      <value value="&quot;polarized&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-dist-normal-mean">
-      <value value="3"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-dist-normal-std">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="message-repeats">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-init-dist">
-      <value value="&quot;uniform&quot;"/>
-      <value value="&quot;normal&quot;"/>
-      <value value="&quot;polarized&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cit-init-normal-mean">
-      <value value="3"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cit-init-normal-std">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <steppedValueSet variable="zeta-media" first="0.25" step="0.25" last="0.75"/>
-    <steppedValueSet variable="zeta-cit" first="0.25" step="0.25" last="0.75"/>
-    <enumeratedValueSet variable="cit-memory-len">
-      <value value="1"/>
-      <value value="2"/>
-      <value value="10"/>
-    </enumeratedValueSet>
-    <steppedValueSet variable="repetition" first="0" step="1" last="4"/>
-  </experiment>
-  <experiment name="static_model_parameter_sweep_large_N" repetitions="1" runMetricsEveryStep="false">
-    <setup>setup-py
-let run-dir (word sim-output-dir substring date-time-safe 11 (length date-time-safe) "-static-param-sweep-large-N")
-let graphs-path (word run-dir "/graphs")
-carefully [
-  if not (py:runresult (word "os.path.isdir('" graphs-path "')")) [
-    py:run (word "create_nested_dirs('" graphs-path "')")
-  ]
-] [ ]
-let graph-file (word graphs-path "/" cognitive-translate "-" institution-tactic "-" media-ecosystem-dist "-" citizen-init-dist "-" epsilon "-" graph-type "-" ba-m "-" repetition ".csv")
-ifelse (py:runresult (word "os.path.isfile('" graph-file "')")) [
-  set load-graph? true
-  set load-graph-path graph-file
-  setup
-] [
-  set load-graph? false
-  set save-graph-path graph-file
-  setup
-  save-graph
-]
-set contagion-dir (word run-dir "/" cognitive-translate "/" institution-tactic "/" media-ecosystem-dist "/" citizen-init-dist "/" epsilon "/" graph-type "/" ba-m "/" repetition)
-carefully [
-  if not (py:runresult (word "os.path.isdir('" contagion-dir "')")) [
-    py:run (word "create_nested_dirs('" contagion-dir "')")
-  ]
-] [ ]</setup>
-    <go>go</go>
-    <final>set behavior-rand random 10000
-export-world (word contagion-dir "/" behavior-rand "_world.csv")
-export-plot "percent-agent-beliefs" (word contagion-dir "/" behavior-rand "_percent-agent-beliefs.csv")
-export-plot "polarization" (word contagion-dir "/" behavior-rand "_polarization.csv")</final>
-    <timeLimit steps="100"/>
-    <metric>count citizens</metric>
-    <enumeratedValueSet variable="belief-resolution">
-      <value value="7"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="tick-end">
-      <value value="100"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="matrix-spread?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="matrix-trust-conn?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-media-trust?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-citizen-trust?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="brain-type">
-      <value value="&quot;discrete&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="N">
-      <value value="1000"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="contagion-on?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-fn">
-      <value value="&quot;sigmoid-stubborn&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="spread-type">
-      <value value="&quot;cognitive&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-scalar">
-      <value value="20"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-exponent">
-      <value value="4"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-translate">
-      <value value="0"/>
-      <value value="1"/>
-      <value value="2"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="institution-tactic">
-      <value value="&quot;broadcast-brain&quot;"/>
-      <value value="&quot;appeal-mean&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-ecosystem">
-      <value value="&quot;distribution&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-ecosystem-dist">
-      <value value="&quot;uniform&quot;"/>
-      <value value="&quot;normal&quot;"/>
-      <value value="&quot;polarized&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-dist-normal-mean">
-      <value value="3"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-dist-normal-std">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-ecosystem-n">
-      <value value="20"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="message-repeats">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-init-dist">
-      <value value="&quot;uniform&quot;"/>
-      <value value="&quot;normal&quot;"/>
-      <value value="&quot;polarized&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cit-init-normal-mean">
-      <value value="3"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cit-init-normal-std">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="epsilon">
-      <value value="0"/>
-      <value value="1"/>
-      <value value="2"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="graph-type">
-      <value value="&quot;barabasi-albert&quot;"/>
-      <value value="&quot;ba-homophilic&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="ba-m">
-      <value value="3"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="repetition">
-      <value value="0"/>
-    </enumeratedValueSet>
-  </experiment>
-  <experiment name="parameter_sweep_low_res-low-media" repetitions="5" runMetricsEveryStep="false">
-    <setup>setup-py
-let run-dir (word sim-output-dir substring date-time-safe 11 (length date-time-safe) "-parameter-sweep-low-res_low-media")
-let graphs-path (word run-dir "/graphs")
-carefully [
-  if not (py:runresult (word "os.path.isdir('" graphs-path "')")) [
-    py:run (word "create_nested_dirs('" graphs-path "')")
-  ]
-] [ ]
-let graph-file (word graphs-path "/" cognitive-translate "-" institution-tactic "-" media-ecosystem-file "-" citizen-init-dist "-" zeta-cit "-" zeta-media "-" cit-memory-len "-" repetition ".csv")
-ifelse (py:runresult (word "os.path.isfile('" graph-file "')")) [
-  set load-graph? true
-  set load-graph-path graph-file
-  setup
-] [
-  set load-graph? false
-  set save-graph-path graph-file
-  setup
-  save-graph
-]
-set contagion-dir (word run-dir "/" cognitive-translate "/" media-ecosystem-file "/" institution-tactic "/" citizen-init-dist "/" zeta-cit "/" zeta-media "/" cit-memory-len "/" repetition)
-carefully [
-  if not (py:runresult (word "os.path.isdir('" contagion-dir "')")) [
-    py:run (word "create_nested_dirs('" contagion-dir "')")
-  ]
-] [ ]</setup>
-    <go>go</go>
-    <final>set behavior-rand random 10000
-export-world (word contagion-dir "/" behavior-rand "_world.csv")
-export-plot "percent-agent-beliefs" (word contagion-dir "/" behavior-rand "_percent-agent-beliefs.csv")
-export-plot "homophily" (word contagion-dir "/" behavior-rand "_homophily.csv")
-export-plot "polarization" (word contagion-dir "/" behavior-rand "_polarization.csv")
-export-plot "fragmentation" (word contagion-dir "/" behavior-rand "_fragmentation.csv")
-output-message-data contagion-dir behavior-rand</final>
-    <timeLimit steps="100"/>
-    <metric>count citizens</metric>
-    <enumeratedValueSet variable="belief-resolution">
-      <value value="7"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="tick-end">
-      <value value="100"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="matrix-spread?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="matrix-trust-conn?">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-media-trust?">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-citizen-trust?">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cits-hear-from-path?">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="brain-type">
-      <value value="&quot;discrete&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="N">
-      <value value="50"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="media-ecosystem">
       <value value="&quot;predetermined&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="media-ecosystem-file">
-      <value value="&quot;two-mid&quot;"/>
-      <value value="&quot;three-mid&quot;"/>
+      <value value="&quot;./gallup-media-ecosystem.json&quot;"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="graph-type">
-      <value value="&quot;barabasi-albert&quot;"/>
+    <enumeratedValueSet variable="media-connection-type">
+      <value value="&quot;per-group&quot;"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="ba-m">
-      <value value="3"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="contagion-on?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-fn">
-      <value value="&quot;sigmoid-stubborn&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="spread-type">
-      <value value="&quot;cognitive&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-scalar">
-      <value value="20"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-exponent">
-      <value value="4"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-translate">
-      <value value="0"/>
-      <value value="1"/>
-      <value value="2"/>
+    <enumeratedValueSet variable="media-connection-file">
+      <value value="&quot;./gallup-media-connections.json&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="institution-tactic">
-      <value value="&quot;broadcast-brain&quot;"/>
-      <value value="&quot;appeal-mean&quot;"/>
+      <value value="&quot;predetermined&quot;"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="media-dist-normal-mean">
-      <value value="3"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-dist-normal-std">
-      <value value="1"/>
+    <enumeratedValueSet variable="messages-data-file">
+      <value value="&quot;./gallup-media-messages.json&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="message-repeats">
       <value value="1"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-init-dist">
-      <value value="&quot;uniform&quot;"/>
-      <value value="&quot;normal&quot;"/>
-      <value value="&quot;polarized&quot;"/>
+    <enumeratedValueSet variable="citizen-init-type">
+      <value value="&quot;per-group&quot;"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="cit-init-normal-mean">
-      <value value="3"/>
+    <enumeratedValueSet variable="citizen-init-per-group-file">
+      <value value="&quot;./gallup-cit-init-dist.json&quot;"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="cit-init-normal-std">
-      <value value="1"/>
+    <enumeratedValueSet variable="spread-type">
+      <value value="&quot;simple&quot;"/>
     </enumeratedValueSet>
-    <steppedValueSet variable="zeta-media" first="0.25" step="0.25" last="0.75"/>
-    <steppedValueSet variable="zeta-cit" first="0.25" step="0.25" last="0.75"/>
-    <enumeratedValueSet variable="cit-memory-len">
-      <value value="1"/>
-      <value value="2"/>
-      <value value="10"/>
+    <enumeratedValueSet variable="simple-spread-chance">
+      <value value="0.01"/>
+      <value value="0.05"/>
+      <value value="0.1"/>
+      <value value="0.25"/>
+      <value value="0.5"/>
+      <value value="0.75"/>
     </enumeratedValueSet>
-    <steppedValueSet variable="repetition" first="0" step="1" last="4"/>
+    <enumeratedValueSet variable="contagion-on?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="belief-resolution">
+      <value value="7"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="brain-type">
+      <value value="&quot;discrete&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="matrix-spread?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="citizen-media-trust?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="citizen-citizen-trust?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="matrix-trust-conn?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sim-output-dir">
+      <value value="&quot;D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/&quot;"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="repetition" first="0" step="1" last="9"/>
   </experiment>
-  <experiment name="parameter_sweep_low_res-n_1000" repetitions="1" runMetricsEveryStep="false">
+  <experiment name="simple-contagion-param-sweep-WS" repetitions="30" runMetricsEveryStep="false">
     <setup>setup-py
-let run-dir (word sim-output-dir substring date-time-safe 11 (length date-time-safe) "-parameter-sweep-low-res-n-1000")
+let run-dir (word sim-output-dir substring date-time-safe 11 (length date-time-safe) "-simple-contagion-sweep-WS")
 let graphs-path (word run-dir "/graphs")
 carefully [
   if not (py:runresult (word "os.path.isdir('" graphs-path "')")) [
     py:run (word "create_nested_dirs('" graphs-path "')")
   ]
 ] [ ]
-let graph-file (word graphs-path "/" cognitive-translate "-" institution-tactic "-" media-ecosystem-dist "-" media-ecosystem-n "-" citizen-init-dist "-" zeta-cit "-" zeta-media "-" cit-memory-len "-" repetition ".csv")
+let graph-file (word graphs-path "/" erdos-renyi-p "-" simple-spread-chance "-" repetition ".csv")
 ifelse (py:runresult (word "os.path.isfile('" graph-file "')")) [
   set load-graph? true
   set load-graph-path graph-file
@@ -5228,7 +4195,7 @@ ifelse (py:runresult (word "os.path.isfile('" graph-file "')")) [
   setup
   save-graph
 ]
-set contagion-dir (word run-dir "/" cognitive-translate "/" institution-tactic "/" media-ecosystem-dist "/" media-ecosystem-n "/" citizen-init-dist "/" zeta-cit "/" zeta-media "/" cit-memory-len "/" repetition)
+set contagion-dir (word run-dir "/" erdos-renyi-p "/" simple-spread-chance "/" repetition)
 carefully [
   if not (py:runresult (word "os.path.isdir('" contagion-dir "')")) [
     py:run (word "create_nested_dirs('" contagion-dir "')")
@@ -5238,112 +4205,700 @@ carefully [
     <final>set behavior-rand random 10000
 export-world (word contagion-dir "/" behavior-rand "_world.csv")
 export-plot "percent-agent-beliefs" (word contagion-dir "/" behavior-rand "_percent-agent-beliefs.csv")
-export-plot "homophily" (word contagion-dir "/" behavior-rand "_homophily.csv")
-export-plot "polarization" (word contagion-dir "/" behavior-rand "_polarization.csv")
-export-plot "fragmentation" (word contagion-dir "/" behavior-rand "_fragmentation.csv")
-output-message-data contagion-dir behavior-rand</final>
-    <timeLimit steps="100"/>
-    <metric>count citizens</metric>
-    <enumeratedValueSet variable="belief-resolution">
-      <value value="7"/>
-    </enumeratedValueSet>
+export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand "_opinion-timeseries.csv")</final>
+    <metric>count turtles</metric>
     <enumeratedValueSet variable="tick-end">
-      <value value="100"/>
+      <value value="73"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="matrix-spread?">
+    <enumeratedValueSet variable="graph-type">
+      <value value="&quot;watts-strogatz&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="watts-strogatz-p">
+      <value value="0.1"/>
+      <value value="0.25"/>
+      <value value="0.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="watts-strogatz-k">
+      <value value="2"/>
+      <value value="3"/>
+      <value value="5"/>
+      <value value="10"/>
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-agents?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-ecosystem">
+      <value value="&quot;predetermined&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-ecosystem-file">
+      <value value="&quot;./gallup-media-ecosystem.json&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-connection-type">
+      <value value="&quot;per-group&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-connection-file">
+      <value value="&quot;./gallup-media-connections.json&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="institution-tactic">
+      <value value="&quot;predetermined&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="messages-data-file">
+      <value value="&quot;./gallup-media-messages.json&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="message-repeats">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="citizen-init-type">
+      <value value="&quot;per-group&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="citizen-init-per-group-file">
+      <value value="&quot;./gallup-cit-init-dist.json&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="spread-type">
+      <value value="&quot;simple&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="simple-spread-chance">
+      <value value="0.01"/>
+      <value value="0.05"/>
+      <value value="0.1"/>
+      <value value="0.25"/>
+      <value value="0.5"/>
+      <value value="0.75"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="contagion-on?">
       <value value="false"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="matrix-trust-conn?">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-media-trust?">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-citizen-trust?">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="cits-hear-from-path?">
-      <value value="true"/>
+    <enumeratedValueSet variable="belief-resolution">
+      <value value="7"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="brain-type">
       <value value="&quot;discrete&quot;"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="N">
-      <value value="1000"/>
+    <enumeratedValueSet variable="matrix-spread?">
+      <value value="false"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="media-ecosystem-n">
-      <value value="15"/>
+    <enumeratedValueSet variable="citizen-media-trust?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="citizen-citizen-trust?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="matrix-trust-conn?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sim-output-dir">
+      <value value="&quot;D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/&quot;"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="repetition" first="0" step="1" last="9"/>
+  </experiment>
+  <experiment name="simple-contagion-param-sweep-BA" repetitions="30" runMetricsEveryStep="false">
+    <setup>setup-py
+let run-dir (word sim-output-dir substring date-time-safe 11 (length date-time-safe) "-simple-contagion-sweep-BA")
+let graphs-path (word run-dir "/graphs")
+carefully [
+  if not (py:runresult (word "os.path.isdir('" graphs-path "')")) [
+    py:run (word "create_nested_dirs('" graphs-path "')")
+  ]
+] [ ]
+let graph-file (word graphs-path "/" erdos-renyi-p "-" simple-spread-chance "-" repetition ".csv")
+ifelse (py:runresult (word "os.path.isfile('" graph-file "')")) [
+  set load-graph? true
+  set load-graph-path graph-file
+  setup
+] [
+  set load-graph? false
+  set save-graph-path graph-file
+  setup
+  save-graph
+]
+set contagion-dir (word run-dir "/" erdos-renyi-p "/" simple-spread-chance "/" repetition)
+carefully [
+  if not (py:runresult (word "os.path.isdir('" contagion-dir "')")) [
+    py:run (word "create_nested_dirs('" contagion-dir "')")
+  ]
+] [ ]</setup>
+    <go>go</go>
+    <final>set behavior-rand random 10000
+export-world (word contagion-dir "/" behavior-rand "_world.csv")
+export-plot "percent-agent-beliefs" (word contagion-dir "/" behavior-rand "_percent-agent-beliefs.csv")
+export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand "_opinion-timeseries.csv")</final>
+    <metric>count turtles</metric>
+    <enumeratedValueSet variable="tick-end">
+      <value value="73"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="graph-type">
       <value value="&quot;barabasi-albert&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="ba-m">
       <value value="3"/>
+      <value value="5"/>
+      <value value="10"/>
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-agents?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-ecosystem">
+      <value value="&quot;predetermined&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-ecosystem-file">
+      <value value="&quot;./gallup-media-ecosystem.json&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-connection-type">
+      <value value="&quot;per-group&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-connection-file">
+      <value value="&quot;./gallup-media-connections.json&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="institution-tactic">
+      <value value="&quot;predetermined&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="messages-data-file">
+      <value value="&quot;./gallup-media-messages.json&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="message-repeats">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="citizen-init-type">
+      <value value="&quot;per-group&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="citizen-init-per-group-file">
+      <value value="&quot;./gallup-cit-init-dist.json&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="spread-type">
+      <value value="&quot;simple&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="simple-spread-chance">
+      <value value="0.01"/>
+      <value value="0.05"/>
+      <value value="0.1"/>
+      <value value="0.25"/>
+      <value value="0.5"/>
+      <value value="0.75"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="contagion-on?">
       <value value="false"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-fn">
-      <value value="&quot;sigmoid-stubborn&quot;"/>
+    <enumeratedValueSet variable="belief-resolution">
+      <value value="7"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="brain-type">
+      <value value="&quot;discrete&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="matrix-spread?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="citizen-media-trust?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="citizen-citizen-trust?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="matrix-trust-conn?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sim-output-dir">
+      <value value="&quot;D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/&quot;"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="repetition" first="0" step="1" last="9"/>
+  </experiment>
+  <experiment name="cog-contagion-param-sweep-ER" repetitions="30" runMetricsEveryStep="false">
+    <setup>setup-py
+let run-dir (word sim-output-dir substring date-time-safe 11 (length date-time-safe) "-simple-contagion-sweep-BA")
+let graphs-path (word run-dir "/graphs")
+carefully [
+  if not (py:runresult (word "os.path.isdir('" graphs-path "')")) [
+    py:run (word "create_nested_dirs('" graphs-path "')")
+  ]
+] [ ]
+let graph-file (word graphs-path "/" erdos-renyi-p "-" cognitive-translate "-" cognitive-exponent "-" repetition ".csv")
+ifelse (py:runresult (word "os.path.isfile('" graph-file "')")) [
+  set load-graph? true
+  set load-graph-path graph-file
+  setup
+] [
+  set load-graph? false
+  set save-graph-path graph-file
+  setup
+  save-graph
+]
+set contagion-dir (word run-dir "/" erdos-renyi-p "/" cognitive-translate "/" cognitive-exponent "/" repetition)
+carefully [
+  if not (py:runresult (word "os.path.isdir('" contagion-dir "')")) [
+    py:run (word "create_nested_dirs('" contagion-dir "')")
+  ]
+] [ ]</setup>
+    <go>go</go>
+    <final>set behavior-rand random 10000
+export-world (word contagion-dir "/" behavior-rand "_world.csv")
+export-plot "percent-agent-beliefs" (word contagion-dir "/" behavior-rand "_percent-agent-beliefs.csv")
+export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand "_opinion-timeseries.csv")</final>
+    <metric>count turtles</metric>
+    <enumeratedValueSet variable="tick-end">
+      <value value="73"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="graph-type">
+      <value value="&quot;erdos-renyi&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="erdos-renyi-p">
+      <value value="0.05"/>
+      <value value="0.1"/>
+      <value value="0.25"/>
+      <value value="0.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-agents?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-ecosystem">
+      <value value="&quot;predetermined&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-ecosystem-file">
+      <value value="&quot;./gallup-media-ecosystem.json&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-connection-type">
+      <value value="&quot;per-group&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-connection-file">
+      <value value="&quot;./gallup-media-connections.json&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="institution-tactic">
+      <value value="&quot;predetermined&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="messages-data-file">
+      <value value="&quot;./gallup-media-messages.json&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="message-repeats">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="citizen-init-type">
+      <value value="&quot;per-group&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="citizen-init-per-group-file">
+      <value value="&quot;./gallup-cit-init-dist.json&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="spread-type">
       <value value="&quot;cognitive&quot;"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="cognitive-scalar">
-      <value value="20"/>
+    <enumeratedValueSet variable="cognitive-fn">
+      <value value="&quot;sigmoid-stubborn&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="cognitive-scalar?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="cognitive-exponent?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="cognitive-translate?">
+      <value value="true"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="cognitive-exponent">
+      <value value="1"/>
+      <value value="2"/>
+      <value value="3"/>
       <value value="4"/>
+      <value value="5"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="cognitive-translate">
       <value value="0"/>
       <value value="1"/>
       <value value="2"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="institution-tactic">
-      <value value="&quot;broadcast-brain&quot;"/>
-      <value value="&quot;appeal-mean&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-ecosystem">
-      <value value="&quot;distribution&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-ecosystem-dist">
-      <value value="&quot;uniform&quot;"/>
-      <value value="&quot;normal&quot;"/>
-      <value value="&quot;polarized&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="media-dist-normal-mean">
       <value value="3"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="media-dist-normal-std">
-      <value value="1"/>
+    <enumeratedValueSet variable="contagion-on?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="belief-resolution">
+      <value value="7"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="brain-type">
+      <value value="&quot;discrete&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="matrix-spread?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="citizen-media-trust?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="citizen-citizen-trust?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="matrix-trust-conn?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sim-output-dir">
+      <value value="&quot;D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/&quot;"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="repetition" first="0" step="1" last="9"/>
+  </experiment>
+  <experiment name="simple-contagion-param-sweep-ER_TEST" repetitions="3" runMetricsEveryStep="false">
+    <setup>setup-py
+let run-dir (word sim-output-dir substring date-time-safe 11 (length date-time-safe) "-simple-contagion-sweep-ER")
+let graphs-path (word run-dir "/graphs")
+if not (py:runresult (word "os.path.isdir('" graphs-path "')")) [
+  py:run (word "create_nested_dirs('" graphs-path "')")
+]
+let graph-file (word graphs-path "/" erdos-renyi-p "-" simple-spread-chance "-" repetition ".csv")
+ifelse (py:runresult (word "os.path.isfile('" graph-file "')")) [
+  set load-graph? true
+  set load-graph-path graph-file
+  setup
+] [
+  set load-graph? false
+  set save-graph-path graph-file
+  setup
+  save-graph
+]
+set contagion-dir (word run-dir "/" erdos-renyi-p "/" simple-spread-chance "/" repetition)
+if not (py:runresult (word "os.path.isdir('" contagion-dir "')")) [
+  py:run (word "create_nested_dirs('" contagion-dir "')")
+]</setup>
+    <go>go</go>
+    <final>set behavior-rand random 10000
+export-world (word contagion-dir "/" behavior-rand "_world.csv")
+export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand "_opinion-timeseries.csv")
+export-plot "percent-agent-beliefs" (word contagion-dir "/" behavior-rand "_percent-agent-beliefs.csv")</final>
+    <metric>count turtles</metric>
+    <enumeratedValueSet variable="tick-end">
+      <value value="73"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="graph-type">
+      <value value="&quot;erdos-renyi&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="erdos-renyi-p">
+      <value value="0.05"/>
+      <value value="0.1"/>
+      <value value="0.25"/>
+      <value value="0.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-agents?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-ecosystem">
+      <value value="&quot;predetermined&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-ecosystem-file">
+      <value value="&quot;./gallup-media-ecosystem.json&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-connection-type">
+      <value value="&quot;per-group&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-connection-file">
+      <value value="&quot;./gallup-media-connections.json&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="institution-tactic">
+      <value value="&quot;predetermined&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="messages-data-file">
+      <value value="&quot;./gallup-media-messages.json&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="message-repeats">
       <value value="1"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="citizen-init-dist">
-      <value value="&quot;uniform&quot;"/>
-      <value value="&quot;normal&quot;"/>
-      <value value="&quot;polarized&quot;"/>
+    <enumeratedValueSet variable="citizen-init-type">
+      <value value="&quot;per-group&quot;"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="cit-init-normal-mean">
+    <enumeratedValueSet variable="citizen-init-per-group-file">
+      <value value="&quot;./gallup-cit-init-dist.json&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="spread-type">
+      <value value="&quot;simple&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="simple-spread-chance">
+      <value value="0.01"/>
+      <value value="0.05"/>
+      <value value="0.1"/>
+      <value value="0.25"/>
+      <value value="0.5"/>
+      <value value="0.75"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="contagion-on?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="belief-resolution">
+      <value value="7"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="brain-type">
+      <value value="&quot;discrete&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="matrix-spread?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="citizen-media-trust?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="citizen-citizen-trust?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="matrix-trust-conn?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sim-output-dir">
+      <value value="&quot;D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/&quot;"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="repetition" first="0" step="1" last="3"/>
+  </experiment>
+  <experiment name="cog-contagion-param-sweep-WS" repetitions="30" runMetricsEveryStep="false">
+    <setup>setup-py
+let run-dir (word sim-output-dir substring date-time-safe 11 (length date-time-safe) "-simple-contagion-sweep-BA")
+let graphs-path (word run-dir "/graphs")
+carefully [
+  if not (py:runresult (word "os.path.isdir('" graphs-path "')")) [
+    py:run (word "create_nested_dirs('" graphs-path "')")
+  ]
+] [ ]
+let graph-file (word graphs-path "/" erdos-renyi-p "-" cognitive-translate "-" cognitive-exponent "-" repetition ".csv")
+ifelse (py:runresult (word "os.path.isfile('" graph-file "')")) [
+  set load-graph? true
+  set load-graph-path graph-file
+  setup
+] [
+  set load-graph? false
+  set save-graph-path graph-file
+  setup
+  save-graph
+]
+set contagion-dir (word run-dir "/" erdos-renyi-p "/" cognitive-translate "/" cognitive-exponent "/" repetition)
+carefully [
+  if not (py:runresult (word "os.path.isdir('" contagion-dir "')")) [
+    py:run (word "create_nested_dirs('" contagion-dir "')")
+  ]
+] [ ]</setup>
+    <go>go</go>
+    <final>set behavior-rand random 10000
+export-world (word contagion-dir "/" behavior-rand "_world.csv")
+export-plot "percent-agent-beliefs" (word contagion-dir "/" behavior-rand "_percent-agent-beliefs.csv")
+export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand "_opinion-timeseries.csv")</final>
+    <metric>count turtles</metric>
+    <enumeratedValueSet variable="tick-end">
+      <value value="73"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="graph-type">
+      <value value="&quot;watts-strogatz&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="watts-strogatz-p">
+      <value value="0.1"/>
+      <value value="0.25"/>
+      <value value="0.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="watts-strogatz-k">
+      <value value="2"/>
       <value value="3"/>
+      <value value="5"/>
+      <value value="10"/>
+      <value value="15"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="cit-init-normal-std">
+    <enumeratedValueSet variable="media-agents?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-ecosystem">
+      <value value="&quot;predetermined&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-ecosystem-file">
+      <value value="&quot;./gallup-media-ecosystem.json&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-connection-type">
+      <value value="&quot;per-group&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-connection-file">
+      <value value="&quot;./gallup-media-connections.json&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="institution-tactic">
+      <value value="&quot;predetermined&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="messages-data-file">
+      <value value="&quot;./gallup-media-messages.json&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="message-repeats">
       <value value="1"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="zeta-media">
-      <value value="0.5"/>
+    <enumeratedValueSet variable="citizen-init-type">
+      <value value="&quot;per-group&quot;"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="zeta-cit">
-      <value value="0.5"/>
+    <enumeratedValueSet variable="citizen-init-per-group-file">
+      <value value="&quot;./gallup-cit-init-dist.json&quot;"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="cit-memory-len">
-      <value value="10"/>
+    <enumeratedValueSet variable="spread-type">
+      <value value="&quot;cognitive&quot;"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="repetition">
+    <enumeratedValueSet variable="cognitive-fn">
+      <value value="&quot;sigmoid-stubborn&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="cognitive-scalar?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="cognitive-exponent?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="cognitive-translate?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="cognitive-exponent">
+      <value value="1"/>
+      <value value="2"/>
+      <value value="3"/>
+      <value value="4"/>
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="cognitive-translate">
       <value value="0"/>
+      <value value="1"/>
+      <value value="2"/>
+      <value value="3"/>
     </enumeratedValueSet>
+    <enumeratedValueSet variable="contagion-on?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="belief-resolution">
+      <value value="7"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="brain-type">
+      <value value="&quot;discrete&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="matrix-spread?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="citizen-media-trust?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="citizen-citizen-trust?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="matrix-trust-conn?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sim-output-dir">
+      <value value="&quot;D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/&quot;"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="repetition" first="0" step="1" last="9"/>
+  </experiment>
+  <experiment name="cog-contagion-param-sweep-WS" repetitions="30" runMetricsEveryStep="false">
+    <setup>setup-py
+let run-dir (word sim-output-dir substring date-time-safe 11 (length date-time-safe) "-simple-contagion-sweep-BA")
+let graphs-path (word run-dir "/graphs")
+carefully [
+  if not (py:runresult (word "os.path.isdir('" graphs-path "')")) [
+    py:run (word "create_nested_dirs('" graphs-path "')")
+  ]
+] [ ]
+let graph-file (word graphs-path "/" erdos-renyi-p "-" cognitive-translate "-" cognitive-exponent "-" repetition ".csv")
+ifelse (py:runresult (word "os.path.isfile('" graph-file "')")) [
+  set load-graph? true
+  set load-graph-path graph-file
+  setup
+] [
+  set load-graph? false
+  set save-graph-path graph-file
+  setup
+  save-graph
+]
+set contagion-dir (word run-dir "/" erdos-renyi-p "/" cognitive-translate "/" cognitive-exponent "/" repetition)
+carefully [
+  if not (py:runresult (word "os.path.isdir('" contagion-dir "')")) [
+    py:run (word "create_nested_dirs('" contagion-dir "')")
+  ]
+] [ ]</setup>
+    <go>go</go>
+    <final>set behavior-rand random 10000
+export-world (word contagion-dir "/" behavior-rand "_world.csv")
+export-plot "percent-agent-beliefs" (word contagion-dir "/" behavior-rand "_percent-agent-beliefs.csv")
+export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand "_opinion-timeseries.csv")</final>
+    <metric>count turtles</metric>
+    <enumeratedValueSet variable="tick-end">
+      <value value="73"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="graph-type">
+      <value value="&quot;barabasi-albert&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ba-m">
+      <value value="3"/>
+      <value value="5"/>
+      <value value="10"/>
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-agents?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-ecosystem">
+      <value value="&quot;predetermined&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-ecosystem-file">
+      <value value="&quot;./gallup-media-ecosystem.json&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-connection-type">
+      <value value="&quot;per-group&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="media-connection-file">
+      <value value="&quot;./gallup-media-connections.json&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="institution-tactic">
+      <value value="&quot;predetermined&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="messages-data-file">
+      <value value="&quot;./gallup-media-messages.json&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="message-repeats">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="citizen-init-type">
+      <value value="&quot;per-group&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="citizen-init-per-group-file">
+      <value value="&quot;./gallup-cit-init-dist.json&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="spread-type">
+      <value value="&quot;cognitive&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="cognitive-fn">
+      <value value="&quot;sigmoid-stubborn&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="cognitive-scalar?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="cognitive-exponent?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="cognitive-translate?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="cognitive-exponent">
+      <value value="1"/>
+      <value value="2"/>
+      <value value="3"/>
+      <value value="4"/>
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="cognitive-translate">
+      <value value="0"/>
+      <value value="1"/>
+      <value value="2"/>
+      <value value="3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="contagion-on?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="belief-resolution">
+      <value value="7"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="brain-type">
+      <value value="&quot;discrete&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="matrix-spread?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="citizen-media-trust?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="citizen-citizen-trust?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="matrix-trust-conn?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sim-output-dir">
+      <value value="&quot;D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/&quot;"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="repetition" first="0" step="1" last="9"/>
   </experiment>
 </experiments>
 @#$#@#$#@
