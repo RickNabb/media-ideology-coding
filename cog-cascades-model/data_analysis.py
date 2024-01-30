@@ -997,7 +997,6 @@ def missing_values_in_multidata(multidata):
 def multidata_as_dataframe(multidata, columns):
   df = pd.DataFrame(columns=(columns+['measure','pen_name','run','data']))
   for (param_measure,data) in multidata.items():
-    print(f'processing {param_measure}')
     if param_measure == 'params':
       continue
     # Something failed to read/didn't exist
@@ -1006,10 +1005,22 @@ def multidata_as_dataframe(multidata, columns):
     param_combo = param_measure[0]
     measure = param_measure[1]
     for (pen_name,runs_data) in data.items():
-      print(f'processing runs for pen {pen_name}')
       for run in range(len(runs_data)):
-        print(f'run {run}')
         df.loc[len(df.index)] = list(param_combo) + [measure,pen_name,run,runs_data[run]]
+  return df
+
+def mean_multidata_as_dataframe(multidata, columns):
+  df = pd.DataFrame(columns=(columns+['measure','pen_name','data']))
+  for (param_measure,data) in multidata.items():
+    if param_measure == 'params':
+      continue
+    # Something failed to read/didn't exist
+    if data == -1:
+      continue
+    param_combo = param_measure[0]
+    measure = param_measure[1]
+    for (pen_name,runs_data) in data.items():
+      df.loc[len(df.index)] = list(param_combo) + [measure,pen_name,runs_data]
   return df
 
 def dataframe_as_multidata(df):
@@ -1061,19 +1072,74 @@ def get_simple_contagion_param_sweep_ER_test_multidata(path):
     path)
   return measure_multidata
 
-def timeseries_similarity_scores_for_simulations(multidata, columns, measure, target_data):
+def metrics_for_simple_contagion_param_sweep_ER_test(path):
+  gallup_data = pd.read_csv('../labeled-data/public/gallup-polling.csv')
+  multidata = get_simple_contagion_param_sweep_ER_test_multidata(path)
+  gallup_data.drop(columns=['Unnamed: 0'], inplace=True)
+  gallup_dict = { col: np.array(gallup_data[col]) for col in gallup_data.columns }
+  all_run_metrics = timeseries_similarity_for_all_runs(multidata, 'opinion-timeseries', ['simple_spread_chance','er_p','repetition'], gallup_dict)
+  mean_metrics = timeseries_similarity_for_mean_runs(multidata, 'opinion-timeseries', ['simple_spread_chance','er_p','repetition'], gallup_dict)
+  return all_run_metrics, mean_metrics
+
+def mean_multidata(multidata):
   multi_data_has_multiple = lambda multi_data_entry: type(multi_data_entry[0]) == type(np.array(0)) and len(multi_data_entry) > 1
- 
   mean_multidata = {
     # param_measure[0] is the parameter combo tuple
     param_measure: {
       pen_name: (multidata[param_measure][pen_name].mean(0) if multi_data_has_multiple(multidata[param_measure][pen_name]) else multidata[param_measure][pen_name]) for pen_name in multidata[param_measure].keys() if multidata[param_measure] != -1
-    } for param_measure in multidata.keys()
+    } for param_measure in multidata.keys() if param_measure != 'params'
   }
-  df_mean = multidata_as_dataframe(mean_multidata, columns)
+  return mean_multidata
 
-  df_all = multidata_as_dataframe(multidata, columns)
-  return df_mean, df_all
+def multidata_means_as_df(multidata, columns):
+  mean_data = mean_multidata(multidata)
+  df_mean = mean_multidata_as_dataframe(mean_data, columns)
+  return df_mean
+
+def timeseries_similarity_for_all_runs(multidata, measure, columns, target_data):
+  multidata_measure = { key: val for key, val in multidata.items() if key[1] == measure }
+  df = multidata_as_dataframe(multidata_measure, columns)
+  columns = columns.copy() + ['run']
+  return timeseries_similarity_scores_for_simulations(df, columns, target_data)
+
+def timeseries_similarity_for_mean_runs(multidata, measure, columns, target_data):
+  multidata_measure = { key: val for key, val in multidata.items() if key[1] == measure }
+  df = multidata_means_as_df(multidata_measure, columns)
+  return timeseries_similarity_scores_for_simulations(df, columns, target_data)
+
+def timeseries_similarity_scores_for_simulations(df, columns, target_data):
+  column_values = { col: df[col].unique() for col in columns }
+  param_combos = []
+  for combo in itertools.product(*list(column_values.values())):
+    param_combos.append(combo)
+
+  metrics = { 
+    'pearson': lambda simulated, empirical: np.corrcoef(simulated, empirical),
+    'euclidean': lambda simulated, empirical: np.sqrt(np.sum((empirical - simulated) ** 2)),
+    'mape': lambda simulated, empirical: np.mean(np.abs((empirical - simulated) / empirical))
+  }
+  df_comparison_results = pd.DataFrame(columns=columns + list(metrics.keys()))
+
+  for param_vals in param_combos:
+    print(f'Comparing data for {param_vals}')
+    query = ''
+    for i in range(len(columns)):
+      param = columns[i]
+      val = param_vals[i]
+      str_val = f'"{val}"'
+      query += f"{param}=={val if type(val) != str else str_val} and "
+    query = query[:-5]
+    df_rows = df.query(query)
+    timeseries_by_pen_name = { row[1]['pen_name']: row[1]['data'] for row in df_rows.iterrows() }
+    # This is an assumption made -- to take the mean of the scores of each
+    # of the separate lines and have that be the aggregate score
+    # NOTE: Slicing the dataframe to only 64 entries is to account for an
+    # error in earlier simulations where they were run for 74 time steps;
+    # slicing to a smaller value does NOT change the results
+    metric_results = [ np.array([ metric_fn(timeseries_by_pen_name[key][:64], target_data[key]) for key in timeseries_by_pen_name.keys() ]).mean() for metric_fn in metrics.values() ]
+    df_comparison_results.loc[len(df_comparison_results)] = [ df_rows.iloc[0][param] for param in columns ] + metric_results
+
+  return df_comparison_results
 
 def low_res_sweep_total_analysis(data_dir, data_file):
   return dynamic_model_total_analysis(data_dir, data_file, ['translate','tactic','media_dist','media_n','citizen_dist','zeta_citizen','zeta_media','citizen_memory_len','repetition'])
