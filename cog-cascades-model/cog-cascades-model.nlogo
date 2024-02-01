@@ -2616,7 +2616,7 @@ tick-end
 tick-end
 30
 1000
-73.0
+62.0
 1
 1
 NIL
@@ -4095,9 +4095,10 @@ carefully [
 export-world (word contagion-dir "/" behavior-rand "_world.csv")
 export-plot "percent-agent-beliefs" (word contagion-dir "/" behavior-rand "_percent-agent-beliefs.csv")
 export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand "_opinion-timeseries.csv")</final>
+    <timeLimit steps="63"/>
     <metric>count turtles</metric>
     <enumeratedValueSet variable="tick-end">
-      <value value="73"/>
+      <value value="63"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="graph-type">
       <value value="&quot;erdos-renyi&quot;"/>
@@ -4184,7 +4185,7 @@ carefully [
     py:run (word "create_nested_dirs('" graphs-path "')")
   ]
 ] [ ]
-let graph-file (word graphs-path "/" erdos-renyi-p "-" simple-spread-chance "-" repetition ".csv")
+let graph-file (word graphs-path "/" watts-strogatz-p "-" watts-strogatz-k "-" simple-spread-chance "-" repetition ".csv")
 ifelse (py:runresult (word "os.path.isfile('" graph-file "')")) [
   set load-graph? true
   set load-graph-path graph-file
@@ -4195,7 +4196,7 @@ ifelse (py:runresult (word "os.path.isfile('" graph-file "')")) [
   setup
   save-graph
 ]
-set contagion-dir (word run-dir "/" erdos-renyi-p "/" simple-spread-chance "/" repetition)
+set contagion-dir (word run-dir "/" watts-strogatz-p "/" watts-strogatz-k "/" simple-spread-chance "/" repetition)
 carefully [
   if not (py:runresult (word "os.path.isdir('" contagion-dir "')")) [
     py:run (word "create_nested_dirs('" contagion-dir "')")
@@ -4206,9 +4207,10 @@ carefully [
 export-world (word contagion-dir "/" behavior-rand "_world.csv")
 export-plot "percent-agent-beliefs" (word contagion-dir "/" behavior-rand "_percent-agent-beliefs.csv")
 export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand "_opinion-timeseries.csv")</final>
+    <timeLimit steps="63"/>
     <metric>count turtles</metric>
     <enumeratedValueSet variable="tick-end">
-      <value value="73"/>
+      <value value="63"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="graph-type">
       <value value="&quot;watts-strogatz&quot;"/>
@@ -4301,7 +4303,7 @@ carefully [
     py:run (word "create_nested_dirs('" graphs-path "')")
   ]
 ] [ ]
-let graph-file (word graphs-path "/" erdos-renyi-p "-" simple-spread-chance "-" repetition ".csv")
+let graph-file (word graphs-path "/" ba-m "-" simple-spread-chance "-" repetition ".csv")
 ifelse (py:runresult (word "os.path.isfile('" graph-file "')")) [
   set load-graph? true
   set load-graph-path graph-file
@@ -4312,7 +4314,7 @@ ifelse (py:runresult (word "os.path.isfile('" graph-file "')")) [
   setup
   save-graph
 ]
-set contagion-dir (word run-dir "/" erdos-renyi-p "/" simple-spread-chance "/" repetition)
+set contagion-dir (word run-dir "/" ba-m "/" simple-spread-chance "/" repetition)
 carefully [
   if not (py:runresult (word "os.path.isdir('" contagion-dir "')")) [
     py:run (word "create_nested_dirs('" contagion-dir "')")
@@ -4323,9 +4325,10 @@ carefully [
 export-world (word contagion-dir "/" behavior-rand "_world.csv")
 export-plot "percent-agent-beliefs" (word contagion-dir "/" behavior-rand "_percent-agent-beliefs.csv")
 export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand "_opinion-timeseries.csv")</final>
+    <timeLimit steps="63"/>
     <metric>count turtles</metric>
     <enumeratedValueSet variable="tick-end">
-      <value value="73"/>
+      <value value="63"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="graph-type">
       <value value="&quot;barabasi-albert&quot;"/>
@@ -4405,7 +4408,7 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
   </experiment>
   <experiment name="cog-contagion-param-sweep-ER" repetitions="30" runMetricsEveryStep="false">
     <setup>setup-py
-let run-dir (word sim-output-dir substring date-time-safe 11 (length date-time-safe) "-simple-contagion-sweep-BA")
+let run-dir (word sim-output-dir substring date-time-safe 11 (length date-time-safe) "-cog-contagion-sweep-ER")
 let graphs-path (word run-dir "/graphs")
 carefully [
   if not (py:runresult (word "os.path.isdir('" graphs-path "')")) [
@@ -4434,9 +4437,10 @@ carefully [
 export-world (word contagion-dir "/" behavior-rand "_world.csv")
 export-plot "percent-agent-beliefs" (word contagion-dir "/" behavior-rand "_percent-agent-beliefs.csv")
 export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand "_opinion-timeseries.csv")</final>
+    <timeLimit steps="63"/>
     <metric>count turtles</metric>
     <enumeratedValueSet variable="tick-end">
-      <value value="73"/>
+      <value value="63"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="graph-type">
       <value value="&quot;erdos-renyi&quot;"/>
@@ -4640,14 +4644,14 @@ export-plot "percent-agent-beliefs" (word contagion-dir "/" behavior-rand "_perc
   </experiment>
   <experiment name="cog-contagion-param-sweep-WS" repetitions="30" runMetricsEveryStep="false">
     <setup>setup-py
-let run-dir (word sim-output-dir substring date-time-safe 11 (length date-time-safe) "-simple-contagion-sweep-BA")
+let run-dir (word sim-output-dir substring date-time-safe 11 (length date-time-safe) "-cog-contagion-sweep-WS")
 let graphs-path (word run-dir "/graphs")
 carefully [
   if not (py:runresult (word "os.path.isdir('" graphs-path "')")) [
     py:run (word "create_nested_dirs('" graphs-path "')")
   ]
 ] [ ]
-let graph-file (word graphs-path "/" erdos-renyi-p "-" cognitive-translate "-" cognitive-exponent "-" repetition ".csv")
+let graph-file (word graphs-path "/" watts-strogatz-p "-" watts-strogatz-k "-" cognitive-translate "-" cognitive-exponent "-" repetition ".csv")
 ifelse (py:runresult (word "os.path.isfile('" graph-file "')")) [
   set load-graph? true
   set load-graph-path graph-file
@@ -4658,7 +4662,7 @@ ifelse (py:runresult (word "os.path.isfile('" graph-file "')")) [
   setup
   save-graph
 ]
-set contagion-dir (word run-dir "/" erdos-renyi-p "/" cognitive-translate "/" cognitive-exponent "/" repetition)
+set contagion-dir (word run-dir "/" watts-strogatz-p "/" watts-strogatz-k "/" cognitive-translate "/" cognitive-exponent "/" repetition)
 carefully [
   if not (py:runresult (word "os.path.isdir('" contagion-dir "')")) [
     py:run (word "create_nested_dirs('" contagion-dir "')")
@@ -4669,9 +4673,10 @@ carefully [
 export-world (word contagion-dir "/" behavior-rand "_world.csv")
 export-plot "percent-agent-beliefs" (word contagion-dir "/" behavior-rand "_percent-agent-beliefs.csv")
 export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand "_opinion-timeseries.csv")</final>
+    <timeLimit steps="63"/>
     <metric>count turtles</metric>
     <enumeratedValueSet variable="tick-end">
-      <value value="73"/>
+      <value value="63"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="graph-type">
       <value value="&quot;watts-strogatz&quot;"/>
@@ -4772,16 +4777,16 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
     </enumeratedValueSet>
     <steppedValueSet variable="repetition" first="0" step="1" last="9"/>
   </experiment>
-  <experiment name="cog-contagion-param-sweep-WS" repetitions="30" runMetricsEveryStep="false">
+  <experiment name="cog-contagion-param-sweep-BA" repetitions="30" runMetricsEveryStep="false">
     <setup>setup-py
-let run-dir (word sim-output-dir substring date-time-safe 11 (length date-time-safe) "-simple-contagion-sweep-BA")
+let run-dir (word sim-output-dir substring date-time-safe 11 (length date-time-safe) "-cog-contagion-sweep-BA")
 let graphs-path (word run-dir "/graphs")
 carefully [
   if not (py:runresult (word "os.path.isdir('" graphs-path "')")) [
     py:run (word "create_nested_dirs('" graphs-path "')")
   ]
 ] [ ]
-let graph-file (word graphs-path "/" erdos-renyi-p "-" cognitive-translate "-" cognitive-exponent "-" repetition ".csv")
+let graph-file (word graphs-path "/" ba-m "-" cognitive-translate "-" cognitive-exponent "-" repetition ".csv")
 ifelse (py:runresult (word "os.path.isfile('" graph-file "')")) [
   set load-graph? true
   set load-graph-path graph-file
@@ -4792,7 +4797,7 @@ ifelse (py:runresult (word "os.path.isfile('" graph-file "')")) [
   setup
   save-graph
 ]
-set contagion-dir (word run-dir "/" erdos-renyi-p "/" cognitive-translate "/" cognitive-exponent "/" repetition)
+set contagion-dir (word run-dir "/" ba-m "/" cognitive-translate "/" cognitive-exponent "/" repetition)
 carefully [
   if not (py:runresult (word "os.path.isdir('" contagion-dir "')")) [
     py:run (word "create_nested_dirs('" contagion-dir "')")
@@ -4803,9 +4808,10 @@ carefully [
 export-world (word contagion-dir "/" behavior-rand "_world.csv")
 export-plot "percent-agent-beliefs" (word contagion-dir "/" behavior-rand "_percent-agent-beliefs.csv")
 export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand "_opinion-timeseries.csv")</final>
+    <timeLimit steps="63"/>
     <metric>count turtles</metric>
     <enumeratedValueSet variable="tick-end">
-      <value value="73"/>
+      <value value="63"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="graph-type">
       <value value="&quot;barabasi-albert&quot;"/>
