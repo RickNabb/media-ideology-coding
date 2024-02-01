@@ -954,6 +954,29 @@ def process_exp_outputs(param_combos, plots, path):
       if multi_data != -1:
         plot_multi_chart_data(plot_types, multi_data, props, f'{path}/results', f'{"-".join(combo)}_{plot_name}-agg-chart')
 
+def process_select_exp_outputs(param_combos, plots, path):
+  '''
+  Process some of the output of a NetLogo experiment, aggregating specified 
+  results over simulation runs and generating plots for them according to
+  all the parameter combinations denoted in param_combos.
+  
+  :param param_combos: A list of selected parameter values as lists
+  :param plots: A list of dictionaries keyed by the name of the NetLogo
+  plot to process, with value of a list of PLOT_TYPE
+  (e.g. { 'polarization': [PLOT_TYPES.LINE], 'agent-beliefs': [...] })
+  :param path: The root path to begin processing in.
+  '''
+  if not os.path.isdir(f'{path}/results'):
+    os.mkdir(f'{path}/results')
+
+  for combo in param_combos:
+    for (plot_name, plot_types) in plots.items():
+      # print(plot_name, plot_types)
+      (multi_data, props, model_params) = process_multi_chart_data(f'{path}/{"/".join(combo)}', plot_name)
+      # If there was no error processing the data
+      if multi_data != -1:
+        plot_multi_chart_data(plot_types, multi_data, props, f'{path}/results', f'{"-".join(combo)}_{plot_name}-agg-chart')
+
 def get_all_message_multidata(param_combos, path):
   combos = []
   for combo in itertools.product(*param_combos):
@@ -1050,6 +1073,21 @@ def read_polarization_dataframe(path):
     df.at[i,'data'] = np.fromstring(raw_data[1:-1].replace('\n','').replace('0. ','0 '),sep=' ')
   return df
 
+def process_top_exp_results(top_df, param_order, path):
+  top_param_combos = [
+    [ row[1][col] for col in param_order ]
+    for row in param_order.iterrows()
+  ]
+  process_select_exp_outputs(
+    top_param_combos,
+    {'percent-agent-beliefs': [PLOT_TYPES.LINE, PLOT_TYPES.STACK],
+    'opinion-timeseries': [PLOT_TYPES.LINE]},
+    path)
+
+def process_simple_contagion_param_sweep_ER_test_top(top_df, path):
+  param_order = ['er_p','simple_spread_chance','repetition']
+  process_top_exp_results(top_df, param_order, path)
+
 def process_simple_contagion_param_sweep_ER_test(path):
   simple_spread_chance = ['0.01','0.05','0.1','0.25','0.5','0.75']
   er_p = ['0.05','0.1','0.25','0.5']
@@ -1072,14 +1110,96 @@ def get_simple_contagion_param_sweep_ER_test_multidata(path):
     path)
   return measure_multidata
 
-def metrics_for_simple_contagion_param_sweep_ER_test(path):
-  gallup_data = pd.read_csv('../labeled-data/public/gallup-polling.csv')
-  multidata = get_simple_contagion_param_sweep_ER_test_multidata(path)
+def get_simple_contagion_param_sweep_ER_multidata(path):
+  simple_spread_chance = ['0.01','0.05','0.1','0.25','0.5','0.75']
+  er_p = ['0.05','0.1','0.25','0.5']
+  repetition = list(map(str, range(10)))
+  measure_multidata = get_all_multidata(
+    [er_p,simple_spread_chance,repetition],
+    ['simple_spread_chance','er_p','repetition'],
+    {'percent-agent-beliefs': [PLOT_TYPES.LINE, PLOT_TYPES.STACK],
+    'opinion-timeseries': [PLOT_TYPES.LINE]},
+    path)
+  return measure_multidata
+
+def process_simple_contagion_param_sweep_WS_test_top(top_df, path):
+  param_order = ['ws_p','ws_k','simple_spread_chance','repetition']
+  process_top_exp_results(top_df, param_order, path)
+
+def get_simple_contagion_param_sweep_WS_multidata(path):
+  simple_spread_chance = ['0.01','0.05','0.1','0.25','0.5','0.75']
+  ws_p = ['0.1','0.25','0.5']
+  ws_k = ['2','3','5','10','15']
+  repetition = list(map(str, range(10)))
+  measure_multidata = get_all_multidata(
+    [er_p,simple_spread_chance,repetition],
+    ['simple_spread_chance','ws_p','ws_k','repetition'],
+    {'percent-agent-beliefs': [PLOT_TYPES.LINE, PLOT_TYPES.STACK],
+    'opinion-timeseries': [PLOT_TYPES.LINE]},
+    path)
+  return measure_multidata
+
+def process_simple_contagion_param_sweep_BA_top(top_df, path):
+  param_order = ['ba-m','simple_spread_chance','repetition']
+  process_top_exp_results(top_df, param_order, path)
+
+def get_simple_contagion_param_sweep_BA_multidata(path):
+  simple_spread_chance = ['0.01','0.05','0.1','0.25','0.5','0.75']
+  ba_m = ['3','5','10','15']
+  repetition = list(map(str, range(10)))
+  measure_multidata = get_all_multidata(
+    [er_p,simple_spread_chance,repetition],
+    ['simple_spread_chance','ba-m','repetition'],
+    {'percent-agent-beliefs': [PLOT_TYPES.LINE, PLOT_TYPES.STACK],
+    'opinion-timeseries': [PLOT_TYPES.LINE]},
+    path)
+  return measure_multidata
+
+def read_gallup_data_into_dict(path):
+  gallup_data = pd.read_csv(path)
   gallup_data.drop(columns=['Unnamed: 0'], inplace=True)
   gallup_dict = { col: np.array(gallup_data[col]) for col in gallup_data.columns }
-  all_run_metrics = timeseries_similarity_for_all_runs(multidata, 'opinion-timeseries', ['simple_spread_chance','er_p','repetition'], gallup_dict)
-  mean_metrics = timeseries_similarity_for_mean_runs(multidata, 'opinion-timeseries', ['simple_spread_chance','er_p','repetition'], gallup_dict)
+  return gallup_dict
+
+def metrics_for_simple_contagion_param_sweep_ER_test(path):
+  gallup_dict = read_gallup_data_into_dict('../labeled-data/public/gallup-polling.csv')
+  columns = ['simple_spread_chance','er_p','repetition']
+  measure = 'opinion-timeseries'
+  multidata = get_simple_contagion_param_sweep_ER_test_multidata(path)
+  all_run_metrics = timeseries_similarity_for_all_runs(multidata, measure, columns, gallup_dict)
+  mean_metrics = timeseries_similarity_for_mean_runs(multidata, measure, columns, gallup_dict)
   return all_run_metrics, mean_metrics
+
+def metrics_for_simple_contagion_param_sweep_ER(path):
+  gallup_dict = read_gallup_data_into_dict('../labeled-data/public/gallup-polling.csv')
+  columns = ['simple_spread_chance','er_p','repetition']
+  measure = 'opinion-timeseries'
+  multidata = get_simple_contagion_param_sweep_ER_multidata(path)
+  all_run_metrics = timeseries_similarity_for_all_runs(multidata, measure, columns, gallup_dict)
+  mean_metrics = timeseries_similarity_for_mean_runs(multidata, measure, columns, gallup_dict)
+  return all_run_metrics, mean_metrics
+
+def metrics_for_simple_contagion_param_sweep_WS(path):
+  gallup_dict = read_gallup_data_into_dict('../labeled-data/public/gallup-polling.csv')
+  columns = ['simple_spread_chance','ws_p','ws_k','repetition']
+  measure = 'opinion-timeseries'
+  multidata = get_simple_contagion_param_sweep_WS_multidata(path)
+  all_run_metrics = timeseries_similarity_for_all_runs(multidata, measure, columns, gallup_dict)
+  mean_metrics = timeseries_similarity_for_mean_runs(multidata, measure, columns, gallup_dict)
+  return all_run_metrics, mean_metrics
+
+def metrics_for_simple_contagion_param_sweep_BA(path):
+  gallup_dict = read_gallup_data_into_dict('../labeled-data/public/gallup-polling.csv')
+  columns = ['simple_spread_chance','ba_m','repetition']
+  measure = 'opinion-timeseries'
+  multidata = get_simple_contagion_param_sweep_BA_multidata(path)
+  all_run_metrics = timeseries_similarity_for_all_runs(multidata, measure, columns, gallup_dict)
+  mean_metrics = timeseries_similarity_for_mean_runs(multidata, measure, columns, gallup_dict)
+  return all_run_metrics, mean_metrics
+
+def top_matches_for_metrics(metrics_df):
+  ranked = metrics_df.sort_values(by=['mape','pearson'], ascending=False)
+  return ranked.head(10)
 
 def mean_multidata(multidata):
   multi_data_has_multiple = lambda multi_data_entry: type(multi_data_entry[0]) == type(np.array(0)) and len(multi_data_entry) > 1
