@@ -1177,7 +1177,7 @@ to save-graph
   let media-ip []
   let media-sub []
   foreach sort medias [ m ->
-    set media-ip (lput (list m (dict-value ([brain] of m) "A")) media-ip)
+    set media-ip (lput (list m ([idee] of m) (dict-value ([brain] of m) "A")) media-ip)
     foreach sort [ subscriber-neighbors ] of m [ sub ->
       set media-sub (lput (list m sub) media-sub)
     ]
@@ -1217,7 +1217,8 @@ to read-graph
     let i (read-from-string (substring (word self) 7 ((length (word self)) - 1))) - N
     let m (item i mediaz)
     let id item 0 m
-    let a read-from-string (item 1 m)
+    set idee (item 1 m)
+    let a read-from-string (item 2 m)
     set brain create-agent-brain (id) citizen-priors citizen-malleables [] (list a)
     set messages-heard []
     set messages-believed []
@@ -2361,7 +2362,7 @@ SWITCH
 91
 show-media-connections?
 show-media-connections?
-0
+1
 1
 -1000
 
@@ -2534,7 +2535,7 @@ INPUTBOX
 244
 929
 load-graph-path
-D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/29-Jan-2024-simple-contagion-sweep-ER/graphs/0.5-0.75-2.csv
+D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/simple-contagion-sweep-ER/graphs/0.5-0.75-2.csv
 1
 0
 String
@@ -2545,7 +2546,7 @@ INPUTBOX
 247
 995
 save-graph-path
-D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/29-Jan-2024-simple-contagion-sweep-ER/graphs/0.5-0.75-2.csv
+D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/simple-contagion-sweep-ER/graphs/0.5-0.75-2.csv
 1
 0
 String
@@ -2576,7 +2577,7 @@ simple-spread-chance
 simple-spread-chance
 0
 1
-0.75
+0.7
 0.01
 1
 NIL
