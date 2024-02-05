@@ -954,7 +954,7 @@ def process_exp_outputs(param_combos, plots, path):
       if multi_data != -1:
         plot_multi_chart_data(plot_types, multi_data, props, f'{path}/results', f'{"-".join(combo)}_{plot_name}-agg-chart')
 
-def process_select_exp_outputs(param_combos, plots, path):
+def process_select_exp_outputs(param_combos, plots, path, results_dir):
   '''
   Process some of the output of a NetLogo experiment, aggregating specified 
   results over simulation runs and generating plots for them according to
@@ -966,8 +966,8 @@ def process_select_exp_outputs(param_combos, plots, path):
   (e.g. { 'polarization': [PLOT_TYPES.LINE], 'agent-beliefs': [...] })
   :param path: The root path to begin processing in.
   '''
-  if not os.path.isdir(f'{path}/results'):
-    os.mkdir(f'{path}/results')
+  if not os.path.isdir(f'{path}/{results_dir}'):
+    os.mkdir(f'{path}/{results_dir}')
 
   for combo in param_combos:
     for (plot_name, plot_types) in plots.items():
@@ -975,7 +975,7 @@ def process_select_exp_outputs(param_combos, plots, path):
       (multi_data, props, model_params) = process_multi_chart_data(f'{path}/{"/".join(combo)}', plot_name)
       # If there was no error processing the data
       if multi_data != -1:
-        plot_multi_chart_data(plot_types, multi_data, props, f'{path}/results', f'{"-".join(combo)}_{plot_name}-agg-chart')
+        plot_multi_chart_data(plot_types, multi_data, props, f'{path}/{results_dir}', f'{"-".join(combo)}_{plot_name}-agg-chart')
 
 def get_all_message_multidata(param_combos, path):
   combos = []
@@ -1073,20 +1073,25 @@ def read_polarization_dataframe(path):
     df.at[i,'data'] = np.fromstring(raw_data[1:-1].replace('\n','').replace('0. ','0 '),sep=' ')
   return df
 
-def process_top_exp_results(top_df, param_order, path):
+def process_top_exp_results(top_df, param_order, path, results_dir):
   top_param_combos = [
     [ row[1][col] for col in param_order ]
-    for row in param_order.iterrows()
+    for row in top_df.iterrows()
   ]
   process_select_exp_outputs(
     top_param_combos,
     {'percent-agent-beliefs': [PLOT_TYPES.LINE, PLOT_TYPES.STACK],
     'opinion-timeseries': [PLOT_TYPES.LINE]},
-    path)
+    path,
+    results_dir)
 
-def process_simple_contagion_param_sweep_ER_test_top(top_df, path):
+def process_simple_contagion_param_sweep_ER_top(top_df, path, results_dir):
   param_order = ['er_p','simple_spread_chance','repetition']
-  process_top_exp_results(top_df, param_order, path)
+  process_top_exp_results(top_df, param_order, path, results_dir)
+
+def process_cognitive_contagion_param_sweep_ER_top(top_df, path, results_dir):
+  param_order = ['er_p','cognitive_translate','cognitive_exponent','repetition']
+  process_top_exp_results(top_df, param_order, path, results_dir)
 
 def process_simple_contagion_param_sweep_ER_test(path):
   simple_spread_chance = ['0.01','0.05','0.1','0.25','0.5','0.75']
@@ -1104,7 +1109,7 @@ def get_simple_contagion_param_sweep_ER_test_multidata(path):
   repetition = list(map(str, range(4)))
   measure_multidata = get_all_multidata(
     [er_p,simple_spread_chance,repetition],
-    ['simple_spread_chance','er_p','repetition'],
+    ['er_p','simple_spread_chance','repetition'],
     {'percent-agent-beliefs': [PLOT_TYPES.LINE, PLOT_TYPES.STACK],
     'opinion-timeseries': [PLOT_TYPES.LINE]},
     path)
@@ -1116,15 +1121,32 @@ def get_simple_contagion_param_sweep_ER_multidata(path):
   repetition = list(map(str, range(10)))
   measure_multidata = get_all_multidata(
     [er_p,simple_spread_chance,repetition],
-    ['simple_spread_chance','er_p','repetition'],
+    ['er_p','simple_spread_chance','repetition'],
     {'percent-agent-beliefs': [PLOT_TYPES.LINE, PLOT_TYPES.STACK],
     'opinion-timeseries': [PLOT_TYPES.LINE]},
     path)
   return measure_multidata
 
-def process_simple_contagion_param_sweep_WS_test_top(top_df, path):
+def get_cognitive_contagion_param_sweep_ER_multidata(path):
+  cognitive_exponent = ['1','2','3','4','5']
+  cognitive_translate = ['0','1','2','3']
+  er_p = ['0.05','0.1','0.25','0.5']
+  repetition = list(map(str, range(10)))
+  measure_multidata = get_all_multidata(
+    [er_p,cognitive_translate,cognitive_exponent,repetition],
+    ['er_p','cognitive_translate','cognitive_exponent','repetition'],
+    {'percent-agent-beliefs': [PLOT_TYPES.LINE, PLOT_TYPES.STACK],
+    'opinion-timeseries': [PLOT_TYPES.LINE]},
+    path)
+  return measure_multidata
+
+def process_simple_contagion_param_sweep_WS_top(top_df, path, results_dir):
   param_order = ['ws_p','ws_k','simple_spread_chance','repetition']
-  process_top_exp_results(top_df, param_order, path)
+  process_top_exp_results(top_df, param_order, path, results_dir)
+
+def process_cognitive_contagion_param_sweep_WS_top(top_df, path, results_dir):
+  param_order = ['ws_p','ws_k','cognitive_translate','cognitive_exponent','repetition']
+  process_top_exp_results(top_df, param_order, path, results_dir)
 
 def get_simple_contagion_param_sweep_WS_multidata(path):
   simple_spread_chance = ['0.01','0.05','0.1','0.25','0.5','0.75']
@@ -1132,24 +1154,55 @@ def get_simple_contagion_param_sweep_WS_multidata(path):
   ws_k = ['2','3','5','10','15']
   repetition = list(map(str, range(10)))
   measure_multidata = get_all_multidata(
-    [er_p,simple_spread_chance,repetition],
-    ['simple_spread_chance','ws_p','ws_k','repetition'],
+    [ws_p,ws_k,simple_spread_chance,repetition],
+    ['ws_p','ws_k','simple_spread_chance','repetition'],
     {'percent-agent-beliefs': [PLOT_TYPES.LINE, PLOT_TYPES.STACK],
     'opinion-timeseries': [PLOT_TYPES.LINE]},
     path)
   return measure_multidata
 
-def process_simple_contagion_param_sweep_BA_top(top_df, path):
-  param_order = ['ba-m','simple_spread_chance','repetition']
-  process_top_exp_results(top_df, param_order, path)
+def get_cognitive_contagion_param_sweep_WS_multidata(path):
+  cognitive_exponent = ['1','2','3','4','5']
+  cognitive_translate = ['0','1','2','3']
+  ws_p = ['0.1','0.25','0.5']
+  ws_k = ['2','3','5','10','15']
+  repetition = list(map(str, range(10)))
+  measure_multidata = get_all_multidata(
+    [ws_p,ws_k,cognitive_translate,cognitive_exponent,repetition],
+    ['ws_p','ws_k','cognitive_translate','cognitive_exponent','repetition'],
+    {'percent-agent-beliefs': [PLOT_TYPES.LINE, PLOT_TYPES.STACK],
+    'opinion-timeseries': [PLOT_TYPES.LINE]},
+    path)
+  return measure_multidata
+
+def process_simple_contagion_param_sweep_BA_top(top_df, path, results_dir):
+  param_order = ['ba_m','simple_spread_chance','repetition']
+  process_top_exp_results(top_df, param_order, path, results_dir)
+
+def process_cognitive_contagion_param_sweep_BA_top(top_df, path, results_dir):
+  param_order = ['ba_m','cognitive_translate','cognitive_exponent','repetition']
+  process_top_exp_results(top_df, param_order, path, results_dir)
 
 def get_simple_contagion_param_sweep_BA_multidata(path):
   simple_spread_chance = ['0.01','0.05','0.1','0.25','0.5','0.75']
   ba_m = ['3','5','10','15']
   repetition = list(map(str, range(10)))
   measure_multidata = get_all_multidata(
-    [er_p,simple_spread_chance,repetition],
-    ['simple_spread_chance','ba-m','repetition'],
+    [ba_m,simple_spread_chance,repetition],
+    ['ba-m','simple_spread_chance','repetition'],
+    {'percent-agent-beliefs': [PLOT_TYPES.LINE, PLOT_TYPES.STACK],
+    'opinion-timeseries': [PLOT_TYPES.LINE]},
+    path)
+  return measure_multidata
+
+def get_cognitive_contagion_param_sweep_BA_multidata(path):
+  cognitive_exponent = ['1','2','3','4','5']
+  cognitive_translate = ['0','1','2','3']
+  ba_m = ['3','5','10','15']
+  repetition = list(map(str, range(10)))
+  measure_multidata = get_all_multidata(
+    [ba_m,cognitive_translate,cognitive_exponent,repetition],
+    ['ba-m','cognitive_translate','cognitive_exponent','repetition'],
     {'percent-agent-beliefs': [PLOT_TYPES.LINE, PLOT_TYPES.STACK],
     'opinion-timeseries': [PLOT_TYPES.LINE]},
     path)
@@ -1163,7 +1216,7 @@ def read_gallup_data_into_dict(path):
 
 def metrics_for_simple_contagion_param_sweep_ER_test(path):
   gallup_dict = read_gallup_data_into_dict('../labeled-data/public/gallup-polling.csv')
-  columns = ['simple_spread_chance','er_p','repetition']
+  columns = ['er_p','simple_spread_chance','repetition']
   measure = 'opinion-timeseries'
   multidata = get_simple_contagion_param_sweep_ER_test_multidata(path)
   all_run_metrics = timeseries_similarity_for_all_runs(multidata, measure, columns, gallup_dict)
@@ -1172,7 +1225,7 @@ def metrics_for_simple_contagion_param_sweep_ER_test(path):
 
 def metrics_for_simple_contagion_param_sweep_ER(path):
   gallup_dict = read_gallup_data_into_dict('../labeled-data/public/gallup-polling.csv')
-  columns = ['simple_spread_chance','er_p','repetition']
+  columns = ['er_p','simple_spread_chance','repetition']
   measure = 'opinion-timeseries'
   multidata = get_simple_contagion_param_sweep_ER_multidata(path)
   all_run_metrics = timeseries_similarity_for_all_runs(multidata, measure, columns, gallup_dict)
@@ -1181,7 +1234,7 @@ def metrics_for_simple_contagion_param_sweep_ER(path):
 
 def metrics_for_simple_contagion_param_sweep_WS(path):
   gallup_dict = read_gallup_data_into_dict('../labeled-data/public/gallup-polling.csv')
-  columns = ['simple_spread_chance','ws_p','ws_k','repetition']
+  columns = ['ws_p','ws_k','simple_spread_chance','repetition']
   measure = 'opinion-timeseries'
   multidata = get_simple_contagion_param_sweep_WS_multidata(path)
   all_run_metrics = timeseries_similarity_for_all_runs(multidata, measure, columns, gallup_dict)
@@ -1190,9 +1243,36 @@ def metrics_for_simple_contagion_param_sweep_WS(path):
 
 def metrics_for_simple_contagion_param_sweep_BA(path):
   gallup_dict = read_gallup_data_into_dict('../labeled-data/public/gallup-polling.csv')
-  columns = ['simple_spread_chance','ba_m','repetition']
+  columns = ['ba_m','simple_spread_chance','repetition']
   measure = 'opinion-timeseries'
   multidata = get_simple_contagion_param_sweep_BA_multidata(path)
+  all_run_metrics = timeseries_similarity_for_all_runs(multidata, measure, columns, gallup_dict)
+  mean_metrics = timeseries_similarity_for_mean_runs(multidata, measure, columns, gallup_dict)
+  return all_run_metrics, mean_metrics
+
+def metrics_for_cognitive_contagion_param_sweep_ER(path):
+  gallup_dict = read_gallup_data_into_dict('../labeled-data/public/gallup-polling.csv')
+  columns = ['er_p','cognitive_translate','cognitive_exponent','repetition']
+  measure = 'opinion-timeseries'
+  multidata = get_cognitive_contagion_param_sweep_ER_multidata(path)
+  all_run_metrics = timeseries_similarity_for_all_runs(multidata, measure, columns, gallup_dict)
+  mean_metrics = timeseries_similarity_for_mean_runs(multidata, measure, columns, gallup_dict)
+  return all_run_metrics, mean_metrics
+
+def metrics_for_cognitive_contagion_param_sweep_WS(path):
+  gallup_dict = read_gallup_data_into_dict('../labeled-data/public/gallup-polling.csv')
+  columns = ['ws_p','ws_k','cognitive_translate','cognitive_exponent','repetition']
+  measure = 'opinion-timeseries'
+  multidata = get_cognitive_contagion_param_sweep_WS_multidata(path)
+  all_run_metrics = timeseries_similarity_for_all_runs(multidata, measure, columns, gallup_dict)
+  mean_metrics = timeseries_similarity_for_mean_runs(multidata, measure, columns, gallup_dict)
+  return all_run_metrics, mean_metrics
+
+def metrics_for_cognitive_contagion_param_sweep_BA(path):
+  gallup_dict = read_gallup_data_into_dict('../labeled-data/public/gallup-polling.csv')
+  columns = ['ba_m','cognitive_translate','cognitive_exponent','repetition']
+  measure = 'opinion-timeseries'
+  multidata = get_cognitive_contagion_param_sweep_BA_multidata(path)
   all_run_metrics = timeseries_similarity_for_all_runs(multidata, measure, columns, gallup_dict)
   mean_metrics = timeseries_similarity_for_mean_runs(multidata, measure, columns, gallup_dict)
   return all_run_metrics, mean_metrics
@@ -1234,14 +1314,13 @@ def timeseries_similarity_scores_for_simulations(df, columns, target_data):
     param_combos.append(combo)
 
   metrics = { 
-    'pearson': lambda simulated, empirical: np.corrcoef(simulated, empirical),
+    'pearson': lambda simulated, empirical: np.corrcoef(simulated, empirical)[0,1],
     'euclidean': lambda simulated, empirical: np.sqrt(np.sum((empirical - simulated) ** 2)),
     'mape': lambda simulated, empirical: np.mean(np.abs((empirical - simulated) / empirical))
   }
   df_comparison_results = pd.DataFrame(columns=columns + list(metrics.keys()))
 
   for param_vals in param_combos:
-    print(f'Comparing data for {param_vals}')
     query = ''
     for i in range(len(columns)):
       param = columns[i]
@@ -1250,16 +1329,86 @@ def timeseries_similarity_scores_for_simulations(df, columns, target_data):
       query += f"{param}=={val if type(val) != str else str_val} and "
     query = query[:-5]
     df_rows = df.query(query)
-    timeseries_by_pen_name = { row[1]['pen_name']: row[1]['data'] for row in df_rows.iterrows() }
-    # This is an assumption made -- to take the mean of the scores of each
-    # of the separate lines and have that be the aggregate score
-    # NOTE: Slicing the dataframe to only 64 entries is to account for an
-    # error in earlier simulations where they were run for 74 time steps;
-    # slicing to a smaller value does NOT change the results
-    metric_results = [ np.array([ metric_fn(timeseries_by_pen_name[key][:64], target_data[key]) for key in timeseries_by_pen_name.keys() ]).mean() for metric_fn in metrics.values() ]
-    df_comparison_results.loc[len(df_comparison_results)] = [ df_rows.iloc[0][param] for param in columns ] + metric_results
+    if len(df_rows) > 0:
+      timeseries_by_pen_name = { row[1]['pen_name']: row[1]['data'] for row in df_rows.iterrows() }
+      # This is an assumption made -- to take the mean of the scores of each
+      # of the separate lines and have that be the aggregate score
+      # NOTE: Slicing the dataframe to only 64 entries is to account for an
+      # error in earlier simulations where they were run for 74 time steps;
+      # slicing to a smaller value does NOT change the results
+      metric_results = [ np.array([ metric_fn(timeseries_by_pen_name[key][:64], target_data[key]) for key in timeseries_by_pen_name.keys() ]).mean() for metric_fn in metrics.values() ]
+      df_comparison_results.loc[len(df_comparison_results)] = [ df_rows.iloc[0][param] for param in columns ] + metric_results
+    else:
+      print(f'Unable to take metric for nonexistant rows for param combo: {param_vals}')
 
   return df_comparison_results
+
+def process_all_cognitive_exp_metrics():
+  er_metrics = metrics_for_cognitive_contagion_param_sweep_ER(f'{DATA_DIR}/cognitive-contagion-sweep-ER')
+  ws_metrics = metrics_for_cognitive_contagion_param_sweep_WS(f'{DATA_DIR}/cognitive-contagion-sweep-WS')
+  ba_metrics = metrics_for_cognitive_contagion_param_sweep_BA(f'{DATA_DIR}/cognitive-contagion-sweep-BA')
+
+  er_metrics[0].to_csv('./data/analyses/cognitive-er-all.csv')
+  er_metrics[1].to_csv('./data/analyses/cognitive-er-mean.csv')
+  ws_metrics[0].to_csv('./data/analyses/cognitive-ws-all.csv')
+  ws_metrics[1].to_csv('./data/analyses/cognitive-ws-mean.csv')
+  ba_metrics[0].to_csv('./data/analyses/cognitive-ba-all.csv')
+  ba_metrics[1].to_csv('./data/analyses/cognitive-ba-mean.csv')
+
+  er_all_top = top_matches_for_metrics(er_metrics[0])
+  er_mean_top = top_matches_for_metrics(er_metrics[1])
+  ws_all_top = top_matches_for_metrics(ws_metrics[0])
+  ws_mean_top = top_matches_for_metrics(ws_metrics[1])
+  ba_all_top = top_matches_for_metrics(ba_metrics[0])
+  ba_mean_top = top_matches_for_metrics(ba_metrics[1])
+
+  er_all_top.to_csv('./data/analyses/cognitive-er-all_top.csv')
+  er_mean_top.to_csv('./data/analyses/cognitive-er-mean_top.csv')
+  ws_all_top.to_csv('./data/analyses/cognitive-ws-all_top.csv')
+  ws_mean_top.to_csv('./data/analyses/cognitive-ws-mean_top.csv')
+  ba_all_top.to_csv('./data/analyses/cognitive-ba-all_top.csv')
+  ba_mean_top.to_csv('./data/analyses/cognitive-ba-mean_top.csv')
+
+  process_cognitive_contagion_param_sweep_ER_top(er_all_top, f'{DATA_DIR}/cognitive-contagion-sweep-ER', 'results-all')
+  process_cognitive_contagion_param_sweep_WS_top(ws_all_top, f'{DATA_DIR}/cognitive-contagion-sweep-WS', 'results-all')
+  process_cognitive_contagion_param_sweep_BA_top(ba_all_top, f'{DATA_DIR}/cognitive-contagion-sweep-BA', 'results-all')
+  process_cognitive_contagion_param_sweep_ER_top(er_mean_top, f'{DATA_DIR}/cognitive-contagion-sweep-ER', 'results-mean')
+  process_cognitive_contagion_param_sweep_WS_top(ws_mean_top, f'{DATA_DIR}/cognitive-contagion-sweep-WS', 'results-mean')
+  process_cognitive_contagion_param_sweep_BA_top(ba_mean_top, f'{DATA_DIR}/cognitive-contagion-sweep-BA', 'results-mean')
+
+
+def process_all_simple_exp_metrics():
+  er_metrics = metrics_for_simple_contagion_param_sweep_ER(f'{DATA_DIR}/simple-contagion-sweep-ER')
+  ws_metrics = metrics_for_simple_contagion_param_sweep_WS(f'{DATA_DIR}/simple-contagion-sweep-WS')
+  ba_metrics = metrics_for_simple_contagion_param_sweep_BA(f'{DATA_DIR}/simple-contagion-sweep-BA')
+
+  er_metrics[0].to_csv('./data/analyses/simple-er-all.csv')
+  er_metrics[1].to_csv('./data/analyses/simple-er-mean.csv')
+  ws_metrics[0].to_csv('./data/analyses/simple-ws-all.csv')
+  ws_metrics[1].to_csv('./data/analyses/simple-ws-mean.csv')
+  ba_metrics[0].to_csv('./data/analyses/simple-ba-all.csv')
+  ba_metrics[1].to_csv('./data/analyses/simple-ba-mean.csv')
+
+  er_all_top = top_matches_for_metrics(er_metrics[0])
+  er_mean_top = top_matches_for_metrics(er_metrics[1])
+  ws_all_top = top_matches_for_metrics(ws_metrics[0])
+  ws_mean_top = top_matches_for_metrics(ws_metrics[1])
+  ba_all_top = top_matches_for_metrics(ba_metrics[0])
+  ba_mean_top = top_matches_for_metrics(ba_metrics[1])
+
+  er_all_top.to_csv('./data/analyses/simple-er-all_top.csv')
+  er_mean_top.to_csv('./data/analyses/simple-er-mean_top.csv')
+  ws_all_top.to_csv('./data/analyses/simple-ws-all_top.csv')
+  ws_mean_top.to_csv('./data/analyses/simple-ws-mean_top.csv')
+  ba_all_top.to_csv('./data/analyses/simple-ba-all_top.csv')
+  ba_mean_top.to_csv('./data/analyses/simple-ba-mean_top.csv')
+
+  process_simple_contagion_param_sweep_ER_top(er_all_top, f'{DATA_DIR}/simple-contagion-sweep-ER', 'results-all')
+  process_simple_contagion_param_sweep_WS_top(ws_all_top, f'{DATA_DIR}/simple-contagion-sweep-WS', 'results-all')
+  process_simple_contagion_param_sweep_BA_top(ba_all_top, f'{DATA_DIR}/simple-contagion-sweep-BA', 'results-all')
+  process_simple_contagion_param_sweep_ER_top(er_mean_top, f'{DATA_DIR}/simple-contagion-sweep-ER', 'results-mean')
+  process_simple_contagion_param_sweep_WS_top(ws_mean_top, f'{DATA_DIR}/simple-contagion-sweep-WS', 'results-mean')
+  process_simple_contagion_param_sweep_BA_top(ba_mean_top, f'{DATA_DIR}/simple-contagion-sweep-BA', 'results-mean')
 
 def low_res_sweep_total_analysis(data_dir, data_file):
   return dynamic_model_total_analysis(data_dir, data_file, ['translate','tactic','media_dist','media_n','citizen_dist','zeta_citizen','zeta_media','citizen_memory_len','repetition'])
