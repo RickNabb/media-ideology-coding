@@ -52,6 +52,23 @@ AttributeValues = {
   }
 }
 
+'''
+This is a simple data structure to put groups on a 1-dimensional
+axis where their distance from each other can be used to calculate, for
+example, similarity and difference.
+'''
+GroupEmbeddings = {
+  'DEM': 0,
+  'MOD': 1,
+  'REP': 2
+}
+
+def group_to_embedding(group):
+  return GroupEmbeddings[group]
+
+def groups_to_embedding(groups):
+  return np.array([ group_to_embedding(group) for group in groups ]).sum()
+
 # AttributeDistributions = {
 #   Attributes.A.name: {
 #     "dist": ADist,
@@ -68,6 +85,21 @@ AttributeValues = {
 # }
 
 # Attribute A distribution values
+'''
+Calculate a row of homophily values for belief value `row` based on the 
+equation: 1 / (1 + d + s|(row-i)^pow|)
+
+Higher values of d, s, and p yield higher homophily values -- smaller scalar
+multipliers for p based on distance make the probability of connecting lower
+as distance increases.
+
+:param row: The belief value to calculate homophily values for -- aka the
+row of a homophily matrix if rows are belief values.
+:param l: The length of the row (the belief resolution)
+:param p: A value to use as the power term.
+:param s: A value to use as the scalar term.
+:param d: A value to use as the displacement term.
+'''
 HomophilicThetaRow = lambda row, l, p, s, d: [ 1/(1 + d + s * abs(pow(row - i, p))) for i in range(0, l) ]
 SquareHomophilicThetaRow = lambda row, l: HomophilicThetaRow(row, l, 2, 5, 0.25)
 LinearHomophilicThetaRow = lambda row, l: HomophilicThetaRow(row, l, 1, 5, 0.25)
@@ -144,9 +176,27 @@ def BA_graph(n, m):
   G = nx.barabasi_albert_graph(n, m)
   return nlogo_safe_nodes_edges(G)
 
-def BA_graph_homophilic(n, m, resolution, attrs):
-  AMAGHomophilicTheta = lambda resolution: np.matrix([ HomophilicThetaRow(i, resolution, 2, 2, 0) for i in range(0, resolution) ])
-  homophily = AMAGHomophilicTheta(resolution)
+'''
+Return a Netlogo-safe Barabasi-Albert graph from the NetworkX package that
+has extra parameters to govern the degree of homophily present in the graph.
+
+:param n: The number of nodes.
+:param m: The number of edges to connect with when a node is added.
+:param resolution: Belief resolution
+:param bel_homophily: Homophily value from 0-1 for homophily based on
+belief similarity.
+:param group_homophily: Homophily value from 0-1 for homophily based on
+group similarity.
+:param brains: A list of agent brain structures containing their beliefs
+:param groups: A list of which groups agents are members of
+'''
+def BA_graph_homophilic(n, m, resolution, bel_homophily, group_homophily, brains, groups):
+  # Params: row, len, pow, scalar, diff
+  # Higher values yield more homophily
+  HOMOPHILY_SCALAR = 10
+  AMAGHomophilicThetaBel = lambda resolution: np.matrix([ HomophilicThetaRow(i, resolution, HOMOPHILY_SCALAR*bel_homophily, HOMOPHILY_SCALAR*bel_homophily, 0) for i in range(0, resolution) ])
+  homophily_group = lambda groups1, groups2, p, s, d: 1/(1 + d + s * abs(pow(groups_to_embedding(groups1) - groups_to_embedding(groups2), p))) 
+  homophily_bel = AMAGHomophilicThetaBel(resolution)
   G = nx.complete_graph(n=m)
   i = 0
   # print(f'started with G: {G}')
@@ -162,9 +212,10 @@ def BA_graph_homophilic(n, m, resolution, attrs):
 
         node_degree = G.degree(node)
         p = node_degree / total_degree
-        for j in range(len(attrs[node])):
+        for j in range(len(brains[node])):
           # print(f'multiplier between {attrs[m+i][j]} and {attrs[node][j]} is {AMAGHomophilicTheta(resolution)[(attrs[m+i][j],attrs[node][j])]}')
-          p *= homophily[(attrs[m+i][j],attrs[node][j])]
+          p *= homophily_bel[(brains[m+i][j],brains[node][j])]
+        p *= homophily_group(groups[m+i],groups[node], HOMOPHILY_SCALAR*group_homophily, HOMOPHILY_SCALAR*group_homophily, 0)
         rand = random()
         if rand <= p:
           G.add_edge(m+i, node)
@@ -310,10 +361,13 @@ def nlogo_graph_to_nx(citizens, friend_links):
   for cit in citizens:
     cit_id = int(cit['ID'])
     G.add_node(cit_id)
-    for attr in cit['malleable']:
-      G.nodes[cit_id][attr] = cit[attr]
-    for attr in cit['prior']:
-      G.nodes[cit_id][attr] = cit[attr]
+    if 'malleable' in cit and 'prior' in cit:
+      for attr in cit['malleable']:
+        G.nodes[cit_id][attr] = cit[attr]
+      for attr in cit['prior']:
+        G.nodes[cit_id][attr] = cit[attr]
+    if 'groups' in cit:
+      G.nodes[cit_id]['groups'] = cit['groups']
   for link in friend_links:
     link_split = link.split(' ')
     end1 = link_split[1]

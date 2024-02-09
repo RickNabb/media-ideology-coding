@@ -1646,7 +1646,13 @@ end
 ;; of single values, and edges is a list of two-element lists (indicating nodes).
 to-report ba-graph-homophilic [en m]
   let brains map agent-brain-beliefs-as-list (sort citizens)
-  report py:runresult((word "BA_graph_homophilic(" en "," m "," belief-resolution "," (list-as-py-array brains false) ")"))
+  let groupz map [cit -> (list-as-py-array ([groups] of cit) true) ] (sort citizens)
+;  let all-groups set-merge-lists map [ cit -> [groups] of cit ] (sort citizens)
+  let belief-homophilee 0
+  let group-homophilee 0
+  if belief-homophily? [ set belief-homophilee belief-homophily ]
+  if group-homophily? [ set group-homophilee group-homophily ]
+  report py:runresult((word "BA_graph_homophilic(" en "," m "," belief-resolution "," belief-homophilee "," group-homophilee "," (list-as-py-array brains false) "," (list-as-py-array groupz false) ")"))
 end
 
 ;; Run a MAG function in the python script.
@@ -1718,14 +1724,32 @@ to-report influencer-distance-paths [ influencer target message t ]
 end
 
 ;; Report the amount of homophily in the graph by measuring the average neighbor
-;; distance across the graph.
-to-report graph-homophily
+;; distance across the graph by belief.
+to-report graph-homophily-belief
   let citizen-arr list-as-py-array (map [ cit -> agent-brain-as-py-dict [brain] of citizen cit ] (range N)) false
   let edge-arr list-as-py-array (sort social-friends) true
   let homophily py:runresult(
     (word "graph_homophily(nlogo_graph_to_nx(" citizen-arr "," edge-arr "))")
   )
   report homophily
+end
+
+;; Report the amount of homophily in the graph by measuring the average neighbor
+;; distance across the graph by group membership.
+to-report graph-homophily-group
+  let citizen-arr list-as-py-array (map [ cit -> list-as-py-dict (list (list "groups" groups-embedding ([groups] of (citizen cit))) (list "ID" ([dict-value brain "ID"] of (citizen cit)))) true false ] (range N)) false
+  let edge-arr list-as-py-array (sort social-friends) true
+  let homophily py:runresult(
+    (word "graph_homophily(nlogo_graph_to_nx(" citizen-arr "," edge-arr "))")
+  )
+  report homophily
+end
+
+to-report groups-embedding [ groupz ]
+  let embedding py:runresult(
+    (word "groups_to_embedding(" list-as-py-array groupz true ")")
+  )
+  report embedding
 end
 
 ;; Report the amount of homophily for a single citizen by measuring the average neighbor
@@ -2525,7 +2549,7 @@ SWITCH
 862
 load-graph?
 load-graph?
-0
+1
 1
 -1000
 
@@ -2780,7 +2804,7 @@ CHOOSER
 graph-type
 graph-type
 "erdos-renyi" "watts-strogatz" "barabasi-albert" "ba-homophilic" "mag" "facebook" "kronecker"
-0
+3
 
 SLIDER
 257
@@ -2819,9 +2843,9 @@ Graph Parameters
 
 SLIDER
 409
-900
+847
 543
-933
+880
 watts-strogatz-p
 watts-strogatz-p
 0
@@ -2834,9 +2858,9 @@ HORIZONTAL
 
 SLIDER
 409
-940
+887
 536
-973
+920
 watts-strogatz-k
 watts-strogatz-k
 0
@@ -2965,9 +2989,9 @@ Link weight settings
 
 INPUTBOX
 409
-999
+946
 552
-1084
+1031
 kronecker-seed
 [[0.6,0.16,0.24],\n  [0.40,0.2,0.4],\n  [0.21,0.14,0.65]]
 1
@@ -2976,9 +3000,9 @@ String
 
 SLIDER
 409
-1090
+1037
 501
-1123
+1070
 kronecker-k
 kronecker-k
 0
@@ -2991,9 +3015,9 @@ HORIZONTAL
 
 TEXTBOX
 413
-980
+927
 563
-998
+945
 Kronecker
 11
 0.0
@@ -3055,9 +3079,9 @@ Erdos-Renyi (random)
 
 TEXTBOX
 409
-877
+824
 559
-895
+842
 Watts-Strogatz (small world)
 11
 0.0
@@ -3345,13 +3369,13 @@ count medias with [dict-value brain \"A\" = 6]
 11
 
 SWITCH
-404
-825
-558
-858
-graph-homophily?
-graph-homophily?
-1
+253
+1085
+391
+1118
+belief-homophily?
+belief-homophily?
+0
 1
 -1000
 
@@ -3717,6 +3741,69 @@ cognitive-fn
 cognitive-fn
 "linear-gullible" "linear-stubborn" "linear-mid" "threshold-gullible" "threshold-mid" "threshold-stubborn" "sigmoid-gullible" "sigmoid-stubborn" "sigmoid-mid"
 7
+
+SWITCH
+410
+1086
+564
+1119
+group-homophily?
+group-homophily?
+1
+1
+-1000
+
+SLIDER
+253
+1127
+392
+1160
+belief-homophily
+belief-homophily
+0
+1
+0.57
+0.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+410
+1125
+566
+1158
+group-homophily
+group-homophily
+0
+1
+0.5
+0.01
+1
+NIL
+HORIZONTAL
+
+MONITOR
+1186
+536
+1303
+582
+curr-bel-homophily
+1 / (1 + (item 0 graph-homophily-belief))
+3
+1
+11
+
+MONITOR
+1185
+590
+1318
+636
+curr-group-homophily
+1 / (1 + (item 0 graph-homophily-group))
+3
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
