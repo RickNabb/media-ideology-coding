@@ -1617,7 +1617,7 @@ end
 ;; @reports A dictionary [ ['nodes' nodes] ['edges' edges] ] where nodes is a list
 ;; of single values, and edges is a list of two-element lists (indicating nodes).
 to-report er-graph [en p]
-  report py:runresult((word "ER_graph(" en "," p ")"))
+  report py:runresult((word "ER_graph_bidirected(" en "," p ")"))
 end
 
 ;; Create a Watts-Strogatz graph with the NetworkX package in python
@@ -1627,7 +1627,7 @@ end
 ;; @reports A dictionary [ ['nodes' nodes] ['edges' edges] ] where nodes is a list
 ;; of single values, and edges is a list of two-element lists (indicating nodes).
 to-report ws-graph [en k p]
-  report py:runresult((word "WS_graph(" en "," k "," p ")"))
+  report py:runresult((word "WS_graph_bidirected(" en "," k "," p ")"))
 end
 
 ;; Create a Barabasi-Albert graph with the NetworkX package in python
@@ -1636,7 +1636,7 @@ end
 ;; @reports A dictionary [ ['nodes' nodes] ['edges' edges] ] where nodes is a list
 ;; of single values, and edges is a list of two-element lists (indicating nodes).
 to-report ba-graph [en m]
-  report py:runresult((word "BA_graph(" en "," m ")"))
+  report py:runresult((word "BA_graph_bidirected(" en "," m ")"))
 end
 
 ;; Create a Barabasi-Albert graph with the NetworkX package in python
@@ -2530,7 +2530,7 @@ CHOOSER
 spread-type
 spread-type
 "simple" "complex" "cognitive"
-0
+1
 
 TEXTBOX
 302
@@ -2804,7 +2804,7 @@ CHOOSER
 graph-type
 graph-type
 "erdos-renyi" "watts-strogatz" "barabasi-albert" "ba-homophilic" "mag" "facebook" "kronecker"
-3
+1
 
 SLIDER
 257
@@ -2815,7 +2815,7 @@ erdos-renyi-p
 erdos-renyi-p
 0
 1
-0.5
+0.1
 0.01
 1
 NIL
@@ -3375,7 +3375,7 @@ SWITCH
 1118
 belief-homophily?
 belief-homophily?
-0
+1
 1
 -1000
 
@@ -3787,7 +3787,7 @@ MONITOR
 1186
 536
 1303
-582
+581
 curr-bel-homophily
 1 / (1 + (item 0 graph-homophily-belief))
 3
@@ -3798,7 +3798,7 @@ MONITOR
 1185
 590
 1318
-636
+635
 curr-group-homophily
 1 / (1 + (item 0 graph-homophily-group))
 3
