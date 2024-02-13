@@ -2559,7 +2559,7 @@ INPUTBOX
 244
 929
 load-graph-path
-D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/simple-contagion-sweep-ER/graphs/0.5-0.75-2.csv
+D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/05-Feb-2024-simple-contagion-sweep-ER-TEST/graphs/0.5-0.75-3.csv
 1
 0
 String
@@ -2570,7 +2570,7 @@ INPUTBOX
 247
 995
 save-graph-path
-D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/simple-contagion-sweep-ER/graphs/0.5-0.75-2.csv
+D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/05-Feb-2024-simple-contagion-sweep-ER-TEST/graphs/0.5-0.5-2.csv
 1
 0
 String
@@ -2601,7 +2601,7 @@ simple-spread-chance
 simple-spread-chance
 0
 1
-0.7
+0.75
 0.01
 1
 NIL
@@ -2641,7 +2641,7 @@ tick-end
 tick-end
 30
 1000
-62.0
+73.0
 1
 1
 NIL
@@ -2717,7 +2717,7 @@ cognitive-exponent
 cognitive-exponent
 -10
 10
-4.0
+3.0
 1
 1
 NIL
@@ -2815,7 +2815,7 @@ erdos-renyi-p
 erdos-renyi-p
 0
 1
-0.05
+0.5
 0.01
 1
 NIL
@@ -3388,7 +3388,7 @@ repetition
 repetition
 0
 10
-2.0
+3.0
 1
 1
 NIL
@@ -4625,7 +4625,7 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
   </experiment>
   <experiment name="simple-contagion-param-sweep-ER_TEST" repetitions="3" runMetricsEveryStep="false">
     <setup>setup-py
-let run-dir (word sim-output-dir substring date-time-safe 11 (length date-time-safe) "-simple-contagion-sweep-ER")
+let run-dir (word sim-output-dir substring date-time-safe 11 (length date-time-safe) "-simple-contagion-sweep-ER-TEST")
 let graphs-path (word run-dir "/graphs")
 if not (py:runresult (word "os.path.isdir('" graphs-path "')")) [
   py:run (word "create_nested_dirs('" graphs-path "')")
