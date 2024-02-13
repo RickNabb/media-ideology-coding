@@ -8,6 +8,7 @@ from nlogo_colors import *
 import itertools
 import pandas as pd
 import os
+from os.path import exists
 import numpy as np
 from scipy.stats import chi2_contingency, truncnorm, pearsonr
 from sklearn.linear_model import LinearRegression
@@ -153,7 +154,7 @@ def process_multi_chart_data(in_path, in_filename='percent-agent-beliefs'):
     return (-1,-1,-1)
 
   for file in os.listdir(in_path):
-    if in_filename in file:
+    if in_filename in file and '.swp' not in file and '.swo' not in file:
       data = process_chart_data(f'{in_path}/{file}')
       model_params = data[0]
       props.append(data[1])
@@ -1075,9 +1076,11 @@ def read_polarization_dataframe(path):
 
 def process_top_exp_results(top_df, param_order, path, results_dir):
   top_param_combos = [
-    [ row[1][col] for col in param_order ]
-    for row in top_df.iterrows()
+    [ str(top_df[col].iloc[i]) for col in param_order ]
+    for i in range(len(top_df))
   ]
+  print(top_df)
+  print(top_param_combos)
   process_select_exp_outputs(
     top_param_combos,
     {'percent-agent-beliefs': [PLOT_TYPES.LINE, PLOT_TYPES.STACK],
@@ -1278,7 +1281,8 @@ def metrics_for_cognitive_contagion_param_sweep_BA(path):
   return all_run_metrics, mean_metrics
 
 def top_matches_for_metrics(metrics_df):
-  ranked = metrics_df.sort_values(by=['mape','pearson'], ascending=False)
+  ranked = metrics_df.sort_values(by=['mape','pearson'], ascending=[True,False])
+  # ranked = metrics_df.sort_values(by=['pearson','mape'], ascending=[False,True])
   return ranked.head(10)
 
 def mean_multidata(multidata):
@@ -1376,32 +1380,88 @@ def process_all_cognitive_exp_metrics():
   process_cognitive_contagion_param_sweep_WS_top(ws_mean_top, f'{DATA_DIR}/cognitive-contagion-sweep-WS', 'results-mean')
   process_cognitive_contagion_param_sweep_BA_top(ba_mean_top, f'{DATA_DIR}/cognitive-contagion-sweep-BA', 'results-mean')
 
-
 def process_all_simple_exp_metrics():
-  er_metrics = metrics_for_simple_contagion_param_sweep_ER(f'{DATA_DIR}/simple-contagion-sweep-ER')
-  ws_metrics = metrics_for_simple_contagion_param_sweep_WS(f'{DATA_DIR}/simple-contagion-sweep-WS')
-  ba_metrics = metrics_for_simple_contagion_param_sweep_BA(f'{DATA_DIR}/simple-contagion-sweep-BA')
+  data_path = './data/analyses'
+  er_metrics = []
+  if exists(f'{data_path}/simple-er-all.csv') and exists(f'{data_path}/simple-er-mean.csv'):
+    print('Read in ER metric data')
+    er_metrics.append(pd.read_csv(f'{data_path}/simple-er-all.csv'))
+    er_metrics.append(pd.read_csv(f'{data_path}/simple-er-mean.csv'))
+    er_metrics[0].drop(columns=['Unnamed: 0'], inplace=True)
+    er_metrics[1].drop(columns=['Unnamed: 0'], inplace=True)
+  else:
+    er_metrics = metrics_for_simple_contagion_param_sweep_ER(f'{DATA_DIR}/simple-contagion-sweep-ER')
+    er_metrics[0].to_csv(f'{data_path}/simple-er-all.csv')
+    er_metrics[1].to_csv(f'{data_path}/simple-er-mean.csv')
 
-  er_metrics[0].to_csv('./data/analyses/simple-er-all.csv')
-  er_metrics[1].to_csv('./data/analyses/simple-er-mean.csv')
-  ws_metrics[0].to_csv('./data/analyses/simple-ws-all.csv')
-  ws_metrics[1].to_csv('./data/analyses/simple-ws-mean.csv')
-  ba_metrics[0].to_csv('./data/analyses/simple-ba-all.csv')
-  ba_metrics[1].to_csv('./data/analyses/simple-ba-mean.csv')
+  ws_metrics = []
+  if exists(f'{data_path}/simple-ws-all.csv') and exists(f'{data_path}/simple-ws-mean.csv'):
+    print('Read in WS metric data')
+    ws_metrics.append(pd.read_csv(f'{data_path}/simple-ws-all.csv'))
+    ws_metrics.append(pd.read_csv(f'{data_path}/simple-ws-mean.csv'))
+    ws_metrics[0].drop(columns=['Unnamed: 0'], inplace=True)
+    ws_metrics[1].drop(columns=['Unnamed: 0'], inplace=True)
+  else:
+    ws_metrics = metrics_for_simple_contagion_param_sweep_WS(f'{DATA_DIR}/simple-contagion-sweep-WS')
+    ws_metrics[0].to_csv(f'{data_path}/simple-ws-all.csv')
+    ws_metrics[1].to_csv(f'{data_path}/simple-ws-mean.csv')
 
-  er_all_top = top_matches_for_metrics(er_metrics[0])
-  er_mean_top = top_matches_for_metrics(er_metrics[1])
-  ws_all_top = top_matches_for_metrics(ws_metrics[0])
-  ws_mean_top = top_matches_for_metrics(ws_metrics[1])
-  ba_all_top = top_matches_for_metrics(ba_metrics[0])
-  ba_mean_top = top_matches_for_metrics(ba_metrics[1])
+  ba_metrics = []
+  if exists(f'{data_path}/simple-ba-all.csv') and exists(f'{data_path}/simple-ba-mean.csv'):
+    print('Read in BA metric data')
+    ba_metrics.append(pd.read_csv(f'{data_path}/simple-ba-all.csv'))
+    ba_metrics.append(pd.read_csv(f'{data_path}/simple-ba-mean.csv'))
+    ba_metrics[0].drop(columns=['Unnamed: 0'], inplace=True)
+    ba_metrics[1].drop(columns=['Unnamed: 0'], inplace=True)
+  else:
+    ba_metrics = metrics_for_simple_contagion_param_sweep_BA(f'{DATA_DIR}/simple-contagion-sweep-BA')
+    ba_metrics[0].to_csv(f'{data_path}/simple-ba-all.csv')
+    ba_metrics[1].to_csv(f'{data_path}/simple-ba-mean.csv')
 
-  er_all_top.to_csv('./data/analyses/simple-er-all_top.csv')
-  er_mean_top.to_csv('./data/analyses/simple-er-mean_top.csv')
-  ws_all_top.to_csv('./data/analyses/simple-ws-all_top.csv')
-  ws_mean_top.to_csv('./data/analyses/simple-ws-mean_top.csv')
-  ba_all_top.to_csv('./data/analyses/simple-ba-all_top.csv')
-  ba_mean_top.to_csv('./data/analyses/simple-ba-mean_top.csv')
+  er_all_top = None
+  er_mean_top = None
+  if exists(f'{data_path}/simple-er-all_top.csv'):
+    er_all_top = pd.read_csv(f'{data_path}/simple-er-all_top.csv')
+    er_all_top.drop(columns=['Unnamed: 0'], inplace=True)
+  else:
+    er_all_top = top_matches_for_metrics(er_metrics[0])
+    er_all_top.to_csv(f'{data_path}/simple-er-all_top.csv')
+  if exists(f'{data_path}/simple-er-mean_top.csv'):
+    er_mean_top = pd.read_csv(f'{data_path}/simple-er-mean_top.csv')
+    er_mean_top.drop(columns=['Unnamed: 0'], inplace=True)
+  else:
+    er_mean_top = top_matches_for_metrics(er_metrics[1])
+    er_mean_top.to_csv(f'{data_path}/simple-er-mean_top.csv')
+
+  ws_all_top = None
+  ws_mean_top = None
+  if exists(f'{data_path}/simple-ws-all_top.csv'):
+    ws_all_top = pd.read_csv(f'{data_path}/simple-ws-all_top.csv')
+    ws_all_top.drop(columns=['Unnamed: 0'], inplace=True)
+  else:
+    ws_all_top = top_matches_for_metrics(ws_metrics[0])
+    ws_all_top.to_csv(f'{data_path}/simple-ws-all_top.csv')
+  if exists(f'{data_path}/simple-ws-mean_top.csv'):
+    ws_mean_top = pd.read_csv(f'{data_path}/simple-ws-mean_top.csv')
+    ws_mean_top.drop(columns=['Unnamed: 0'], inplace=True)
+  else:
+    ws_mean_top = top_matches_for_metrics(ws_metrics[1])
+    ws_mean_top.to_csv(f'{data_path}/simple-ws-mean_top.csv')
+
+  ba_all_top = None
+  ba_mean_top = None
+  if exists(f'{data_path}/simple-ba-all_top.csv'):
+    ba_all_top = pd.read_csv(f'{data_path}/simple-ba-all_top.csv')
+    ba_all_top.drop(columns=['Unnamed: 0'], inplace=True)
+  else:
+    ba_all_top = top_matches_for_metrics(ba_metrics[0])
+    ba_all_top.to_csv(f'{data_path}/simple-ba-all_top.csv')
+  if exists(f'{data_path}/simple-ba-mean_top.csv'):
+    ba_mean_top = pd.read_csv(f'{data_path}/simple-ba-mean_top.csv')
+    ba_mean_top.drop(columns=['Unnamed: 0'], inplace=True)
+  else:
+    ba_mean_top = top_matches_for_metrics(ba_metrics[1])
+    ba_mean_top.to_csv(f'{data_path}/simple-ba-mean_top.csv')
 
   process_simple_contagion_param_sweep_ER_top(er_all_top, f'{DATA_DIR}/simple-contagion-sweep-ER', 'results-all')
   process_simple_contagion_param_sweep_WS_top(ws_all_top, f'{DATA_DIR}/simple-contagion-sweep-WS', 'results-all')
