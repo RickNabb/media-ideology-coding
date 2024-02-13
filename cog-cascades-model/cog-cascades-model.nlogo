@@ -989,7 +989,10 @@ to receive-message [ source cit senders message message-id ]
           ]
         ]
 ;        show (word "Citizen " cit "has ratio " (believing-neighbors / length sort social-friend-neighbors))
-        if (believing-neighbors / length sort out-social-friend-neighbors) >= complex-spread-ratio [
+        ; NOTE: This is a choice made with the non-bidirectional graph to count *all* the social neighbors
+        ; while determining whether or not to spread complex contagion -- the interpretation is that an ego
+        ; agent would also be gauging support from people who spread to them, who "they follow"
+        if (believing-neighbors / length sort social-friend-neighbors) >= complex-spread-ratio [
 ;          show (word "Citizen " cit " believing with ratio " (believing-neighbors / length sort social-friend-neighbors))
           set brain (believe-message-py brain message)
           believe-message self message-id message
@@ -1617,7 +1620,7 @@ end
 ;; @reports A dictionary [ ['nodes' nodes] ['edges' edges] ] where nodes is a list
 ;; of single values, and edges is a list of two-element lists (indicating nodes).
 to-report er-graph [en p]
-  report py:runresult((word "ER_graph_bidirected(" en "," p ")"))
+  report py:runresult((word "ER_graph(" en "," p ")"))
 end
 
 ;; Create a Watts-Strogatz graph with the NetworkX package in python
@@ -1627,7 +1630,7 @@ end
 ;; @reports A dictionary [ ['nodes' nodes] ['edges' edges] ] where nodes is a list
 ;; of single values, and edges is a list of two-element lists (indicating nodes).
 to-report ws-graph [en k p]
-  report py:runresult((word "WS_graph_bidirected(" en "," k "," p ")"))
+  report py:runresult((word "WS_graph(" en "," k "," p ")"))
 end
 
 ;; Create a Barabasi-Albert graph with the NetworkX package in python
@@ -1636,7 +1639,7 @@ end
 ;; @reports A dictionary [ ['nodes' nodes] ['edges' edges] ] where nodes is a list
 ;; of single values, and edges is a list of two-element lists (indicating nodes).
 to-report ba-graph [en m]
-  report py:runresult((word "BA_graph_bidirected(" en "," m ")"))
+  report py:runresult((word "BA_graph(" en "," m ")"))
 end
 
 ;; Create a Barabasi-Albert graph with the NetworkX package in python
@@ -2616,7 +2619,7 @@ complex-spread-ratio
 complex-spread-ratio
 0
 1
-0.35
+0.9
 0.01
 1
 NIL
@@ -3125,7 +3128,7 @@ CHOOSER
 citizen-init-dist
 citizen-init-dist
 "uniform" "normal" "polarized"
-0
+2
 
 TEXTBOX
 857
