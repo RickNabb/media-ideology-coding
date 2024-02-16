@@ -144,6 +144,7 @@ def process_multi_chart_data(in_path, in_filename='percent-agent-beliefs'):
   props = []
   multi_data = []
   model_params = {}
+  file_order = []
   print(f'process_multi_chart_data for {in_path}/{in_filename}')
 
   if not os.path.isdir(in_path):
@@ -159,10 +160,13 @@ def process_multi_chart_data(in_path, in_filename='percent-agent-beliefs'):
       model_params = data[0]
       props.append(data[1])
       multi_data.append(data[2])
+      file_order.append(file)
 
   full_data_size = int(model_params['tick-end']) + 1
   means = { key: [] for key in multi_data[0].keys() }
+  i = -1
   for data in multi_data:
+    i += 1
     for key in data.keys():
       data_vector = np.array(data[key]['y']).astype('float32')
 
@@ -1079,8 +1083,6 @@ def process_top_exp_results(top_df, param_order, path, results_dir):
     [ str(top_df[col].iloc[i]) for col in param_order ]
     for i in range(len(top_df))
   ]
-  print(top_df)
-  print(top_param_combos)
   process_select_exp_outputs(
     top_param_combos,
     {'percent-agent-beliefs': [PLOT_TYPES.LINE, PLOT_TYPES.STACK],
@@ -1094,6 +1096,10 @@ def process_simple_contagion_param_sweep_ER_top(top_df, path, results_dir):
 
 def process_cognitive_contagion_param_sweep_ER_top(top_df, path, results_dir):
   param_order = ['er_p','cognitive_translate','cognitive_exponent','repetition']
+  process_top_exp_results(top_df, param_order, path, results_dir)
+
+def process_complex_contagion_param_sweep_ER_top(top_df, path, results_dir):
+  param_order = ['er_p','complex_spread_ratio','repetition']
   process_top_exp_results(top_df, param_order, path, results_dir)
 
 def process_simple_contagion_param_sweep_ER_test(path):
@@ -1143,12 +1149,28 @@ def get_cognitive_contagion_param_sweep_ER_multidata(path):
     path)
   return measure_multidata
 
+def get_complex_contagion_param_sweep_ER_multidata(path):
+  complex_spread_ratio = ['0.05','0.1','0.25','0.5','0.75','0.95']
+  er_p = ['0.05','0.1','0.25','0.5']
+  repetition = list(map(str, range(10)))
+  measure_multidata = get_all_multidata(
+    [er_p,complex_spread_ratio,repetition],
+    ['er_p','complex_spread_ratio','repetition'],
+    {'percent-agent-beliefs': [PLOT_TYPES.LINE, PLOT_TYPES.STACK],
+    'opinion-timeseries': [PLOT_TYPES.LINE]},
+    path)
+  return measure_multidata
+
 def process_simple_contagion_param_sweep_WS_top(top_df, path, results_dir):
   param_order = ['ws_p','ws_k','simple_spread_chance','repetition']
   process_top_exp_results(top_df, param_order, path, results_dir)
 
 def process_cognitive_contagion_param_sweep_WS_top(top_df, path, results_dir):
   param_order = ['ws_p','ws_k','cognitive_translate','cognitive_exponent','repetition']
+  process_top_exp_results(top_df, param_order, path, results_dir)
+
+def process_complex_contagion_param_sweep_WS_top(top_df, path, results_dir):
+  param_order = ['ws_p','ws_k','complex_spread_ratio','repetition']
   process_top_exp_results(top_df, param_order, path, results_dir)
 
 def get_simple_contagion_param_sweep_WS_multidata(path):
@@ -1178,6 +1200,19 @@ def get_cognitive_contagion_param_sweep_WS_multidata(path):
     path)
   return measure_multidata
 
+def get_complex_contagion_param_sweep_WS_multidata(path):
+  complex_spread_ratio = ['0.05','0.1','0.25','0.5','0.75','0.9']
+  ws_p = ['0.1','0.25','0.5']
+  ws_k = ['2','3','5','10','15']
+  repetition = list(map(str, range(10)))
+  measure_multidata = get_all_multidata(
+    [ws_p,ws_k,complex_spread_ratio,repetition],
+    ['ws_p','ws_k','complex_spread_ratio','repetition'],
+    {'percent-agent-beliefs': [PLOT_TYPES.LINE, PLOT_TYPES.STACK],
+    'opinion-timeseries': [PLOT_TYPES.LINE]},
+    path)
+  return measure_multidata
+
 def process_simple_contagion_param_sweep_BA_top(top_df, path, results_dir):
   param_order = ['ba_m','simple_spread_chance','repetition']
   process_top_exp_results(top_df, param_order, path, results_dir)
@@ -1186,13 +1221,17 @@ def process_cognitive_contagion_param_sweep_BA_top(top_df, path, results_dir):
   param_order = ['ba_m','cognitive_translate','cognitive_exponent','repetition']
   process_top_exp_results(top_df, param_order, path, results_dir)
 
+def process_complex_contagion_param_sweep_BA_top(top_df, path, results_dir):
+  param_order = ['ba_m','complex_spread_ratio','repetition']
+  process_top_exp_results(top_df, param_order, path, results_dir)
+
 def get_simple_contagion_param_sweep_BA_multidata(path):
   simple_spread_chance = ['0.01','0.05','0.1','0.25','0.5','0.75']
   ba_m = ['3','5','10','15']
   repetition = list(map(str, range(10)))
   measure_multidata = get_all_multidata(
     [ba_m,simple_spread_chance,repetition],
-    ['ba-m','simple_spread_chance','repetition'],
+    ['ba_m','simple_spread_chance','repetition'],
     {'percent-agent-beliefs': [PLOT_TYPES.LINE, PLOT_TYPES.STACK],
     'opinion-timeseries': [PLOT_TYPES.LINE]},
     path)
@@ -1205,7 +1244,19 @@ def get_cognitive_contagion_param_sweep_BA_multidata(path):
   repetition = list(map(str, range(10)))
   measure_multidata = get_all_multidata(
     [ba_m,cognitive_translate,cognitive_exponent,repetition],
-    ['ba-m','cognitive_translate','cognitive_exponent','repetition'],
+    ['ba_m','cognitive_translate','cognitive_exponent','repetition'],
+    {'percent-agent-beliefs': [PLOT_TYPES.LINE, PLOT_TYPES.STACK],
+    'opinion-timeseries': [PLOT_TYPES.LINE]},
+    path)
+  return measure_multidata
+
+def get_complex_contagion_param_sweep_BA_multidata(path):
+  complex_spread_ratio = ['0.05','0.1','0.25','0.5','0.75','0.9']
+  ba_m = ['3','5','10','15']
+  repetition = list(map(str, range(10)))
+  measure_multidata = get_all_multidata(
+    [ba_m,complex_spread_ratio,repetition],
+    ['ba_m','complex_spread_ratio','repetition'],
     {'percent-agent-beliefs': [PLOT_TYPES.LINE, PLOT_TYPES.STACK],
     'opinion-timeseries': [PLOT_TYPES.LINE]},
     path)
@@ -1280,6 +1331,33 @@ def metrics_for_cognitive_contagion_param_sweep_BA(path):
   mean_metrics = timeseries_similarity_for_mean_runs(multidata, measure, columns, gallup_dict)
   return all_run_metrics, mean_metrics
 
+def metrics_for_complex_contagion_param_sweep_ER(path):
+  gallup_dict = read_gallup_data_into_dict('../labeled-data/public/gallup-polling.csv')
+  columns = ['er_p','complex_spread_ratio','repetition']
+  measure = 'opinion-timeseries'
+  multidata = get_complex_contagion_param_sweep_ER_multidata(path)
+  all_run_metrics = timeseries_similarity_for_all_runs(multidata, measure, columns, gallup_dict)
+  mean_metrics = timeseries_similarity_for_mean_runs(multidata, measure, columns, gallup_dict)
+  return all_run_metrics, mean_metrics
+
+def metrics_for_complex_contagion_param_sweep_WS(path):
+  gallup_dict = read_gallup_data_into_dict('../labeled-data/public/gallup-polling.csv')
+  columns = ['ws_p','ws_k','complex_spread_ratio','repetition']
+  measure = 'opinion-timeseries'
+  multidata = get_complex_contagion_param_sweep_WS_multidata(path)
+  all_run_metrics = timeseries_similarity_for_all_runs(multidata, measure, columns, gallup_dict)
+  mean_metrics = timeseries_similarity_for_mean_runs(multidata, measure, columns, gallup_dict)
+  return all_run_metrics, mean_metrics
+
+def metrics_for_complex_contagion_param_sweep_BA(path):
+  gallup_dict = read_gallup_data_into_dict('../labeled-data/public/gallup-polling.csv')
+  columns = ['ba_m','complex_spread_ratio','repetition']
+  measure = 'opinion-timeseries'
+  multidata = get_complex_contagion_param_sweep_BA_multidata(path)
+  all_run_metrics = timeseries_similarity_for_all_runs(multidata, measure, columns, gallup_dict)
+  mean_metrics = timeseries_similarity_for_mean_runs(multidata, measure, columns, gallup_dict)
+  return all_run_metrics, mean_metrics
+
 def top_matches_for_metrics(metrics_df):
   ranked = metrics_df.sort_values(by=['mape','pearson'], ascending=[True,False])
   # ranked = metrics_df.sort_values(by=['pearson','mape'], ascending=[False,True])
@@ -1287,11 +1365,17 @@ def top_matches_for_metrics(metrics_df):
 
 def mean_multidata(multidata):
   multi_data_has_multiple = lambda multi_data_entry: type(multi_data_entry[0]) == type(np.array(0)) and len(multi_data_entry) > 1
+  # for param_measure in multidata.keys():
+  #   if param_measure != 'params':
+  #     if multidata[param_measure] == -1:
+  #       print(f'Found -1 at {param_measure}')
+  #     else:
+  #       print(f'Keys: {multidata[param_measure].keys()}')
   mean_multidata = {
     # param_measure[0] is the parameter combo tuple
     param_measure: {
-      pen_name: (multidata[param_measure][pen_name].mean(0) if multi_data_has_multiple(multidata[param_measure][pen_name]) else multidata[param_measure][pen_name]) for pen_name in multidata[param_measure].keys() if multidata[param_measure] != -1
-    } for param_measure in multidata.keys() if param_measure != 'params'
+      pen_name: (multidata[param_measure][pen_name].mean(0) if multi_data_has_multiple(multidata[param_measure][pen_name]) else multidata[param_measure][pen_name]) for pen_name in multidata[param_measure].keys() 
+    } for param_measure in multidata.keys() if (param_measure != 'params' and multidata[param_measure] != -1)
   }
   return mean_multidata
 
@@ -1379,6 +1463,97 @@ def process_all_cognitive_exp_metrics():
   process_cognitive_contagion_param_sweep_ER_top(er_mean_top, f'{DATA_DIR}/cognitive-contagion-sweep-ER', 'results-mean')
   process_cognitive_contagion_param_sweep_WS_top(ws_mean_top, f'{DATA_DIR}/cognitive-contagion-sweep-WS', 'results-mean')
   process_cognitive_contagion_param_sweep_BA_top(ba_mean_top, f'{DATA_DIR}/cognitive-contagion-sweep-BA', 'results-mean')
+
+def process_all_complex_exp_metrics():
+  data_path = './data/analyses'
+  er_metrics = []
+  if exists(f'{data_path}/complex-er-all.csv') and exists(f'{data_path}/simple-er-mean.csv'):
+    print('Read in ER metric data')
+    er_metrics.append(pd.read_csv(f'{data_path}/complex-er-all.csv'))
+    er_metrics.append(pd.read_csv(f'{data_path}/complex-er-mean.csv'))
+    er_metrics[0].drop(columns=['Unnamed: 0'], inplace=True)
+    er_metrics[1].drop(columns=['Unnamed: 0'], inplace=True)
+  else:
+    er_metrics = metrics_for_complex_contagion_param_sweep_ER(f'{DATA_DIR}/complex-contagion-sweep-ER')
+    er_metrics[0].to_csv(f'{data_path}/complex-er-all.csv')
+    er_metrics[1].to_csv(f'{data_path}/complex-er-mean.csv')
+
+  ws_metrics = []
+  if exists(f'{data_path}/complex-ws-all.csv') and exists(f'{data_path}/complex-ws-mean.csv'):
+    print('Read in WS metric data')
+    ws_metrics.append(pd.read_csv(f'{data_path}/complex-ws-all.csv'))
+    ws_metrics.append(pd.read_csv(f'{data_path}/complex-ws-mean.csv'))
+    ws_metrics[0].drop(columns=['Unnamed: 0'], inplace=True)
+    ws_metrics[1].drop(columns=['Unnamed: 0'], inplace=True)
+  else:
+    ws_metrics = metrics_for_complex_contagion_param_sweep_WS(f'{DATA_DIR}/complex-contagion-sweep-WS')
+    ws_metrics[0].to_csv(f'{data_path}/complex-ws-all.csv')
+    ws_metrics[1].to_csv(f'{data_path}/complex-ws-mean.csv')
+
+  ba_metrics = []
+  if exists(f'{data_path}/complex-ba-all.csv') and exists(f'{data_path}/complex-ba-mean.csv'):
+    print('Read in BA metric data')
+    ba_metrics.append(pd.read_csv(f'{data_path}/complex-ba-all.csv'))
+    ba_metrics.append(pd.read_csv(f'{data_path}/complex-ba-mean.csv'))
+    ba_metrics[0].drop(columns=['Unnamed: 0'], inplace=True)
+    ba_metrics[1].drop(columns=['Unnamed: 0'], inplace=True)
+  else:
+    ba_metrics = metrics_for_complex_contagion_param_sweep_BA(f'{DATA_DIR}/complex-contagion-sweep-BA')
+    ba_metrics[0].to_csv(f'{data_path}/complex-ba-all.csv')
+    ba_metrics[1].to_csv(f'{data_path}/complex-ba-mean.csv')
+
+  er_all_top = None
+  er_mean_top = None
+  if exists(f'{data_path}/complex-er-all_top.csv'):
+    er_all_top = pd.read_csv(f'{data_path}/complex-er-all_top.csv')
+    er_all_top.drop(columns=['Unnamed: 0'], inplace=True)
+  else:
+    er_all_top = top_matches_for_metrics(er_metrics[0])
+    er_all_top.to_csv(f'{data_path}/complex-er-all_top.csv')
+  if exists(f'{data_path}/complex-er-mean_top.csv'):
+    er_mean_top = pd.read_csv(f'{data_path}/complex-er-mean_top.csv')
+    er_mean_top.drop(columns=['Unnamed: 0'], inplace=True)
+  else:
+    er_mean_top = top_matches_for_metrics(er_metrics[1])
+    er_mean_top.to_csv(f'{data_path}/complex-er-mean_top.csv')
+
+  ws_all_top = None
+  ws_mean_top = None
+  if exists(f'{data_path}/complex-ws-all_top.csv'):
+    ws_all_top = pd.read_csv(f'{data_path}/complex-ws-all_top.csv')
+    ws_all_top.drop(columns=['Unnamed: 0'], inplace=True)
+  else:
+    ws_all_top = top_matches_for_metrics(ws_metrics[0])
+    ws_all_top.to_csv(f'{data_path}/complex-ws-all_top.csv')
+  if exists(f'{data_path}/complex-ws-mean_top.csv'):
+    ws_mean_top = pd.read_csv(f'{data_path}/complex-ws-mean_top.csv')
+    ws_mean_top.drop(columns=['Unnamed: 0'], inplace=True)
+  else:
+    ws_mean_top = top_matches_for_metrics(ws_metrics[1])
+    ws_mean_top.to_csv(f'{data_path}/complex-ws-mean_top.csv')
+
+  ba_all_top = None
+  ba_mean_top = None
+  if exists(f'{data_path}/complex-ba-all_top.csv'):
+    ba_all_top = pd.read_csv(f'{data_path}/complex-ba-all_top.csv')
+    ba_all_top.drop(columns=['Unnamed: 0'], inplace=True)
+  else:
+    ba_all_top = top_matches_for_metrics(ba_metrics[0])
+    ba_all_top.to_csv(f'{data_path}/complex-ba-all_top.csv')
+  if exists(f'{data_path}/complex-ba-mean_top.csv'):
+    ba_mean_top = pd.read_csv(f'{data_path}/complex-ba-mean_top.csv')
+    ba_mean_top.drop(columns=['Unnamed: 0'], inplace=True)
+  else:
+    ba_mean_top = top_matches_for_metrics(ba_metrics[1])
+    ba_mean_top.to_csv(f'{data_path}/complex-ba-mean_top.csv')
+
+  process_complex_contagion_param_sweep_ER_top(er_all_top, f'{DATA_DIR}/complex-contagion-sweep-ER', 'results-all')
+  process_complex_contagion_param_sweep_WS_top(ws_all_top, f'{DATA_DIR}/complex-contagion-sweep-WS', 'results-all')
+  process_complex_contagion_param_sweep_BA_top(ba_all_top, f'{DATA_DIR}/complex-contagion-sweep-BA', 'results-all')
+  process_complex_contagion_param_sweep_ER_top(er_mean_top, f'{DATA_DIR}/complex-contagion-sweep-ER', 'results-mean')
+  process_complex_contagion_param_sweep_WS_top(ws_mean_top, f'{DATA_DIR}/complex-contagion-sweep-WS', 'results-mean')
+  process_complex_contagion_param_sweep_BA_top(ba_mean_top, f'{DATA_DIR}/complex-contagion-sweep-BA', 'results-mean')
+
 
 def process_all_simple_exp_metrics():
   data_path = './data/analyses'
