@@ -1262,6 +1262,58 @@ def get_complex_contagion_param_sweep_BA_multidata(path):
     path)
   return measure_multidata
 
+def process_simple_contagion_param_sweep_BA_group_homophily_top(top_df, path, results_dir):
+  param_order = ['ba_m','simple_spread_chance','group_homophily','repetition']
+  process_top_exp_results(top_df, param_order, path, results_dir)
+
+def process_cognitive_contagion_param_sweep_BA_group_homophily_top(top_df, path, results_dir):
+  param_order = ['ba_m','cognitive_translate','cognitive_exponent','group_homophily','repetition']
+  process_top_exp_results(top_df, param_order, path, results_dir)
+
+def process_complex_contagion_param_sweep_BA_group_homophily_top(top_df, path, results_dir):
+  param_order = ['ba_m','complex_spread_ratio','group_homophily','repetition']
+  process_top_exp_results(top_df, param_order, path, results_dir)
+
+def get_simple_contagion_param_sweep_BA_group_homophily_multidata(path):
+  group_homophily = ['0.1','0.25','0.5','0.75']
+  simple_spread_chance = ['0.01','0.05','0.1','0.25','0.5','0.75']
+  ba_m = ['3','5','10','15']
+  repetition = list(map(str, range(10)))
+  measure_multidata = get_all_multidata(
+    [ba_m,simple_spread_chance,group_homophily,repetition],
+    ['ba_m','simple_spread_chance','group_homophily','repetition'],
+    {'percent-agent-beliefs': [PLOT_TYPES.LINE, PLOT_TYPES.STACK],
+    'opinion-timeseries': [PLOT_TYPES.LINE]},
+    path)
+  return measure_multidata
+
+def get_cognitive_contagion_param_sweep_BA_group_homophily_multidata(path):
+  group_homophily = ['0.1','0.25','0.5','0.75']
+  cognitive_exponent = ['1','2','3','4','5']
+  cognitive_translate = ['0','1','2','3']
+  ba_m = ['3','5','10','15']
+  repetition = list(map(str, range(10)))
+  measure_multidata = get_all_multidata(
+    [ba_m,cognitive_translate,cognitive_exponent,group_homophily,repetition],
+    ['ba_m','cognitive_translate','cognitive_exponent','group_homophily','repetition'],
+    {'percent-agent-beliefs': [PLOT_TYPES.LINE, PLOT_TYPES.STACK],
+    'opinion-timeseries': [PLOT_TYPES.LINE]},
+    path)
+  return measure_multidata
+
+def get_complex_contagion_param_sweep_BA_group_homophily_multidata(path):
+  group_homophily = ['0.1','0.25','0.5','0.75']
+  complex_spread_ratio = ['0.05','0.1','0.25','0.5','0.75','0.9']
+  ba_m = ['3','5','10','15']
+  repetition = list(map(str, range(10)))
+  measure_multidata = get_all_multidata(
+    [ba_m,complex_spread_ratio,group_homophily,repetition],
+    ['ba_m','complex_spread_ratio','group_homophily','repetition'],
+    {'percent-agent-beliefs': [PLOT_TYPES.LINE, PLOT_TYPES.STACK],
+    'opinion-timeseries': [PLOT_TYPES.LINE]},
+    path)
+  return measure_multidata
+
 def read_gallup_data_into_dict(path):
   gallup_data = pd.read_csv(path)
   gallup_data.drop(columns=['Unnamed: 0'], inplace=True)
@@ -1304,6 +1356,15 @@ def metrics_for_simple_contagion_param_sweep_BA(path):
   mean_metrics = timeseries_similarity_for_mean_runs(multidata, measure, columns, gallup_dict)
   return all_run_metrics, mean_metrics
 
+def metrics_for_simple_contagion_param_sweep_BA_group_homophily(path):
+  gallup_dict = read_gallup_data_into_dict('../labeled-data/public/gallup-polling.csv')
+  columns = ['ba_m','simple_spread_chance','group_homophily','repetition']
+  measure = 'opinion-timeseries'
+  multidata = get_simple_contagion_param_sweep_BA_group_homophily_multidata(path)
+  all_run_metrics = timeseries_similarity_for_all_runs(multidata, measure, columns, gallup_dict)
+  mean_metrics = timeseries_similarity_for_mean_runs(multidata, measure, columns, gallup_dict)
+  return all_run_metrics, mean_metrics
+
 def metrics_for_cognitive_contagion_param_sweep_ER(path):
   gallup_dict = read_gallup_data_into_dict('../labeled-data/public/gallup-polling.csv')
   columns = ['er_p','cognitive_translate','cognitive_exponent','repetition']
@@ -1331,6 +1392,15 @@ def metrics_for_cognitive_contagion_param_sweep_BA(path):
   mean_metrics = timeseries_similarity_for_mean_runs(multidata, measure, columns, gallup_dict)
   return all_run_metrics, mean_metrics
 
+def metrics_for_cognitive_contagion_param_sweep_BA_group_homophily(path):
+  gallup_dict = read_gallup_data_into_dict('../labeled-data/public/gallup-polling.csv')
+  columns = ['ba_m','cognitive_translate','cognitive_exponent','group_homophily','repetition']
+  measure = 'opinion-timeseries'
+  multidata = get_cognitive_contagion_param_sweep_BA_group_homophily_multidata(path)
+  all_run_metrics = timeseries_similarity_for_all_runs(multidata, measure, columns, gallup_dict)
+  mean_metrics = timeseries_similarity_for_mean_runs(multidata, measure, columns, gallup_dict)
+  return all_run_metrics, mean_metrics
+
 def metrics_for_complex_contagion_param_sweep_ER(path):
   gallup_dict = read_gallup_data_into_dict('../labeled-data/public/gallup-polling.csv')
   columns = ['er_p','complex_spread_ratio','repetition']
@@ -1354,6 +1424,15 @@ def metrics_for_complex_contagion_param_sweep_BA(path):
   columns = ['ba_m','complex_spread_ratio','repetition']
   measure = 'opinion-timeseries'
   multidata = get_complex_contagion_param_sweep_BA_multidata(path)
+  all_run_metrics = timeseries_similarity_for_all_runs(multidata, measure, columns, gallup_dict)
+  mean_metrics = timeseries_similarity_for_mean_runs(multidata, measure, columns, gallup_dict)
+  return all_run_metrics, mean_metrics
+
+def metrics_for_complex_contagion_param_sweep_BA_group_homophily(path):
+  gallup_dict = read_gallup_data_into_dict('../labeled-data/public/gallup-polling.csv')
+  columns = ['ba_m','complex_spread_ratio','group_homophily','repetition']
+  measure = 'opinion-timeseries'
+  multidata = get_complex_contagion_param_sweep_BA_group_homophily_multidata(path)
   all_run_metrics = timeseries_similarity_for_all_runs(multidata, measure, columns, gallup_dict)
   mean_metrics = timeseries_similarity_for_mean_runs(multidata, measure, columns, gallup_dict)
   return all_run_metrics, mean_metrics
@@ -1435,13 +1514,16 @@ def process_all_cognitive_exp_metrics():
   er_metrics = metrics_for_cognitive_contagion_param_sweep_ER(f'{DATA_DIR}/cognitive-contagion-sweep-ER')
   ws_metrics = metrics_for_cognitive_contagion_param_sweep_WS(f'{DATA_DIR}/cognitive-contagion-sweep-WS')
   ba_metrics = metrics_for_cognitive_contagion_param_sweep_BA(f'{DATA_DIR}/cognitive-contagion-sweep-BA')
+  ba_group_homophily_metrics = metrics_for_cognitive_contagion_param_sweep_BA_group_homophily(f'{DATA_DIR}/cognitive-contagion-sweep-BA-group-homophily')
 
   er_metrics[0].to_csv('./data/analyses/cognitive-er-all.csv')
   er_metrics[1].to_csv('./data/analyses/cognitive-er-mean.csv')
   ws_metrics[0].to_csv('./data/analyses/cognitive-ws-all.csv')
   ws_metrics[1].to_csv('./data/analyses/cognitive-ws-mean.csv')
   ba_metrics[0].to_csv('./data/analyses/cognitive-ba-all.csv')
-  ba_metrics[1].to_csv('./data/analyses/cognitive-ba-mean.csv')
+  ba_metrics[0].to_csv('./data/analyses/cognitive-ba-all.csv')
+  ba_group_homophily_metrics[1].to_csv('./data/analyses/cognitive-ba-group-homophily-mean.csv')
+  ba_group_homophily_metrics[1].to_csv('./data/analyses/cognitive-ba-group-homophily-mean.csv')
 
   er_all_top = top_matches_for_metrics(er_metrics[0])
   er_mean_top = top_matches_for_metrics(er_metrics[1])
@@ -1449,6 +1531,8 @@ def process_all_cognitive_exp_metrics():
   ws_mean_top = top_matches_for_metrics(ws_metrics[1])
   ba_all_top = top_matches_for_metrics(ba_metrics[0])
   ba_mean_top = top_matches_for_metrics(ba_metrics[1])
+  ba_group_homophily_all_top = top_matches_for_metrics(ba_group_homophily_metrics[0])
+  ba_group_homophily_mean_top = top_matches_for_metrics(ba_group_homophily_metrics[1])
 
   er_all_top.to_csv('./data/analyses/cognitive-er-all_top.csv')
   er_mean_top.to_csv('./data/analyses/cognitive-er-mean_top.csv')
@@ -1456,13 +1540,17 @@ def process_all_cognitive_exp_metrics():
   ws_mean_top.to_csv('./data/analyses/cognitive-ws-mean_top.csv')
   ba_all_top.to_csv('./data/analyses/cognitive-ba-all_top.csv')
   ba_mean_top.to_csv('./data/analyses/cognitive-ba-mean_top.csv')
+  ba_group_homophily_all_top.to_csv('./data/analyses/cognitive-ba-group-homophily-all_top.csv')
+  ba_group_homophily_mean_top.to_csv('./data/analyses/cognitive-ba-group-homophily-mean_top.csv')
 
   process_cognitive_contagion_param_sweep_ER_top(er_all_top, f'{DATA_DIR}/cognitive-contagion-sweep-ER', 'results-all')
   process_cognitive_contagion_param_sweep_WS_top(ws_all_top, f'{DATA_DIR}/cognitive-contagion-sweep-WS', 'results-all')
   process_cognitive_contagion_param_sweep_BA_top(ba_all_top, f'{DATA_DIR}/cognitive-contagion-sweep-BA', 'results-all')
+  process_cognitive_contagion_param_sweep_BA_group_homophily_top(ba_group_homophily_all_top, f'{DATA_DIR}/cognitive-contagion-sweep-BA-group-homophily', 'results-all')
   process_cognitive_contagion_param_sweep_ER_top(er_mean_top, f'{DATA_DIR}/cognitive-contagion-sweep-ER', 'results-mean')
   process_cognitive_contagion_param_sweep_WS_top(ws_mean_top, f'{DATA_DIR}/cognitive-contagion-sweep-WS', 'results-mean')
   process_cognitive_contagion_param_sweep_BA_top(ba_mean_top, f'{DATA_DIR}/cognitive-contagion-sweep-BA', 'results-mean')
+  process_cognitive_contagion_param_sweep_BA_group_homophily_top(ba_group_homophily_mean_top, f'{DATA_DIR}/cognitive-contagion-sweep-BA-group-homophily', 'results-mean')
 
 def process_all_complex_exp_metrics():
   data_path = './data/analyses'
@@ -1501,6 +1589,18 @@ def process_all_complex_exp_metrics():
     ba_metrics = metrics_for_complex_contagion_param_sweep_BA(f'{DATA_DIR}/complex-contagion-sweep-BA')
     ba_metrics[0].to_csv(f'{data_path}/complex-ba-all.csv')
     ba_metrics[1].to_csv(f'{data_path}/complex-ba-mean.csv')
+
+  ba_group_homophily_metrics = []
+  if exists(f'{data_path}/complex-ba-group-homophily-all.csv') and exists(f'{data_path}/complex-ba-group-homophily-mean.csv'):
+    print('Read in BA group homophily metric data')
+    ba_group_homophily_metrics.append(pd.read_csv(f'{data_path}/complex-ba-group-homophily-all.csv'))
+    ba_group_homophily_metrics.append(pd.read_csv(f'{data_path}/complex-ba-group-homophily-mean.csv'))
+    ba_group_homophily_metrics[0].drop(columns=['Unnamed: 0'], inplace=True)
+    ba_group_homophily_metrics[1].drop(columns=['Unnamed: 0'], inplace=True)
+  else:
+    ba_group_homophily_metrics = metrics_for_complex_contagion_param_sweep_BA_group_homophily(f'{DATA_DIR}/complex-contagion-sweep-BA-group-homophily')
+    ba_group_homophily_metrics[0].to_csv(f'{data_path}/complex-ba-group-homophily-all.csv')
+    ba_group_homophily_metrics[1].to_csv(f'{data_path}/complex-ba-group-homophily-mean.csv')
 
   er_all_top = None
   er_mean_top = None
@@ -1547,13 +1647,29 @@ def process_all_complex_exp_metrics():
     ba_mean_top = top_matches_for_metrics(ba_metrics[1])
     ba_mean_top.to_csv(f'{data_path}/complex-ba-mean_top.csv')
 
+  ba_group_homophily_all_top = None
+  ba_group_homophily_mean_top = None
+  if exists(f'{data_path}/complex-ba-group-homophily-all_top.csv'):
+    ba_group_homophily_all_top = pd.read_csv(f'{data_path}/complex-ba-group-homophily-all_top.csv')
+    ba_group_homophily_all_top.drop(columns=['Unnamed: 0'], inplace=True)
+  else:
+    ba_group_homophily_all_top = top_matches_for_metrics(ba_group_homophily_metrics[0])
+    ba_group_homophily_all_top.to_csv(f'{data_path}/complex-ba-group-homophily-all_top.csv')
+  if exists(f'{data_path}/complex-ba-group-homophily-mean_top.csv'):
+    ba_group_homophily_mean_top = pd.read_csv(f'{data_path}/complex-ba-group-homophily-mean_top.csv')
+    ba_group_homophily_mean_top.drop(columns=['Unnamed: 0'], inplace=True)
+  else:
+    ba_group_homophily_mean_top = top_matches_for_metrics(ba_group_homophily_metrics[1])
+    ba_group_homophily_mean_top.to_csv(f'{data_path}/complex-ba-group-homophily-mean_top.csv')
+
   process_complex_contagion_param_sweep_ER_top(er_all_top, f'{DATA_DIR}/complex-contagion-sweep-ER', 'results-all')
   process_complex_contagion_param_sweep_WS_top(ws_all_top, f'{DATA_DIR}/complex-contagion-sweep-WS', 'results-all')
   process_complex_contagion_param_sweep_BA_top(ba_all_top, f'{DATA_DIR}/complex-contagion-sweep-BA', 'results-all')
+  process_complex_contagion_param_sweep_BA_group_homophily_top(ba_group_homophily_all_top, f'{DATA_DIR}/complex-contagion-sweep-BA-group-homophily', 'results-all')
   process_complex_contagion_param_sweep_ER_top(er_mean_top, f'{DATA_DIR}/complex-contagion-sweep-ER', 'results-mean')
   process_complex_contagion_param_sweep_WS_top(ws_mean_top, f'{DATA_DIR}/complex-contagion-sweep-WS', 'results-mean')
   process_complex_contagion_param_sweep_BA_top(ba_mean_top, f'{DATA_DIR}/complex-contagion-sweep-BA', 'results-mean')
-
+  process_complex_contagion_param_sweep_BA_group_homophily_top(ba_group_homophily_mean_top, f'{DATA_DIR}/complex-contagion-sweep-BA-group-homophily', 'results-mean')
 
 def process_all_simple_exp_metrics():
   data_path = './data/analyses'
@@ -1592,6 +1708,18 @@ def process_all_simple_exp_metrics():
     ba_metrics = metrics_for_simple_contagion_param_sweep_BA(f'{DATA_DIR}/simple-contagion-sweep-BA')
     ba_metrics[0].to_csv(f'{data_path}/simple-ba-all.csv')
     ba_metrics[1].to_csv(f'{data_path}/simple-ba-mean.csv')
+
+  ba_group_homophily_metrics = []
+  if exists(f'{data_path}/simple-ba-group-homophily-all.csv') and exists(f'{data_path}/simple-ba-group-homophily-mean.csv'):
+    print('Read in BA group homophily metric data')
+    ba_group_homophily_metrics.append(pd.read_csv(f'{data_path}/simple-ba-group-homophily-all.csv'))
+    ba_group_homophily_metrics.append(pd.read_csv(f'{data_path}/simple-ba-group-homophily-mean.csv'))
+    ba_group_homophily_metrics[0].drop(columns=['Unnamed: 0'], inplace=True)
+    ba_group_homophily_metrics[1].drop(columns=['Unnamed: 0'], inplace=True)
+  else:
+    ba_group_homophily_metrics = metrics_for_simple_contagion_param_sweep_BA_group_homophily(f'{DATA_DIR}/simple-contagion-sweep-BA-group-homophily')
+    ba_group_homophily_metrics[0].to_csv(f'{data_path}/simple-ba-group-homophily-all.csv')
+    ba_group_homophily_metrics[1].to_csv(f'{data_path}/simple-ba-group-homophily-mean.csv')
 
   er_all_top = None
   er_mean_top = None
@@ -1638,12 +1766,29 @@ def process_all_simple_exp_metrics():
     ba_mean_top = top_matches_for_metrics(ba_metrics[1])
     ba_mean_top.to_csv(f'{data_path}/simple-ba-mean_top.csv')
 
+  ba_group_homophily_all_top = None
+  ba_group_homophily_mean_top = None
+  if exists(f'{data_path}/simple-ba-group-homophily-all_top.csv'):
+    ba_group_homophily_all_top = pd.read_csv(f'{data_path}/simple-ba-group-homophily-all_top.csv')
+    ba_group_homophily_all_top.drop(columns=['Unnamed: 0'], inplace=True)
+  else:
+    ba_group_homophily_all_top = top_matches_for_metrics(ba_group_homophily_metrics[0])
+    ba_group_homophily_all_top.to_csv(f'{data_path}/simple-ba-group-homophily-all_top.csv')
+  if exists(f'{data_path}/simple-ba-group-homophily-mean_top.csv'):
+    ba_group_homophily_mean_top = pd.read_csv(f'{data_path}/simple-ba-group-homophily-mean_top.csv')
+    ba_group_homophily_mean_top.drop(columns=['Unnamed: 0'], inplace=True)
+  else:
+    ba_group_homophily_mean_top = top_matches_for_metrics(ba_group_homophily_metrics[1])
+    ba_group_homophily_mean_top.to_csv(f'{data_path}/simple-ba-group-homophily-mean_top.csv')
+
   process_simple_contagion_param_sweep_ER_top(er_all_top, f'{DATA_DIR}/simple-contagion-sweep-ER', 'results-all')
   process_simple_contagion_param_sweep_WS_top(ws_all_top, f'{DATA_DIR}/simple-contagion-sweep-WS', 'results-all')
   process_simple_contagion_param_sweep_BA_top(ba_all_top, f'{DATA_DIR}/simple-contagion-sweep-BA', 'results-all')
+  process_simple_contagion_param_sweep_BA_group_homophily_top(ba_group_homophily_all_top, f'{DATA_DIR}/simple-contagion-sweep-BA-group-homophily', 'results-all')
   process_simple_contagion_param_sweep_ER_top(er_mean_top, f'{DATA_DIR}/simple-contagion-sweep-ER', 'results-mean')
   process_simple_contagion_param_sweep_WS_top(ws_mean_top, f'{DATA_DIR}/simple-contagion-sweep-WS', 'results-mean')
   process_simple_contagion_param_sweep_BA_top(ba_mean_top, f'{DATA_DIR}/simple-contagion-sweep-BA', 'results-mean')
+  process_simple_contagion_param_sweep_BA_group_homophily_top(ba_group_homophily_mean_top, f'{DATA_DIR}/simple-contagion-sweep-BA-group-homophily', 'results-mean')
 
 def low_res_sweep_total_analysis(data_dir, data_file):
   return dynamic_model_total_analysis(data_dir, data_file, ['translate','tactic','media_dist','media_n','citizen_dist','zeta_citizen','zeta_media','citizen_memory_len','repetition'])
