@@ -70,6 +70,32 @@ def process_multiple_sim_data(path):
     data = process_sim_data(f'{path}/{file}')
     stats = citizen_message_statistics(data[0], data[1])
 
+def process_nlogo_world_data(path):
+  '''
+  Read in and process the data that NetLogo produces from BehaviorSpace
+  for the state of the model world, which includes global variables at their
+  final values at the end of the simulation, the final state of each agent,
+  the state of each patch, link, plots, etc.
+
+  For now, we just use this to return global variables, but it can be
+  extended to include more.
+
+  :param path: The filepath including filename for data to read in.
+  :returns: A dictionary of global variables and their values.
+  '''
+  f = open(path)
+  raw = f.read()
+  f.close()
+  chunks = raw.split('\n\n')
+
+  global_lines = chunks[2].split('\n')
+  global_keys = [ el.replace('"','') for el in global_lines[1].split('","') ]
+  global_vals = [ el.replace('"','') for el in global_lines[2].split('","') ]
+
+  global_vars = { global_keys[i]: global_vals[i] for i in range(len(global_keys)) }
+
+  return (global_vars)
+
 '''
 Parse a NetLogo chart export .csv file. This requires a single chart export file
 and should not be run on an entire world export. This will return a dictionary
@@ -145,30 +171,35 @@ def process_multi_chart_data(in_path, in_filename='percent-agent-beliefs'):
   multi_data = []
   model_params = {}
   file_order = []
+  global_vars = []
+  globals_to_keep = ['behavior-rand']
   print(f'process_multi_chart_data for {in_path}/{in_filename}')
 
   if not os.path.isdir(in_path):
     print(f'ERROR: Path not found {in_path}')
-    return (-1, -1, -1)
+    return (-1, -1, -1,-1)
   if len(os.listdir(in_path)) == 0:
     print(f'ERROR: Path contains no files')
-    return (-1,-1,-1)
+    return (-1,-1,-1,-1)
 
   for file in os.listdir(in_path):
     if in_filename in file and '.swp' not in file and '.swo' not in file:
       data = process_chart_data(f'{in_path}/{file}')
+      global_data = process_nlogo_world_data(f'{in_path}/{file[0:file.index("_")]}_world.csv')
+      globals_reduced = { key: val for key,val in global_data.items() if key in globals_to_keep }
       model_params = data[0]
       props.append(data[1])
       multi_data.append(data[2])
       file_order.append(file)
+      global_vars.append(globals_reduced)
 
   full_data_size = int(model_params['tick-end']) + 1
-  means = { key: [] for key in multi_data[0].keys() }
+  means = { pen_name: [] for pen_name in multi_data[0].keys() }
   i = -1
   for data in multi_data:
     i += 1
-    for key in data.keys():
-      data_vector = np.array(data[key]['y']).astype('float32')
+    for pen_name in data.keys():
+      data_vector = np.array(data[pen_name]['y']).astype('float32')
 
       if len(data_vector) != full_data_size:
         if len(data_vector) > full_data_size:
@@ -177,18 +208,18 @@ def process_multi_chart_data(in_path, in_filename='percent-agent-beliefs'):
         # elif abs(len(data_vector) - full_data_size) <= 5:
         #   data_vector = np.append(data_vector, [ data_vector[-1] for i in range(abs(len(data_vector) - full_data_size)) ])
         else:
-          print(f'ERROR parsing multi chart data for pen "{key}" -- data length {len(data_vector)} did not equal number of ticks {full_data_size}')
+          print(f'ERROR parsing multi chart data for pen "{pen_name}" -- data length {len(data_vector)} did not equal number of ticks {full_data_size}')
           continue
 
-      if means[key] == []:
-        means[key] = np.array([data_vector])
+      if means[pen_name] == []:
+        means[pen_name] = np.array([data_vector])
       else:
-        means[key] = np.vstack([means[key], data_vector])
+        means[pen_name] = np.vstack([means[pen_name], data_vector])
 
   final_props = props[0]
   props_y_max = np.array([ float(prop['y max']) for prop in props ])
   final_props['y max'] = props_y_max.max()
-  return (means, final_props, model_params)
+  return (means, final_props, model_params, global_vars)
 
 def process_message_data(in_path, rand_id):
   '''
@@ -388,6 +419,27 @@ def plot_multi_chart_data(types, multi_data, props, out_path, out_filename='aggr
     if show_plot: plt.show()
     plt.close()
 
+def plot_chart_data(types, chart_data, props, out_path, out_filename='aggregate-chart', show_plot=False):
+  if PLOT_TYPES.LINE in types:
+    plot = plot_nlogo_chart_line(props, chart_data)
+    plt.savefig(f'{out_path}/{out_filename}_line.png')
+    if show_plot: plt.show()
+    plt.close()
+
+  if PLOT_TYPES.STACK in types:
+    print('UNSUPPORTED CHART TYPE')
+    # plot = plot_nlogo_chart_stacked(props, chart_data)
+    # plt.savefig(f'{out_path}/{out_filename}_stacked.png')
+    # if show_plot: plt.show()
+    # plt.close()
+
+  if PLOT_TYPES.HISTOGRAM in types:
+    print('UNSUPPORTED CHART TYPE')
+    # plot = plot_nlogo_chart_histogram(props, chart_data)
+    # plt.savefig(f'{out_path}/{out_filename}_histogram.png')
+    # if show_plot: plt.show()
+    # plt.close()
+
 '''
 Plot multiple NetLogo chart data sets on a single plot. 
 
@@ -455,10 +507,11 @@ def plot_nlogo_multi_chart_line(props, multi_data):
   # ax, ax2 = fig.add_subplot(2)
   y_min = int(round(float(props['y min'])))
   y_max = int(round(float(props['y max'])))
+  y_step = int(round(float(props['y step'])))
   x_min = int(round(float(props['x min'])))
   x_max = int(round(float(props['x max'])))
   ax.set_ylim([0, y_max])
-  plt.yticks(np.arange(y_min, y_max, step=1))
+  plt.yticks(np.arange(y_min, y_max, step=y_step))
   # plt.yticks(np.arange(y_min, y_max*1.1, step=y_max/10))
   plt.xticks(np.arange(x_min, x_max*1.1, step=5))
   ax.set_ylabel("% of agents who believe b")
@@ -490,6 +543,45 @@ def plot_nlogo_multi_chart_line(props, multi_data):
     ax.fill_between(range(x_min, len(mean_vec)), mean_vec-var_vec, mean_vec+var_vec, facecolor=f'{line_color(key)}44')
   
   return multi_data
+
+def plot_nlogo_chart_line(props, chart_data):
+  print(props)
+  fig, (ax) = plt.subplots(1, figsize=(8,6))
+  # ax, ax2 = fig.add_subplot(2)
+  y_min = int(round(float(props['y min'])))
+  y_max = int(round(float(props['y max'])))
+  y_step = float(props['y step'])
+  x_min = int(round(float(props['x min'])))
+  x_max = int(round(float(props['x max'])))
+  ax.set_ylim([0, y_max])
+  plt.yticks(np.arange(y_min, y_max, step=y_step))
+  # plt.yticks(np.arange(y_min, y_max*1.1, step=y_max/10))
+  plt.xticks(np.arange(x_min, x_max*1.1, step=5))
+  ax.set_ylabel("% of agents who believe b")
+  ax.set_xlabel("Time Step")
+
+  line_color = lambda key: '#000000'
+  line_names_to_color = {
+    'dem': '#0000ff',
+    'mod': '#ff00ff',
+    'rep': '#ff0000'
+  }
+
+  if 'dem' in list(chart_data.keys()):
+    line_color = lambda key: line_names_to_color[key]
+  elif list(chart_data.keys())[0] != 'default':
+    # This is specific code to set the colors for belief resolutions
+    multi_data_keys_int = list(map(lambda el: int(el), chart_data.keys()))
+    resolution = int(max(multi_data_keys_int))+1
+    line_color = lambda key: f"#{rgb_to_hex([ 255 - round((255/max(resolution-1,1))*int(key)), 0, round((255/max(resolution-1,1)) * int(key)) ])}"
+ 
+  for key in chart_data:
+    data_vec = chart_data[key]
+    # print(multi_data[key])
+    # print(var_vec)
+    ax.plot(data_vec['y'], c=line_color(key))
+  
+  return chart_data
 
 '''
 Plot multiple NetLogo chart data sets on a single plot. This will scatterplot
@@ -959,7 +1051,41 @@ def process_exp_outputs(param_combos, plots, path):
       if multi_data != -1:
         plot_multi_chart_data(plot_types, multi_data, props, f'{path}/results', f'{"-".join(combo)}_{plot_name}-agg-chart')
 
-def process_select_exp_outputs(param_combos, plots, path, results_dir):
+def process_select_exp_outputs_single(param_combos, rand_params, plots, path, results_dir):
+  '''
+  Process some of the output of a NetLogo experiment, aggregating specified 
+  results over simulation runs and generating plots for them according to
+  all the parameter combinations denoted in param_combos.
+  
+  :param param_combos: A list of selected parameter values as lists
+  :param plots: A list of dictionaries keyed by the name of the NetLogo
+  plot to process, with value of a list of PLOT_TYPE
+  (e.g. { 'polarization': [PLOT_TYPES.LINE], 'agent-beliefs': [...] })
+  :param path: The root path to begin processing in.
+  '''
+  if not os.path.isdir(f'{path}/{results_dir}'):
+    os.mkdir(f'{path}/{results_dir}')
+
+  for i in range(len(param_combos)):
+    combo = param_combos[i]
+    rand_id = rand_params[i]
+    for (plot_name, plot_types) in plots.items():
+      # print(plot_name, plot_types)
+      chart_data = process_chart_data(f'{path}/{"/".join(combo)}/{rand_id}_{plot_name}.csv')
+      model_params = chart_data[0]
+      props = chart_data[1]
+      if plot_name == 'opinion-timeseries':
+        props['y min'] = 0
+        props['y max'] = 100
+        props['y step'] = 5
+      if plot_name == 'percent-agent-beliefs':
+        props['y min'] = 0
+        props['y max'] = 1
+        props['y step'] = 0.1
+      data = chart_data[2]
+      plot_chart_data(plot_types, data, props, f'{path}/{results_dir}', f'{"-".join(combo)}_{plot_name}')
+
+def process_select_exp_outputs_mean(param_combos, plots, path, results_dir):
   '''
   Process some of the output of a NetLogo experiment, aggregating specified 
   results over simulation runs and generating plots for them according to
@@ -978,6 +1104,14 @@ def process_select_exp_outputs(param_combos, plots, path, results_dir):
     for (plot_name, plot_types) in plots.items():
       # print(plot_name, plot_types)
       (multi_data, props, model_params) = process_multi_chart_data(f'{path}/{"/".join(combo)}', plot_name)
+      if plot_name == 'opinion-timeseries':
+        props['y min'] = 0
+        props['y max'] = 100
+        props['y step'] = 5
+      if plot_name == 'percent-agent-beliefs':
+        props['y min'] = 0
+        props['y max'] = 1
+        props['y step'] = 0.1
       # If there was no error processing the data
       if multi_data != -1:
         plot_multi_chart_data(plot_types, multi_data, props, f'{path}/{results_dir}', f'{"-".join(combo)}_{plot_name}-agg-chart')
@@ -1014,8 +1148,8 @@ def get_all_multidata(param_combos, params, plots, path):
   for combo in combos:
     for (plot_name, plot_types) in plots.items():
       # print(plot_name, plot_types)
-      (multi_data, props, model_params) = process_multi_chart_data(f'{path}/{"/".join(combo)}', plot_name)
-      multi_datas[(combo,plot_name)] = multi_data
+      (multi_data, props, model_params, global_vars) = process_multi_chart_data(f'{path}/{"/".join(combo)}', plot_name)
+      multi_datas[(combo,plot_name)] = { 'data': multi_data, 'globals': global_vars }
       multi_datas['params'] = params
   return multi_datas
 
@@ -1023,10 +1157,18 @@ def missing_values_in_multidata(multidata):
   return { key: val for key,val in multidata.items() if val == -1 }
 
 def multidata_as_dataframe(multidata, columns):
-  df = pd.DataFrame(columns=(columns+['measure','pen_name','run','data']))
-  for (param_measure,data) in multidata.items():
+  '''
+  
+  :param multidata: A dictionary keyed on a tuple of (param_combo, measure), where the values are a dictionary with two values: 'data' which contains
+  a dictionary keyed on pen_name with values of stacked arrays of plot
+  data for each run of a certain param combo
+  '''
+  df = pd.DataFrame(columns=(columns+['measure','pen_name','run','rand_id','data']))
+  for (param_measure,data_globals) in multidata.items():
     if param_measure == 'params':
       continue
+    data = data_globals['data']
+    global_vars = data_globals['globals']
     # Something failed to read/didn't exist
     if data == -1:
       continue
@@ -1034,14 +1176,21 @@ def multidata_as_dataframe(multidata, columns):
     measure = param_measure[1]
     for (pen_name,runs_data) in data.items():
       for run in range(len(runs_data)):
-        df.loc[len(df.index)] = list(param_combo) + [measure,pen_name,run,runs_data[run]]
+        df.loc[len(df.index)] = list(param_combo) + [measure,pen_name,run,global_vars[run]['behavior-rand'],runs_data[run]]
   return df
 
 def mean_multidata_as_dataframe(multidata, columns):
+  '''
+  
+  :param multidata: A dictionary keyed on a tuple of (param_combo, measure), where the values are a dictionary with two values: 'data' which contains
+  a dictionary keyed on pen_name with values of stacked arrays of plot
+  data for each run of a certain param combo
+  '''
   df = pd.DataFrame(columns=(columns+['measure','pen_name','data']))
-  for (param_measure,data) in multidata.items():
+  for (param_measure,data_globals) in multidata.items():
     if param_measure == 'params':
       continue
+    data = data_globals['data']
     # Something failed to read/didn't exist
     if data == -1:
       continue
@@ -1078,29 +1227,56 @@ def read_polarization_dataframe(path):
     df.at[i,'data'] = np.fromstring(raw_data[1:-1].replace('\n','').replace('0. ','0 '),sep=' ')
   return df
 
-def process_top_exp_results(top_df, param_order, path, results_dir):
+def process_top_exp_all_results(top_df, param_order, path, results_dir):
+  params_no_rand_id = list_subtract(param_order, ['rand_id'])
+  top_param_combos = [
+    [ str(top_df[col].iloc[i]) for col in params_no_rand_id ]
+    for i in range(len(top_df))
+  ]
+  rand_params = list(top_df['rand_id'])
+  process_select_exp_outputs_single(
+    top_param_combos,
+    rand_params,
+    {'percent-agent-beliefs': [PLOT_TYPES.LINE, PLOT_TYPES.STACK],
+    'opinion-timeseries': [PLOT_TYPES.LINE]},
+    path,
+    results_dir)
+
+def process_top_exp_mean_results(top_df, param_order, path, results_dir):
   top_param_combos = [
     [ str(top_df[col].iloc[i]) for col in param_order ]
     for i in range(len(top_df))
   ]
-  process_select_exp_outputs(
+  process_select_exp_outputs_mean(
     top_param_combos,
     {'percent-agent-beliefs': [PLOT_TYPES.LINE, PLOT_TYPES.STACK],
     'opinion-timeseries': [PLOT_TYPES.LINE]},
     path,
     results_dir)
 
-def process_simple_contagion_param_sweep_ER_top(top_df, path, results_dir):
+def process_simple_contagion_param_sweep_ER_top_mean(top_df, path, results_dir):
   param_order = ['er_p','simple_spread_chance','repetition']
-  process_top_exp_results(top_df, param_order, path, results_dir)
+  process_top_exp_mean_results(top_df, param_order, path, results_dir)
 
-def process_cognitive_contagion_param_sweep_ER_top(top_df, path, results_dir):
+def process_cognitive_contagion_param_sweep_ER_top_mean(top_df, path, results_dir):
   param_order = ['er_p','cognitive_translate','cognitive_exponent','repetition']
-  process_top_exp_results(top_df, param_order, path, results_dir)
+  process_top_exp_mean_results(top_df, param_order, path, results_dir)
 
-def process_complex_contagion_param_sweep_ER_top(top_df, path, results_dir):
+def process_complex_contagion_param_sweep_ER_top_mean(top_df, path, results_dir):
   param_order = ['er_p','complex_spread_ratio','repetition']
-  process_top_exp_results(top_df, param_order, path, results_dir)
+  process_top_exp_mean_results(top_df, param_order, path, results_dir)
+
+def process_simple_contagion_param_sweep_ER_top_all(top_df, path, results_dir):
+  param_order = ['er_p','simple_spread_chance','repetition','rand_id']
+  process_top_exp_all_results(top_df, param_order, path, results_dir)
+
+def process_cognitive_contagion_param_sweep_ER_top_all(top_df, path, results_dir):
+  param_order = ['er_p','cognitive_translate','cognitive_exponent','repetition','rand_id']
+  process_top_exp_all_results(top_df, param_order, path, results_dir)
+
+def process_complex_contagion_param_sweep_ER_top_all(top_df, path, results_dir):
+  param_order = ['er_p','complex_spread_ratio','repetition','rand_id']
+  process_top_exp_all_results(top_df, param_order, path, results_dir)
 
 def process_simple_contagion_param_sweep_ER_test(path):
   simple_spread_chance = ['0.01','0.05','0.1','0.25','0.5','0.75']
@@ -1161,17 +1337,29 @@ def get_complex_contagion_param_sweep_ER_multidata(path):
     path)
   return measure_multidata
 
-def process_simple_contagion_param_sweep_WS_top(top_df, path, results_dir):
+def process_simple_contagion_param_sweep_WS_top_mean(top_df, path, results_dir):
   param_order = ['ws_p','ws_k','simple_spread_chance','repetition']
-  process_top_exp_results(top_df, param_order, path, results_dir)
+  process_top_exp_mean_results(top_df, param_order, path, results_dir)
 
-def process_cognitive_contagion_param_sweep_WS_top(top_df, path, results_dir):
+def process_simple_contagion_param_sweep_WS_top_all(top_df, path, results_dir):
+  param_order = ['ws_p','ws_k','simple_spread_chance','repetition','rand_id']
+  process_top_exp_all_results(top_df, param_order, path, results_dir)
+
+def process_cognitive_contagion_param_sweep_WS_top_mean(top_df, path, results_dir):
   param_order = ['ws_p','ws_k','cognitive_translate','cognitive_exponent','repetition']
-  process_top_exp_results(top_df, param_order, path, results_dir)
+  process_top_exp_mean_results(top_df, param_order, path, results_dir)
 
-def process_complex_contagion_param_sweep_WS_top(top_df, path, results_dir):
+def process_cognitive_contagion_param_sweep_WS_top_all(top_df, path, results_dir):
+  param_order = ['ws_p','ws_k','cognitive_translate','cognitive_exponent','repetition','rand_id']
+  process_top_exp_all_results(top_df, param_order, path, results_dir)
+
+def process_complex_contagion_param_sweep_WS_top_mean(top_df, path, results_dir):
   param_order = ['ws_p','ws_k','complex_spread_ratio','repetition']
-  process_top_exp_results(top_df, param_order, path, results_dir)
+  process_top_exp_mean_results(top_df, param_order, path, results_dir)
+
+def process_complex_contagion_param_sweep_WS_top_all(top_df, path, results_dir):
+  param_order = ['ws_p','ws_k','complex_spread_ratio','repetition','rand_id']
+  process_top_exp_all_results(top_df, param_order, path, results_dir)
 
 def get_simple_contagion_param_sweep_WS_multidata(path):
   simple_spread_chance = ['0.01','0.05','0.1','0.25','0.5','0.75']
@@ -1213,17 +1401,29 @@ def get_complex_contagion_param_sweep_WS_multidata(path):
     path)
   return measure_multidata
 
-def process_simple_contagion_param_sweep_BA_top(top_df, path, results_dir):
+def process_simple_contagion_param_sweep_BA_top_all(top_df, path, results_dir):
+  param_order = ['ba_m','simple_spread_chance','repetition','rand_id']
+  process_top_exp_all_results(top_df, param_order, path, results_dir)
+
+def process_cognitive_contagion_param_sweep_BA_top_all(top_df, path, results_dir):
+  param_order = ['ba_m','cognitive_translate','cognitive_exponent','repetition','rand_id']
+  process_top_exp_all_results(top_df, param_order, path, results_dir)
+
+def process_complex_contagion_param_sweep_BA_top_all(top_df, path, results_dir):
+  param_order = ['ba_m','complex_spread_ratio','repetition','rand_id']
+  process_top_exp_all_results(top_df, param_order, path, results_dir)
+
+def process_simple_contagion_param_sweep_BA_top_mean(top_df, path, results_dir):
   param_order = ['ba_m','simple_spread_chance','repetition']
-  process_top_exp_results(top_df, param_order, path, results_dir)
+  process_top_exp_mean_results(top_df, param_order, path, results_dir)
 
-def process_cognitive_contagion_param_sweep_BA_top(top_df, path, results_dir):
+def process_cognitive_contagion_param_sweep_BA_top_mean(top_df, path, results_dir):
   param_order = ['ba_m','cognitive_translate','cognitive_exponent','repetition']
-  process_top_exp_results(top_df, param_order, path, results_dir)
+  process_top_exp_mean_results(top_df, param_order, path, results_dir)
 
-def process_complex_contagion_param_sweep_BA_top(top_df, path, results_dir):
+def process_complex_contagion_param_sweep_BA_top_mean(top_df, path, results_dir):
   param_order = ['ba_m','complex_spread_ratio','repetition']
-  process_top_exp_results(top_df, param_order, path, results_dir)
+  process_top_exp_mean_results(top_df, param_order, path, results_dir)
 
 def get_simple_contagion_param_sweep_BA_multidata(path):
   simple_spread_chance = ['0.01','0.05','0.1','0.25','0.5','0.75']
@@ -1262,17 +1462,29 @@ def get_complex_contagion_param_sweep_BA_multidata(path):
     path)
   return measure_multidata
 
-def process_simple_contagion_param_sweep_BA_group_homophily_top(top_df, path, results_dir):
+def process_simple_contagion_param_sweep_BA_group_homophily_top_all(top_df, path, results_dir):
+  param_order = ['ba_m','simple_spread_chance','group_homophily','repetition','rand_id']
+  process_top_exp_all_results(top_df, param_order, path, results_dir)
+
+def process_cognitive_contagion_param_sweep_BA_group_homophily_top_all(top_df, path, results_dir):
+  param_order = ['ba_m','cognitive_translate','cognitive_exponent','group_homophily','repetition','rand_id']
+  process_top_exp_all_results(top_df, param_order, path, results_dir)
+
+def process_complex_contagion_param_sweep_BA_group_homophily_top_all(top_df, path, results_dir):
+  param_order = ['ba_m','complex_spread_ratio','group_homophily','repetition','rand_id']
+  process_top_exp_all_results(top_df, param_order, path, results_dir)
+
+def process_simple_contagion_param_sweep_BA_group_homophily_top_mean(top_df, path, results_dir):
   param_order = ['ba_m','simple_spread_chance','group_homophily','repetition']
-  process_top_exp_results(top_df, param_order, path, results_dir)
+  process_top_exp_mean_results(top_df, param_order, path, results_dir)
 
-def process_cognitive_contagion_param_sweep_BA_group_homophily_top(top_df, path, results_dir):
+def process_cognitive_contagion_param_sweep_BA_group_homophily_top_mean(top_df, path, results_dir):
   param_order = ['ba_m','cognitive_translate','cognitive_exponent','group_homophily','repetition']
-  process_top_exp_results(top_df, param_order, path, results_dir)
+  process_top_exp_mean_results(top_df, param_order, path, results_dir)
 
-def process_complex_contagion_param_sweep_BA_group_homophily_top(top_df, path, results_dir):
+def process_complex_contagion_param_sweep_BA_group_homophily_top_mean(top_df, path, results_dir):
   param_order = ['ba_m','complex_spread_ratio','group_homophily','repetition']
-  process_top_exp_results(top_df, param_order, path, results_dir)
+  process_top_exp_mean_results(top_df, param_order, path, results_dir)
 
 def get_simple_contagion_param_sweep_BA_group_homophily_multidata(path):
   group_homophily = ['0.1','0.25','0.5','0.75']
@@ -1453,8 +1665,11 @@ def mean_multidata(multidata):
   mean_multidata = {
     # param_measure[0] is the parameter combo tuple
     param_measure: {
-      pen_name: (multidata[param_measure][pen_name].mean(0) if multi_data_has_multiple(multidata[param_measure][pen_name]) else multidata[param_measure][pen_name]) for pen_name in multidata[param_measure].keys() 
-    } for param_measure in multidata.keys() if (param_measure != 'params' and multidata[param_measure] != -1)
+      'data': {
+        pen_name: (multidata[param_measure]['data'][pen_name].mean(0) if multi_data_has_multiple(multidata[param_measure]['data'][pen_name]) else multidata[param_measure]['data'][pen_name]) for pen_name in multidata[param_measure]['data'].keys() 
+      },
+      'globals': multidata[param_measure]['globals']
+    } for param_measure in multidata.keys() if (param_measure != 'params' and multidata[param_measure]['data'] != -1)
   }
   return mean_multidata
 
@@ -1464,51 +1679,130 @@ def multidata_means_as_df(multidata, columns):
   return df_mean
 
 def timeseries_similarity_for_all_runs(multidata, measure, columns, target_data):
-  multidata_measure = { key: val for key, val in multidata.items() if key[1] == measure }
+  '''
+  
+  :param multidata: A dictionary keyed on a tuple of (param_combo, measure), where the values are a dictionary with two values: 'data' which contains
+  a dictionary keyed on pen_name with values of stacked arrays of plot
+  data for each run of a certain param combo
+  '''
+  multidata_measure = { key: val for key, val in multidata.items() if (key[1] == measure) }
   df = multidata_as_dataframe(multidata_measure, columns)
-  columns = columns.copy() + ['run']
-  return timeseries_similarity_scores_for_simulations(df, columns, target_data)
+  columns = columns.copy() + ['run','rand_id']
+  return timeseries_similarity_scores_for_simulations(df, target_data)
 
 def timeseries_similarity_for_mean_runs(multidata, measure, columns, target_data):
   multidata_measure = { key: val for key, val in multidata.items() if key[1] == measure }
   df = multidata_means_as_df(multidata_measure, columns)
-  return timeseries_similarity_scores_for_simulations(df, columns, target_data)
+  return timeseries_similarity_scores_for_simulations(df, target_data)
 
-def timeseries_similarity_scores_for_simulations(df, columns, target_data):
-  column_values = { col: df[col].unique() for col in columns }
-  param_combos = []
-  for combo in itertools.product(*list(column_values.values())):
-    param_combos.append(combo)
-
+def timeseries_similarity_scores_for_simulations(df, target_data):
   metrics = { 
     'pearson': lambda simulated, empirical: np.corrcoef(simulated, empirical)[0,1],
     'euclidean': lambda simulated, empirical: np.sqrt(np.sum((empirical - simulated) ** 2)),
     'mape': lambda simulated, empirical: np.mean(np.abs((empirical - simulated) / empirical))
   }
-  df_comparison_results = pd.DataFrame(columns=columns + list(metrics.keys()))
+  df_comparison_results = pd.DataFrame(columns=list(df.columns) + list(metrics.keys()))
 
-  for param_vals in param_combos:
-    query = ''
-    for i in range(len(columns)):
-      param = columns[i]
-      val = param_vals[i]
-      str_val = f'"{val}"'
-      query += f"{param}=={val if type(val) != str else str_val} and "
-    query = query[:-5]
-    df_rows = df.query(query)
-    if len(df_rows) > 0:
-      timeseries_by_pen_name = { row[1]['pen_name']: row[1]['data'] for row in df_rows.iterrows() }
-      # This is an assumption made -- to take the mean of the scores of each
-      # of the separate lines and have that be the aggregate score
-      # NOTE: Slicing the dataframe to only 64 entries is to account for an
-      # error in earlier simulations where they were run for 74 time steps;
-      # slicing to a smaller value does NOT change the results
-      metric_results = [ np.array([ metric_fn(timeseries_by_pen_name[key][:64], target_data[key]) for key in timeseries_by_pen_name.keys() ]).mean() for metric_fn in metrics.values() ]
-      df_comparison_results.loc[len(df_comparison_results)] = [ df_rows.iloc[0][param] for param in columns ] + metric_results
-    else:
-      print(f'Unable to take metric for nonexistant rows for param combo: {param_vals}')
+  for row in df.iterrows():
+    metric_results = [ metric_fn(row[1]['data'][:64], target_data[row[1]['pen_name']]) for metric_fn in metrics.values() ]
+    df_comparison_results.loc[len(df_comparison_results)] = list(row[1]) + metric_results
 
   return df_comparison_results
+
+def process_experiment_data_to_dfs():
+  data_out = './data'
+  contagion_types_tested = ['simple','complex','cognitive']
+  graph_topos_tested = ['er','ws','ba']
+  contagion_graph_combos = itertools.product(contagion_types_tested,graph_topos_tested)
+  parameters = {
+    'simple': ['simple_spread_chance'],
+    'complex': ['complex_spread_ratio'],
+    'cognitive': ['cognitive_translate','cognitive_exponent'],
+    'er': ['er_p'],
+    'ws': ['ws_p', 'ws_k'],
+    'ba': ['ba_m']
+  }
+  fns = {
+    'simple_er': get_simple_contagion_param_sweep_ER_multidata,
+    'simple_ws': get_simple_contagion_param_sweep_WS_multidata,
+    'simple_ba': get_simple_contagion_param_sweep_BA_multidata,
+    'simple_ba_homophily': get_simple_contagion_param_sweep_BA_group_homophily_multidata,
+    'complex_er': get_complex_contagion_param_sweep_ER_multidata,
+    'complex_ws': get_complex_contagion_param_sweep_WS_multidata,
+    'complex_ba': get_complex_contagion_param_sweep_BA_multidata,
+    'complex_ba_homophily': get_complex_contagion_param_sweep_BA_group_homophily_multidata,
+    'cognitive_er': get_cognitive_contagion_param_sweep_ER_multidata,
+    'cognitive_ws': get_cognitive_contagion_param_sweep_WS_multidata,
+    'cognitive_ba': get_cognitive_contagion_param_sweep_BA_multidata,
+    'cognitive_ba_homophily': get_cognitive_contagion_param_sweep_BA_group_homophily_multidata,
+  }
+  measures_to_report = ['opinion-timeseries']
+  for combo in contagion_graph_combos:
+    if exists(f'{data_out}/{combo[0]}-{combo[1]}-all.csv'):
+      print(f'Skipping {combo[0]}-{combo[1]}-all because data exists')
+      continue
+    if exists(f'{data_out}/{combo[0]}-{combo[1]}-mean.csv'):
+      print(f'Skipping {combo[0]}-{combo[1]}-mean because data exists')
+      continue
+
+    multidata = fns[f'{combo[0]}_{combo[1]}'](f'{DATA_DIR}/{combo[0]}-contagion-sweep-{combo[1].upper()}')
+    multidata_measure = { key: val for key, val in multidata.items() if key[1] in measures_to_report }
+    all_params = parameters[combo[0]] + parameters[combo[1]] + ['repetition']
+    print('Generating all runs dataframe...')
+    all_df = multidata_as_dataframe(multidata_measure, all_params)
+    print('Generating mean runs dataframe...')
+    mean_df = mean_multidata_as_dataframe(multidata_measure, all_params)
+    all_df.to_csv(f'{data_out}/{combo[0]}-{combo[1]}-all.csv')
+    mean_df.to_csv(f'{data_out}/{combo[0]}-{combo[1]}-mean.csv')
+
+  # er_simple_multidata = get_simple_contagion_param_sweep_ER_multidata(f'{DATA_DIR}/simple-contagion-sweep-ER')
+  # ws_simple_multidata = get_simple_contagion_param_sweep_WS_multidata(f'{DATA_DIR}/simple-contagion-sweep-WS')
+  # ba_simple_multidata = get_simple_contagion_param_sweep_BA_multidata(f'{DATA_DIR}/simple-contagion-sweep-BA')
+  # er_complex_multidata = get_complex_contagion_param_sweep_ER_multidata(f'{DATA_DIR}/complex-contagion-sweep-ER')
+  # ws_complex_multidata = get_complex_contagion_param_sweep_WS_multidata(f'{DATA_DIR}/complex-contagion-sweep-WS')
+  # ba_complex_multidata = get_complex_contagion_param_sweep_BA_multidata(f'{DATA_DIR}/complex-contagion-sweep-BA')
+  # er_cognitive_multidata = get_cognitive_contagion_param_sweep_ER_multidata(f'{DATA_DIR}/cognitive-contagion-sweep-ER')
+  # ws_cognitive_multidata = get_cognitive_contagion_param_sweep_WS_multidata(f'{DATA_DIR}/cognitive-contagion-sweep-WS')
+  # ba_cognitive_multidata = get_cognitive_contagion_param_sweep_BA_multidata(f'{DATA_DIR}/cognitive-contagion-sweep-BA')
+
+  # er_simple_all_df = multidata_as_dataframe(er_simple_multidata, ['er_p','simple_spread_chance','repetition'])
+  # ws_simple_all_df = multidata_as_dataframe(ws_simple_multidata, ['ws_p','ws_k','simple_spread_chance','repetition'])
+  # ba_simple_all_df = multidata_as_dataframe(ba_simple_multidata, ['ba_m','simple_spread_chance','repetition'])
+  # er_complex_all_df = multidata_as_dataframe(er_complex_multidata, ['er_p','complex_spread_ratio','repetition'])
+  # ws_complex_all_df = multidata_as_dataframe(ws_complex_multidata, ['ws_p','ws_k','complex_spread_ratio','repetition'])
+  # ba_complex_all_df = multidata_as_dataframe(ba_complex_multidata, ['ba_m','complex_spread_ratio','repetition'])
+  # er_cognitive_all_df = multidata_as_dataframe(er_cognitive_multidata, ['er_p','cognitive_translate','cognitive_exponent','repetition'])
+  # ws_cognitive_all_df = multidata_as_dataframe(ws_cognitive_multidata, ['ws_p','ws_k','cognitive_translate','cognitive_exponent','repetition'])
+  # ba_cognitive_all_df = multidata_as_dataframe(ba_cognitive_multidata, ['ba_m','cognitive_translate','cognitive_exponent','repetition'])
+
+  # er_simple_mean_df = mean_multidata_as_dataframe(er_simple_multidata, ['er_p','simple_spread_chance','repetition'])
+  # ws_simple_mean_df = mean_multidata_as_dataframe(ws_simple_multidata, ['ws_p','ws_k','simple_spread_chance','repetition'])
+  # ba_simple_mean_df = mean_multidata_as_dataframe(ba_simple_multidata, ['ba_m','simple_spread_chance','repetition'])
+  # er_complex_mean_df = mean_multidata_as_dataframe(er_complex_multidata, ['er_p','complex_spread_ratio','repetition'])
+  # ws_complex_mean_df = mean_multidata_as_dataframe(ws_complex_multidata, ['ws_p','ws_k','complex_spread_ratio','repetition'])
+  # ba_complex_mean_df = mean_multidata_as_dataframe(ba_complex_multidata, ['ba_m','complex_spread_ratio','repetition'])
+  # er_cognitive_mean_df = mean_multidata_as_dataframe(er_cognitive_multidata, ['er_p','cognitive_translate','cognitive_exponent','repetition'])
+  # ws_cognitive_mean_df = mean_multidata_as_dataframe(ws_cognitive_multidata, ['ws_p','ws_k','cognitive_translate','cognitive_exponent','repetition'])
+  # ba_cognitive_mean_df = mean_multidata_as_dataframe(ba_cognitive_multidata, ['ba_m','cognitive_translate','cognitive_exponent','repetition'])
+
+  # er_simple_all_df.to_csv(f'{data_out}/simple-er-all.csv')
+  # er_simple_mean_df.to_csv(f'{data_out}/simple-er-mean.csv')
+  # ws_simple_all_df.to_csv(f'{data_out}/simple-ws-all.csv')
+  # ws_simple_mean_df.to_csv(f'{data_out}/simple-ws-mean.csv')
+  # ba_simple_all_df.to_csv(f'{data_out}/simple-ba-all.csv')
+  # ba_simple_mean_df.to_csv(f'{data_out}/simple-ba-mean.csv')
+  # er_complex_all_df.to_csv(f'{data_out}/complex-er-all.csv')
+  # er_complex_mean_df.to_csv(f'{data_out}/complex-er-mean.csv')
+  # ws_complex_all_df.to_csv(f'{data_out}/complex-ws-all.csv')
+  # ws_complex_mean_df.to_csv(f'{data_out}/complex-ws-mean.csv')
+  # ba_complex_all_df.to_csv(f'{data_out}/complex-ba-all.csv')
+  # ba_complex_mean_df.to_csv(f'{data_out}/complex-ba-mean.csv')
+  # er_cognitive_all_df.to_csv(f'{data_out}/cognitive-er-all.csv')
+  # er_cognitive_mean_df.to_csv(f'{data_out}/cognitive-er-mean.csv')
+  # ws_cognitive_all_df.to_csv(f'{data_out}/cognitive-ws-all.csv')
+  # ws_cognitive_mean_df.to_csv(f'{data_out}/cognitive-ws-mean.csv')
+  # ba_cognitive_all_df.to_csv(f'{data_out}/cognitive-ba-all.csv')
+  # ba_cognitive_mean_df.to_csv(f'{data_out}/cognitive-ba-mean.csv')
 
 def process_all_cognitive_exp_metrics():
   er_metrics = metrics_for_cognitive_contagion_param_sweep_ER(f'{DATA_DIR}/cognitive-contagion-sweep-ER')
@@ -1543,14 +1837,14 @@ def process_all_cognitive_exp_metrics():
   ba_group_homophily_all_top.to_csv('./data/analyses/cognitive-ba-group-homophily-all_top.csv')
   ba_group_homophily_mean_top.to_csv('./data/analyses/cognitive-ba-group-homophily-mean_top.csv')
 
-  process_cognitive_contagion_param_sweep_ER_top(er_all_top, f'{DATA_DIR}/cognitive-contagion-sweep-ER', 'results-all')
-  process_cognitive_contagion_param_sweep_WS_top(ws_all_top, f'{DATA_DIR}/cognitive-contagion-sweep-WS', 'results-all')
-  process_cognitive_contagion_param_sweep_BA_top(ba_all_top, f'{DATA_DIR}/cognitive-contagion-sweep-BA', 'results-all')
-  process_cognitive_contagion_param_sweep_BA_group_homophily_top(ba_group_homophily_all_top, f'{DATA_DIR}/cognitive-contagion-sweep-BA-group-homophily', 'results-all')
-  process_cognitive_contagion_param_sweep_ER_top(er_mean_top, f'{DATA_DIR}/cognitive-contagion-sweep-ER', 'results-mean')
-  process_cognitive_contagion_param_sweep_WS_top(ws_mean_top, f'{DATA_DIR}/cognitive-contagion-sweep-WS', 'results-mean')
-  process_cognitive_contagion_param_sweep_BA_top(ba_mean_top, f'{DATA_DIR}/cognitive-contagion-sweep-BA', 'results-mean')
-  process_cognitive_contagion_param_sweep_BA_group_homophily_top(ba_group_homophily_mean_top, f'{DATA_DIR}/cognitive-contagion-sweep-BA-group-homophily', 'results-mean')
+  # process_cognitive_contagion_param_sweep_ER_top(er_all_top, f'{DATA_DIR}/cognitive-contagion-sweep-ER', 'results-all')
+  # process_cognitive_contagion_param_sweep_WS_top(ws_all_top, f'{DATA_DIR}/cognitive-contagion-sweep-WS', 'results-all')
+  # process_cognitive_contagion_param_sweep_BA_top(ba_all_top, f'{DATA_DIR}/cognitive-contagion-sweep-BA', 'results-all')
+  # process_cognitive_contagion_param_sweep_BA_group_homophily_top(ba_group_homophily_all_top, f'{DATA_DIR}/cognitive-contagion-sweep-BA-group-homophily', 'results-all')
+  process_cognitive_contagion_param_sweep_ER_top_mean(er_mean_top, f'{DATA_DIR}/cognitive-contagion-sweep-ER', 'results-mean')
+  process_cognitive_contagion_param_sweep_WS_top_mean(ws_mean_top, f'{DATA_DIR}/cognitive-contagion-sweep-WS', 'results-mean')
+  process_cognitive_contagion_param_sweep_BA_top_mean(ba_mean_top, f'{DATA_DIR}/cognitive-contagion-sweep-BA', 'results-mean')
+  process_cognitive_contagion_param_sweep_BA_group_homophily_top_mean(ba_group_homophily_mean_top, f'{DATA_DIR}/cognitive-contagion-sweep-BA-group-homophily', 'results-mean')
 
 def process_all_complex_exp_metrics():
   data_path = './data/analyses'
@@ -1662,14 +1956,14 @@ def process_all_complex_exp_metrics():
     ba_group_homophily_mean_top = top_matches_for_metrics(ba_group_homophily_metrics[1])
     ba_group_homophily_mean_top.to_csv(f'{data_path}/complex-ba-group-homophily-mean_top.csv')
 
-  process_complex_contagion_param_sweep_ER_top(er_all_top, f'{DATA_DIR}/complex-contagion-sweep-ER', 'results-all')
-  process_complex_contagion_param_sweep_WS_top(ws_all_top, f'{DATA_DIR}/complex-contagion-sweep-WS', 'results-all')
-  process_complex_contagion_param_sweep_BA_top(ba_all_top, f'{DATA_DIR}/complex-contagion-sweep-BA', 'results-all')
-  process_complex_contagion_param_sweep_BA_group_homophily_top(ba_group_homophily_all_top, f'{DATA_DIR}/complex-contagion-sweep-BA-group-homophily', 'results-all')
-  process_complex_contagion_param_sweep_ER_top(er_mean_top, f'{DATA_DIR}/complex-contagion-sweep-ER', 'results-mean')
-  process_complex_contagion_param_sweep_WS_top(ws_mean_top, f'{DATA_DIR}/complex-contagion-sweep-WS', 'results-mean')
-  process_complex_contagion_param_sweep_BA_top(ba_mean_top, f'{DATA_DIR}/complex-contagion-sweep-BA', 'results-mean')
-  process_complex_contagion_param_sweep_BA_group_homophily_top(ba_group_homophily_mean_top, f'{DATA_DIR}/complex-contagion-sweep-BA-group-homophily', 'results-mean')
+  # process_complex_contagion_param_sweep_ER_top(er_all_top, f'{DATA_DIR}/complex-contagion-sweep-ER', 'results-all')
+  # process_complex_contagion_param_sweep_WS_top(ws_all_top, f'{DATA_DIR}/complex-contagion-sweep-WS', 'results-all')
+  # process_complex_contagion_param_sweep_BA_top(ba_all_top, f'{DATA_DIR}/complex-contagion-sweep-BA', 'results-all')
+  # process_complex_contagion_param_sweep_BA_group_homophily_top(ba_group_homophily_all_top, f'{DATA_DIR}/complex-contagion-sweep-BA-group-homophily', 'results-all')
+  process_complex_contagion_param_sweep_ER_top_mean(er_mean_top, f'{DATA_DIR}/complex-contagion-sweep-ER', 'results-mean')
+  process_complex_contagion_param_sweep_WS_top_mean(ws_mean_top, f'{DATA_DIR}/complex-contagion-sweep-WS', 'results-mean')
+  process_complex_contagion_param_sweep_BA_top_mean(ba_mean_top, f'{DATA_DIR}/complex-contagion-sweep-BA', 'results-mean')
+  process_complex_contagion_param_sweep_BA_group_homophily_top_mean(ba_group_homophily_mean_top, f'{DATA_DIR}/complex-contagion-sweep-BA-group-homophily', 'results-mean')
 
 def process_all_simple_exp_metrics():
   data_path = './data/analyses'
@@ -1781,135 +2075,17 @@ def process_all_simple_exp_metrics():
     ba_group_homophily_mean_top = top_matches_for_metrics(ba_group_homophily_metrics[1])
     ba_group_homophily_mean_top.to_csv(f'{data_path}/simple-ba-group-homophily-mean_top.csv')
 
-  process_simple_contagion_param_sweep_ER_top(er_all_top, f'{DATA_DIR}/simple-contagion-sweep-ER', 'results-all')
-  process_simple_contagion_param_sweep_WS_top(ws_all_top, f'{DATA_DIR}/simple-contagion-sweep-WS', 'results-all')
-  process_simple_contagion_param_sweep_BA_top(ba_all_top, f'{DATA_DIR}/simple-contagion-sweep-BA', 'results-all')
-  process_simple_contagion_param_sweep_BA_group_homophily_top(ba_group_homophily_all_top, f'{DATA_DIR}/simple-contagion-sweep-BA-group-homophily', 'results-all')
-  process_simple_contagion_param_sweep_ER_top(er_mean_top, f'{DATA_DIR}/simple-contagion-sweep-ER', 'results-mean')
-  process_simple_contagion_param_sweep_WS_top(ws_mean_top, f'{DATA_DIR}/simple-contagion-sweep-WS', 'results-mean')
-  process_simple_contagion_param_sweep_BA_top(ba_mean_top, f'{DATA_DIR}/simple-contagion-sweep-BA', 'results-mean')
-  process_simple_contagion_param_sweep_BA_group_homophily_top(ba_group_homophily_mean_top, f'{DATA_DIR}/simple-contagion-sweep-BA-group-homophily', 'results-mean')
-
-def low_res_sweep_total_analysis(data_dir, data_file):
-  return dynamic_model_total_analysis(data_dir, data_file, ['translate','tactic','media_dist','media_n','citizen_dist','zeta_citizen','zeta_media','citizen_memory_len','repetition'])
-
-def low_res_low_media_total_analysis(data_dir, data_file):
-  return dynamic_model_total_analysis(data_dir, data_file, ['translate','media_dist','tactic','citizen_dist','zeta_citizen','zeta_media','citizen_memory_len','repetition'])
-
-def static_sweep_large_N_total_analysis(data_dir, data_file):
-  return static_model_total_analysis(data_dir, data_file, ['translate','tactic','media_dist','citizen_dist','epsilon','graph_type','ba_m','repetition'])
+  # process_simple_contagion_param_sweep_ER_top(er_all_top, f'{DATA_DIR}/simple-contagion-sweep-ER', 'results-all')
+  # process_simple_contagion_param_sweep_WS_top(ws_all_top, f'{DATA_DIR}/simple-contagion-sweep-WS', 'results-all')
+  # process_simple_contagion_param_sweep_BA_top(ba_all_top, f'{DATA_DIR}/simple-contagion-sweep-BA', 'results-all')
+  # process_simple_contagion_param_sweep_BA_group_homophily_top(ba_group_homophily_all_top, f'{DATA_DIR}/simple-contagion-sweep-BA-group-homophily', 'results-all')
+  process_simple_contagion_param_sweep_ER_top_mean(er_mean_top, f'{DATA_DIR}/simple-contagion-sweep-ER', 'results-mean')
+  process_simple_contagion_param_sweep_WS_top_mean(ws_mean_top, f'{DATA_DIR}/simple-contagion-sweep-WS', 'results-mean')
+  process_simple_contagion_param_sweep_BA_top_mean(ba_mean_top, f'{DATA_DIR}/simple-contagion-sweep-BA', 'results-mean')
+  process_simple_contagion_param_sweep_BA_group_homophily_top_mean(ba_group_homophily_mean_top, f'{DATA_DIR}/simple-contagion-sweep-BA-group-homophily', 'results-mean')
 
 '''
 ================
 ANALYSES OF RESULTS
 ================
 '''
-
-def static_model_total_analysis(data_dir, data_file, params):
-  print('loading polarization data...')
-  df = read_polarization_dataframe(f'{data_dir}/{data_file}')
-  df = df.drop(columns=['Unnamed: 0'])
-  df['pen_name'] = df['pen_name'].astype(str)
-  multidata = dataframe_as_multidata(df)
-  multidata['params'] = params
-  print('loaded polarization data')
-
-  print('starting polarization analysis...')
-  polarization_slope = 0.01
-  polarization_intercept = 8.5
-
-  polarization_categories = ['polarized','depolarized','remained_polarized','remained_nonpolarized']
-
-  polarization_data = polarization_all_analysis(multidata, polarization_slope, polarization_intercept)
-  with open(f'{data_dir}/polarization-results.json','w') as f:
-    polarization_results = { category: len(polarization_data[category]) for category in polarization_categories }
-    json.dump(polarization_results, f)
-  print('finished polarization analysis')
- 
-  polarization_all_df = polarization_data['polarization_df']
-
-  print('starting polarization stability analysis...')
-  polarization_stability_data = polarization_stability_analysis(multidata, polarization_slope, polarization_intercept)
-  with open(f'{data_dir}/polarization-stability-diff-parts.json','w') as f:
-    json.dump(polarization_stability_data['diff_parts'], f)
-  print('finished polarization stability analysis')
-
-  stability_df = polarization_stability_data['stability']
-  print('starting polarization results by parameter breakdown...')
-  (fe_relative, fe_absolute) = static_polarization_results_by_fragmentation_exposure(polarization_all_df)
-  with open(f'{data_dir}/polarization-by-frag-zeta-relative.json','w') as f:
-    json.dump(fe_relative, f)
-  with open(f'{data_dir}/polarization-by-frag-zeta-absolute.json','w') as f:
-    json.dump(fe_absolute, f)
-  write_static_polarization_by_fragmentation_exposure(fe_absolute, data_dir, 'polarization-by-frag-zeta-absolute-LATEX.tex')
-  write_static_polarization_by_fragmentation_exposure(fe_relative, data_dir, 'polarization-by-frag-zeta-relative-LATEX.tex')
-
-  print('finished breakdown by fragmentation and exposure')
-
-  (td_relative, td_absolute) = polarization_results_by_tactic_distributions(polarization_all_df)
-  with open(f'{data_dir}/polarization-all-by-tactic-dist-relative.json','w') as f:
-    json.dump(td_relative, f)
-  with open(f'{data_dir}/polarization-all-by-tactic-dist-absolute.json','w') as f:
-    json.dump(td_absolute, f)
-  write_polarization_by_tactic_distribution(td_absolute, data_dir, 'polarization-all-by-tactic-dist-absolute-LATEX.tex')
-  write_polarization_by_tactic_distribution(td_relative, data_dir, 'polarization-all-by-tactic-dist-relative-LATEX.tex')
-  print('finished breakdown by tactic and distribution')
-
-  return polarization_all_df
-
-def polarization_all_analysis(multidata, slope_threshold, intercept_threshold):
-  polarization_data = { key: value for (key,value) in multidata.items() if key[1] == 'polarization' }
-  x = np.array([[val] for val in range(len(list(polarization_data.values())[0]['0'][0]))])
-  all_df = pd.DataFrame(columns=multidata['params'] + ['run','category','lr-intercept','lr-slope','start','end','delta','max','data'])
-  for (props, data) in polarization_data.items():
-    for i in range(len(data['0'])):
-      run_data = data['0'][i]
-      model = LinearRegression().fit(x, run_data)
-      category = determine_polarization_categories(run_data, model, slope_threshold, intercept_threshold)
-      all_df.loc[len(all_df.index)] = list(props[0]) + [i,category,model.intercept_,model.coef_[0],run_data[0],run_data[-1],run_data[-1]-run_data[0],max(run_data),run_data]
-  polarizing = all_df[all_df['category'] == 'polarized']
-  depolarizing = all_df[all_df['category'] == 'depolarized']
-  remained_polarized = all_df[all_df['category'] == 'remained_polarized']
-  remained_nonpolarized = all_df[all_df['category'] == 'remained_nonpolarized']
-
-  return { 'polarization_df': all_df, 'polarized': polarizing, 'depolarized': depolarizing, 'remained_polarized': remained_polarized, 'remained_nonpolarized': remained_nonpolarized }
-
-def polarization_means_analysis(multidata,slope_threshold,intercept_threshold):
-  '''
-  Analyze polarization data for any of the experiments' multidata
-  collection. This returns a data frame with conditions parameters
-  and measures on the polarization data like linear regression slope,
-  intercept, min, max, final value of the mean values, variance, etc.
-
-  This reports data broken up by a polarization regression slope threshold
-  and thus partitions the results into polarizing, depolarizing, and
-  remaining the same.
-
-  :param multidata: A collection of multidata for a given experiment.
-  :param slope_threshold: A slope value to use to categorize results
-  as polarizing or not based off of slope of a linear regression fit
-  to their data.
-  :param intercept_threshold: A y-value to use to categorize results
-  as being polarized or not based off of the intercept of a linear
-  regression fit to their data.
-  '''
-  # slope_threshold = 0.01
-  # intercept_threshold = 8.5
-
-  polarization_data = { key: value for (key,value) in multidata.items() if key[1] == 'polarization' }
-  polarization_means = { key: value['0'].mean(0) for (key,value) in polarization_data.items() }
-  polarization_vars = { key: value['0'].var(0).mean() for (key,value) in polarization_data.items() }
-  x = np.array([[val] for val in range(len(list(polarization_means.values())[0]))])
-  df = pd.DataFrame(columns=multidata['params'] + ['category','lr-intercept','lr-slope','var','start','end','delta','max','data'])
-
-  for (props, data) in polarization_means.items():
-    model = LinearRegression().fit(x, data)
-    category = determine_polarization_categories(data, model, slope_threshold, intercept_threshold)
-    df.loc[len(df.index)] = list(props[0]) + [category,model.intercept_,model.coef_[0],polarization_vars[props],data[0],data[-1],data[-1]-data[0],max(data),data]
-
-  polarizing = df[df['category'] == 'polarized']
-  depolarizing = df[df['category'] == 'depolarized']
-  remained_polarized = df[df['category'] == 'remained_polarized']
-  remained_nonpolarized = df[df['category'] == 'remained_nonpolarized']
-
-  return { 'polarization_df': df, 'polarized': polarizing, 'depolarized': depolarizing, 'remained_polarized': remained_polarized, 'remained_nonpolarized': remained_nonpolarized }
