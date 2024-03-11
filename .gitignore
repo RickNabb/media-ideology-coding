@@ -8,4 +8,6 @@ paper-figures/
 cog-cascades-model/__pycache__
 __pycache__
 cog-cascades-model/*.tmp.nlogo
+cog-cascades-model/data
+cog-cascades-model/data/analyses
 
