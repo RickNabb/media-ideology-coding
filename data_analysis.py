@@ -27,6 +27,22 @@ media_diets = {
 }
 
 media_diets_and_colors = { 'Republican': 'red', 'Moderate': 'purple', 'Democrat': 'blue' }
+category_to_title = {
+  'mw_comfort_breathe': 'Difficult to breathe?',
+  'mw_comfort_hot': 'Too hot?',
+  'mw_efficacy_health': 'No health benefits?',
+  'mw_efficacy_eff': 'Not effective?',
+  'mw_access_diff': 'Difficult to get?',
+  'mw_access_cost': 'Too expensive?',
+  'mw_compensation': 'Can avoid people?',
+  'mw_inconvenience_remember': 'Hard to remember?',
+  'mw_inconvenience_hassle': 'Is a hassle?',
+  'mw_appearance': 'Looks ugly/weird?',
+  'mw_attention_trust': 'Seems untrustworthy?',
+  'mw_attention_uncomfortable': 'Makes others uncomfortable?',
+  'mw_independence_forced': 'Dislike being forced?',
+  'mw_independence_authority': 'Reject authority?',
+}
 
 # Pulled from https://stackoverflow.com/questions/1060279/iterating-through-a-range-of-dates-in-python
 
@@ -569,24 +585,8 @@ def graph_article_belief_over_time(mask_codes_df, articles_db_df):
 
 def graph_labeled_paragraphs_per_category(mask_codes_df):
   labeled_paragraphs_per_category = num_paragraphs_labeled_per_category(mask_codes_df)
-  fig,axs = plt.subplots(2, 7, figsize=(4,4), sharex=True, sharey=True)
+  fig,axs = plt.subplots(2, 7, figsize=(14,4), sharex=True, sharey=True)
   i = 0
-  category_to_title = {
-    'mw_comfort_breathe': 'Difficult to breathe?',
-    'mw_comfort_hot': 'Too hot?',
-    'mw_efficacy_health': 'Health benefits?',
-    'mw_efficacy_eff': 'Effective?',
-    'mw_access_diff': 'Difficult to get?',
-    'mw_access_cost': 'Too expensive?',
-    'mw_compensation': 'Can avoid people?',
-    'mw_inconvenience_remember': 'Hard to remember?',
-    'mw_inconvenience_hassle': 'Is a hassle?',
-    'mw_appearance': 'Looks ugly/weird?',
-    'mw_attention_trust': 'Seems untrustworthy?',
-    'mw_attention_uncomfortable': 'Makes others uncomfortable?',
-    'mw_independence_forced': 'Dislike being forced?',
-    'mw_independence_authority': 'Reject authority?',
-  }
   code_to_label = {
     0: 'Yes',
     1: 'No',
@@ -660,6 +660,97 @@ def graph_media_article_beliefs_over_time(data, start_date, end_date, media_outl
       text = ax.text(j, i, round(data[i, j], 2), ha='center', va='center', color='w', fontsize=6)
   
   fig.tight_layout()
+  plt.show()
+
+def graph_inter_rater_scores(mask_wearing_df):
+  '''
+  Graph a histogram of the paragraph inter-rater ratings.
+
+  :param mask_wearing_df: A dataframe containing the annotations for paragraphs
+  along the 14 mask-wearing dimensions coded for.
+  '''
+  all_article_ids = mask_wearing_df['article_id'].unique()
+  multi_coded_paragraphs = [ article_id for article_id in all_article_ids if len(mask_wearing_df[mask_wearing_df['article_id']==article_id]['session_id'].unique()) > 1 ]
+  multi_coded_scores = [ { 'article_id': article_id, 'kappa': inter_rater_agreement_across_categories(mask_wearing_df, article_id) } for article_id in multi_coded_paragraphs ]
+  multi_codes_df = pd.DataFrame(multi_coded_scores)
+
+  bar_categories = [
+    { 'lower': 0, 'upper': 0.2 }, # Slight agreement
+    { 'lower': 0.2, 'upper': 0.4 }, # Fair agreement
+    { 'lower': 0.4, 'upper': 0.6 }, # Moderate agreement
+    { 'lower': 0.6, 'upper': 0.8 }, # Substantial agreement
+    { 'lower': 0.8, 'upper': 1.0 }, # Almost perfect agreement
+  ]
+  bar_labels = [
+    'Slight\n(0.0 - 0.2)',
+    'Fair\n(0.2 - 0.4)',
+    'Moderate\n(0.4 - 0.6)',
+    'Substantial\n(0.6 - 0.8)',
+    'Almost\nperfect\n(0.8 - 1.0)',
+  ]
+  num_pars_per_category = [ len(multi_codes_df[multi_codes_df['kappa'].between(category['lower'],category['upper'])]) for category in bar_categories ]
+
+  fig, ax = plt.subplots(figsize=(5,4))
+  ax.barh(range(len(bar_labels)), num_pars_per_category)
+  ax.set_yticks(range(len(bar_labels)))
+  ax.set_yticklabels(bar_labels, fontsize=12)
+  ax.set_ylabel('Fleiss Kappa Interpretation (Agreement)', fontsize=14)
+  ax.set_xlabel('Number of Paragraphs with Agreement Level', fontsize=14)
+  plt.show()
+
+def low_and_high_agreement_text_sample(mask_wearing_df, articles_df):
+  all_article_ids = mask_wearing_df['article_id'].unique()
+  multi_coded_paragraphs = [ article_id for article_id in all_article_ids if len(mask_wearing_df[mask_wearing_df['article_id']==article_id]['session_id'].unique()) > 1 ]
+  multi_coded_scores = [ { 'article_id': article_id, 'kappa': inter_rater_agreement_across_categories(mask_wearing_df, article_id) } for article_id in multi_coded_paragraphs ]
+  multi_codes_df = pd.DataFrame(multi_coded_scores)
+
+  agreement_score_threshold = 0.4
+  low_agreement_df = multi_codes_df[multi_codes_df['kappa'] < agreement_score_threshold]
+  high_agreement_df = multi_codes_df[multi_codes_df['kappa'] >= agreement_score_threshold]
+
+  low_agreement_df['text'] = [ articles_df[articles_df['id'] == article_id]['paragraph_text'].iloc[0] for article_id in low_agreement_df['article_id'] ]
+  high_agreement_df['text'] = [ articles_df[articles_df['id'] == article_id]['paragraph_text'].iloc[0] for article_id in high_agreement_df['article_id'] ]
+
+  return low_agreement_df, high_agreement_df
+
+def graph_low_high_agreement_category_distribution(mask_wearing_df):
+  all_article_ids = mask_wearing_df['article_id'].unique()
+  multi_coded_paragraphs = [ article_id for article_id in all_article_ids if len(mask_wearing_df[mask_wearing_df['article_id']==article_id]['session_id'].unique()) > 1 ]
+  multi_coded_scores = [ { 'article_id': article_id, 'kappa': inter_rater_agreement_across_categories(mask_wearing_df, article_id) } for article_id in multi_coded_paragraphs ]
+  multi_codes_df = pd.DataFrame(multi_coded_scores)
+
+  agreement_score_threshold = 0.4
+  low_agreement_df = multi_codes_df[multi_codes_df['kappa'] < agreement_score_threshold]
+  high_agreement_df = multi_codes_df[multi_codes_df['kappa'] >= agreement_score_threshold]
+
+  fig,axs = plt.subplots(1, 2, figsize=(12,4), sharey=True)
+  low_ax = axs[0]
+  high_ax = axs[1]
+
+  attrs = mask_wearing_df['attribute'].unique()
+
+  num_low_codes_per_attribute = np.array([ [ len(mask_wearing_df[(mask_wearing_df['article_id'] == article_id) & (mask_wearing_df['attribute'] == attr) & (mask_wearing_df['code'] != 2)]) for attr in attrs ] for article_id in low_agreement_df['article_id'] ])
+  num_high_codes_per_attribute = np.array([ [ len(mask_wearing_df[(mask_wearing_df['article_id'] == article_id) & (mask_wearing_df['attribute'] == attr) & (mask_wearing_df['code'] != 2)]) for attr in attrs ] for article_id in high_agreement_df['article_id'] ])
+
+  low_agreement_by_attr = num_low_codes_per_attribute.sum(axis=0) 
+  low_agreement_by_attr_df = pd.DataFrame([ {'attribute': attrs[i], 'num_pars': low_agreement_by_attr[i] } for i in range(len(attrs)) ])
+  low_agreement_by_attr_df.sort_values(by='attribute', inplace=True)
+
+  high_agreement_by_attr = num_high_codes_per_attribute.sum(axis=0) 
+  high_agreement_by_attr_df = pd.DataFrame([{ 'attribute': attrs[i], 'num_pars': high_agreement_by_attr[i]} for i in range(len(attrs)) ])
+  high_agreement_by_attr_df.sort_values(by='attribute', inplace=True)
+
+  low_ax.barh(range(len(low_agreement_by_attr)), low_agreement_by_attr_df['num_pars'])
+  low_ax.set_yticks(range(len(attrs)))
+  low_ax.set_yticklabels([ category_to_title[attr] for attr in low_agreement_by_attr_df['attribute'] ])
+  low_ax.set_xlabel('Low Agreement')
+
+  high_ax.barh(range(len(high_agreement_by_attr)), high_agreement_by_attr_df['num_pars'])
+  high_ax.set_yticks(range(len(attrs)))
+  high_ax.set_yticklabels([ category_to_title[attr] for attr in high_agreement_by_attr_df['attribute'] ])
+  high_ax.set_xlabel('High Agreement')
+  # high_ax.set_yticks(attrs)
+
   plt.show()
 
 def ratings_for_category_for_paragraph(mask_codes_df, article_id, attribute):
@@ -774,12 +865,12 @@ def articles_df():
 def focused_articles_df(article_df):
   columns = ['stories_id','article_data','publish_date','media_id','word_count','title']
   focused_df = article_df[columns]
-  df_for_dates = rows_within_time_range(focused_df, '2020-04-01','2020-06-14')
+  df_for_dates = rows_within_tioe_range(focused_df, '2020-04-01','2020-06-14')
   return df_for_dates
 
 def high_quality_codes_across_categories(mask_wearing_df):
   article_ids = mask_wearing_df['article_id'].unique()
-  high_quality_paragraphs = []
+  high_quality_paragraphs = {}
   for article_id in article_ids:
     rows_for_article_id = mask_wearing_df[mask_wearing_df['article_id'] == article_id]
     num_annotaters = len(rows_for_article_id['session_id'].unique())
@@ -788,11 +879,12 @@ def high_quality_codes_across_categories(mask_wearing_df):
       agreement = inter_rater_agreement_across_categories(mask_wearing_df, article_id)
       # Rated as moderate agreement from Landis & Koch 1977 (https://datatab.net/tutorial/fleiss-kappa)
       if agreement > 0.4:
-        high_quality_paragraphs.append(article_id)
+        high_quality_paragraphs[article_id] = { 'agreement': agreement }
     # Otherwise, look at high confidences
     else:
-      if rows_for_article_id['confidence'].mean() >= 5:
-        high_quality_paragraphs.append(article_id)
+      mean_confidence = rows_for_article_id['confidence'].mean()
+      if mean_confidence >= 5:
+        high_quality_paragraphs[article_id] = { 'confidence': mean_confidence }
   return high_quality_paragraphs
 
 def high_quality_resolved_codes(mask_wearing_df):
@@ -803,9 +895,12 @@ def high_quality_resolved_codes(mask_wearing_df):
   :param mask_wearing_df: A data frame of mask wearing codes combined
   across coding rounds.
   '''
-  high_quality_ids = high_quality_codes_across_categories(mask_wearing_df)
+  if 'paragraph_id' in mask_wearing_df.columns and 'article_id' not in mask_wearing_df.columns:
+    mask_wearing_df.rename(columns={'paragraph_id': 'article_id'}, inplace=True)
+  high_quality_ids = list(high_quality_codes_across_categories(mask_wearing_df).keys())
   mask_wearing_hq_df = mask_wearing_df[mask_wearing_df['article_id'].isin(high_quality_ids)]
-  mask_wearing_hq_df.drop(columns=['id'],inplace=True)
+  if 'id' in mask_wearing_hq_df.columns:
+    mask_wearing_hq_df.drop(columns=['id'],inplace=True)
   resolved_codes = resolve_multiple_codes_per_paragraph(mask_wearing_hq_df)
   codes_without_multiples = mask_wearing_hq_df[~mask_wearing_hq_df['article_id'].isin(resolved_codes)]
   mask_wearing_hq_resolved_df = codes_without_multiples.copy()
@@ -821,6 +916,7 @@ def high_quality_resolved_codes(mask_wearing_df):
       # print(len(mask_wearing_hq_resolved_df))
       mask_wearing_hq_resolved_df.loc[len(mask_wearing_hq_resolved_df)] = [article_id, attr, code, -1, -1, row_for_article_id['datetime'], row_for_article_id['native_id']]
       # print(len(mask_wearing_hq_resolved_df))
+  mask_wearing_hq_resolved_df.rename(columns={'article_id': 'paragraph_id'}, inplace=True)
   return mask_wearing_hq_resolved_df
 
 def add_text_to_codes_df(mask_wearing_df,article_db_df):
