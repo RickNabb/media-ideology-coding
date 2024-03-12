@@ -1887,6 +1887,18 @@ to output-message-data [ path uniqueid ]
   py:run (word "write_message_data('" path "'," "'" uniqueid "'," bel-over-time-py "," messages-heard-py "," messages-believed-py "," messages-sent-py ")")
 end
 
+to convert-world-data-to-message-data [ path ]
+  let path-ids py:runresult((word "get_all_world_files('" path "')"))
+  foreach path-ids [ path-id ->
+    let pth item 0 path-id
+    let ids item 1 path-id
+    foreach ids [ id ->
+      show (word "Generating message data for " pth ": " id)
+      output-message-data pth read-from-string(id)
+    ]
+  ]
+end
+
 ;;;;;;;;;;;;;;;
 ; HELPER PROCS
 ;;;;;;;;;;;;;;;
@@ -2533,7 +2545,7 @@ CHOOSER
 spread-type
 spread-type
 "simple" "complex" "cognitive"
-2
+0
 
 TEXTBOX
 302
@@ -2562,7 +2574,7 @@ INPUTBOX
 244
 929
 load-graph-path
-D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/cognitive-contagion-sweep-BA/graphs/15-3-5-9.csv
+D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/simple-contagion-sweep-ER/graphs/0.05-0.01-0.csv
 1
 0
 String
@@ -2573,7 +2585,7 @@ INPUTBOX
 247
 995
 save-graph-path
-D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/cog-contagion-sweep-ER/graphs/0.05-1-2-9.csv
+D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/19-Feb-2024-simple-contagion-sweep-ER-TEST/graphs/0.1-0.05-3.csv
 1
 0
 String
@@ -2604,7 +2616,7 @@ simple-spread-chance
 simple-spread-chance
 0
 1
-0.75
+0.01
 0.01
 1
 NIL
@@ -2720,7 +2732,7 @@ cognitive-exponent
 cognitive-exponent
 -10
 10
-5.0
+3.0
 1
 1
 NIL
@@ -2772,7 +2784,7 @@ cognitive-translate
 cognitive-translate
 -10
 20
-3.0
+0.0
 1
 1
 NIL
@@ -2807,7 +2819,7 @@ CHOOSER
 graph-type
 graph-type
 "erdos-renyi" "watts-strogatz" "barabasi-albert" "ba-homophilic" "mag" "facebook" "kronecker"
-2
+0
 
 SLIDER
 257
@@ -2818,7 +2830,7 @@ erdos-renyi-p
 erdos-renyi-p
 0
 1
-0.5
+0.05
 0.01
 1
 NIL
@@ -3391,7 +3403,7 @@ repetition
 repetition
 0
 10
-9.0
+0.0
 1
 1
 NIL

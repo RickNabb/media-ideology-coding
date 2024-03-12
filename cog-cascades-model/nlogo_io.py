@@ -1,4 +1,5 @@
 import json
+import os
 
 '''
 NETLOGO PARSING
@@ -143,3 +144,16 @@ def read_json_file(filename):
 
 def read_cit_init_per_group(filename):
   return read_json_file(filename)
+
+def get_all_world_files(top_path):
+  path_to_ids = {}
+  for root, dirs, files in os.walk(top_path):
+    path = root.split(os.sep)
+    path_name = '/'.join(path)
+    file_ids = set([ f'{file.split("_")[0]}' for file in files if '_world.csv' in file ])
+    # print(file_ids)
+    if path_name not in path_to_ids and len(file_ids) > 0:
+      path_to_ids[path_name] = []
+    if len(file_ids) > 0:
+      path_to_ids[path_name] = list(file_ids)
+  return path_to_ids
