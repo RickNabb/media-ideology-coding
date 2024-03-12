@@ -1431,6 +1431,124 @@ def timeseries_similarity_scores_for_simulations(df, columns, target_data):
 
   return df_comparison_results
 
+def analysis_dfs():
+  data_path = './data/analyses'
+  cognitive_er_df_mean = pd.read_csv(f'{data_path}/cognitive-er-mean.csv')
+  cognitive_ws_df_mean = pd.read_csv(f'{data_path}/cognitive-ws-mean.csv')
+  cognitive_ba_df_mean = pd.read_csv(f'{data_path}/cognitive-ba-mean.csv')
+  simple_er_df_mean = pd.read_csv(f'{data_path}/simple-er-mean.csv')
+  simple_ws_df_mean = pd.read_csv(f'{data_path}/simple-ws-mean.csv')
+  simple_ba_df_mean = pd.read_csv(f'{data_path}/simple-ba-mean.csv')
+  complex_er_df_mean = pd.read_csv(f'{data_path}/complex-er-mean.csv')
+  complex_ws_df_mean = pd.read_csv(f'{data_path}/complex-ws-mean.csv')
+  complex_ba_df_mean = pd.read_csv(f'{data_path}/complex-ba-mean.csv')
+
+  cognitive_er_df_all = pd.read_csv(f'{data_path}/cognitive-er-all.csv')
+  cognitive_ws_df_all = pd.read_csv(f'{data_path}/cognitive-ws-all.csv')
+  cognitive_ba_df_all = pd.read_csv(f'{data_path}/cognitive-ba-all.csv')
+  simple_er_df_all = pd.read_csv(f'{data_path}/simple-er-all.csv')
+  simple_ws_df_all = pd.read_csv(f'{data_path}/simple-ws-all.csv')
+  simple_ba_df_all = pd.read_csv(f'{data_path}/simple-ba-all.csv')
+  complex_er_df_all = pd.read_csv(f'{data_path}/complex-er-all.csv')
+  complex_ws_df_all = pd.read_csv(f'{data_path}/complex-ws-all.csv')
+  complex_ba_df_all = pd.read_csv(f'{data_path}/complex-ba-all.csv')
+
+  dfs = {
+    'cognitive_er_mean': cognitive_er_df_mean,
+    'cognitive_ws_mean': cognitive_ws_df_mean,
+    'cognitive_ba_mean': cognitive_ba_df_mean,
+    'simple_er_mean': simple_er_df_mean,
+    'simple_ws_mean': simple_ws_df_mean,
+    'simple_ba_mean': simple_ba_df_mean,
+    'complex_er_mean': complex_er_df_mean,
+    'complex_ws_mean': complex_ws_df_mean,
+    'complex_ba_mean': complex_ba_df_mean,
+    'cognitive_er_all': cognitive_er_df_all,
+    'cognitive_ws_all': cognitive_ws_df_all,
+    'cognitive_ba_all': cognitive_ba_df_all,
+    'simple_er_all': simple_er_df_all,
+    'simple_ws_all': simple_ws_df_all,
+    'simple_ba_all': simple_ba_df_all,
+    'complex_er_all': complex_er_df_all,
+    'complex_ws_all': complex_ws_df_all,
+    'complex_ba_all': complex_ba_df_all,
+  } 
+  return dfs
+
+def mean_top_measures(dfs, measures, num_top):
+  return { df_name: {
+    measure: df.sort_values(by=measure).head(num_top)[measure].mean() for measure in measures
+  } for df_name, df in dfs.items() }
+
+def num_high_scoring_metrics():
+  dfs = analysis_dfs()
+  mape_threshold = 0.25
+
+  high_scoring_dfs = { df_name: df[df['mape'] <= mape_threshold] for df_name,df in dfs.items() }
+  results = { df_name: len(df) for df_name,df in high_scoring_dfs.items() }
+
+  return results, high_scoring_dfs
+
+def top_params_df(high_scoring_dfs):
+  num_top_score_head = 10
+  top_params_df = pd.DataFrame(columns=['c1','c2','c3','c4','c5'])
+
+  for df_name, df in high_scoring_dfs.items():
+    df_sorted = df.sort_values(by='mape')
+    print(f'analyzing {df_name}')
+    top_params_df.loc[len(top_params_df)] = [df_name, '','','','']
+    if '_er_'in df_name:
+      if 'simple' in df_name:
+        top_params_df.loc[len(top_params_df)] = ['er_p','p','mape','','']
+        for row_tuple in df_sorted.head(num_top_score_head).iterrows():
+          row = row_tuple[1]
+          top_params_df.loc[len(top_params_df)] = [ row['er_p'], row['simple_spread_chance'], row['mape'], '', '' ]
+      if 'complex' in df_name:
+        top_params_df.loc[len(top_params_df)] = ['er_p','ratio','mape','','']
+        for row_tuple in df_sorted.head(num_top_score_head).iterrows():
+          row = row_tuple[1]
+          top_params_df.loc[len(top_params_df)] = [ row['er_p'], row['complex_spread_ratio'], row['mape'], '', '' ]
+      if 'cognitive' in df_name:
+        top_params_df.loc[len(top_params_df)] = ['er_p','translate','exponent','mape','']
+        for row_tuple in df_sorted.head(num_top_score_head).iterrows():
+          row = row_tuple[1]
+          top_params_df.loc[len(top_params_df)] = [ row['er_p'], row['cognitive_translate'], row['cognitive_exponent'], row['mape'], '' ]
+    if '_ws_'in df_name:
+      if 'simple' in df_name:
+        top_params_df.loc[len(top_params_df)] = ['ws_p','ws_k','p','mape','']
+        for row_tuple in df_sorted.head(num_top_score_head).iterrows():
+          row = row_tuple[1]
+          top_params_df.loc[len(top_params_df)] = [ row['ws_p'], row['ws_k'], row['simple_spread_chance'], row['mape'], '']
+      if 'complex' in df_name:
+        top_params_df.loc[len(top_params_df)] = ['ws_p','ws_k','ratio','mape','']
+        for row_tuple in df_sorted.head(num_top_score_head).iterrows():
+          row = row_tuple[1]
+          top_params_df.loc[len(top_params_df)] = [ row['ws_p'], row['ws_k'], row['complex_spread_ratio'], row['mape'], '']
+      if 'cognitive' in df_name:
+        top_params_df.loc[len(top_params_df)] = ['ws_p','ws_k','translate','exponent','mape']
+        for row_tuple in df_sorted.head(num_top_score_head).iterrows():
+          row = row_tuple[1]
+          top_params_df.loc[len(top_params_df)] = [ row['ws_p'], row['ws_k'], row['cognitive_translate'], row['cognitive_exponent'], row['mape']]
+    if '_ba_'in df_name:
+      if 'simple' in df_name:
+        top_params_df.loc[len(top_params_df)] = ['ba_m','p','mape','','']
+        for row_tuple in df_sorted.head(num_top_score_head).iterrows():
+          row = row_tuple[1]
+          top_params_df.loc[len(top_params_df)] = [ row['ba_m'], row['simple_spread_chance'], row['mape'], '', '']
+      if 'complex' in df_name:
+        top_params_df.loc[len(top_params_df)] = ['ba_m','ratio','mape','','']
+        for row_tuple in df_sorted.head(num_top_score_head).iterrows():
+          row = row_tuple[1]
+          top_params_df.loc[len(top_params_df)] = [ row['ba_m'], row['complex_spread_ratio'], row['mape'], '','']
+      if 'cognitive' in df_name:
+        top_params_df.loc[len(top_params_df)] = ['ba_m','translate','exponent','mape','']
+        for row_tuple in df_sorted.head(num_top_score_head).iterrows():
+          row = row_tuple[1]
+          top_params_df.loc[len(top_params_df)] = [ row['ba_m'], row['cognitive_translate'], row['cognitive_exponent'], row['mape'],'']
+  return top_params_df
+  # top_params_df.to_csv(f'{data_path}/top-params.csv')
+
+
 def process_all_cognitive_exp_metrics():
   er_metrics = metrics_for_cognitive_contagion_param_sweep_ER(f'{DATA_DIR}/cognitive-contagion-sweep-ER')
   ws_metrics = metrics_for_cognitive_contagion_param_sweep_WS(f'{DATA_DIR}/cognitive-contagion-sweep-WS')
