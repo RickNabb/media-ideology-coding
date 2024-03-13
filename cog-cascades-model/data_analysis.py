@@ -244,11 +244,15 @@ def process_message_data(in_path, rand_id):
   :param in_path: The path to a single param combo run's output
   :param rand_id: The random seed used for filenames to process.
 
-  Analysis ideas:
-  [X] Mean and var difference of message exposure (heard) over time
-  [X] Mean and var difference of message belief over time
-  - Change in media messaging over time (color chart over time -- maybe stack plot)
-  - Do per run and then aggregate across runs with same paratmeres
+  :return belief_data: A dictionary keyed by tick, where each entry is
+   a list of agent beliefs as dictionaries keyed by proposition, values
+   as belief value.
+  :return messages_heard: A list where each entry is an agent's dictionary
+  of messages heard, keyed by tick, valued with a list of message ids.
+  :return messages_believed: A list where each entry is an agent's dictionary
+  of messages heard, keyed by tick, valued with a list of message ids.
+  :return all_messages: A dictionary keyed by message id with the value
+  as a dictionary of proposition & belief value encoded into the message.
   '''
   print(f'processing message data for {in_path}/{rand_id}_FILE.json')
   citizen_beliefs_file = open(f'{in_path}/{rand_id}_bel_over_time.json', 'r')
@@ -295,7 +299,63 @@ def process_message_data(in_path, rand_id):
   messages_believed_file.close()
   messages_heard_file.close()
   messages_sent_file.close()
+  return belief_data, messages_heard_data, messages_bel_data, all_messages
 
+def message_exposure_by_belief_analysis(beliefs, messages_heard, all_messages):
+  '''
+  Generates a dictionary of all belief values heard by each belief value
+  from 0-6, keyed on belief value 0-6, with values as lists containing
+  message belief values. The dictionary is keyed by proposition, so the
+  construction has a copy for each proposition.
+
+  :param beliefs: The belief_data object returned from process_message_data
+  :param messages_heard: The messages_heard_data object returned from process_message_data
+  :param all_messages: The messages_heard_data object returned from process_message_data
+  '''
+  # exposure_by_belief = { proposition: { agent_b: { message_b: [] for message_b in range(7) } for agent_b in range(7) } for proposition in beliefs['0'][0] }
+  exposure_by_belief = { proposition: { agent_b: [] for agent_b in range(7) } for proposition in beliefs['0'][0] }
+  for tick in beliefs:
+    beliefs_at_tick = beliefs[tick]
+    for agent_id in range(len(beliefs_at_tick)):
+      if tick not in messages_heard[agent_id]:
+        continue
+      agent_beliefs = beliefs_at_tick[agent_id]
+      messages_at_tick_for_agent = messages_heard[agent_id][tick]
+      messages = [ all_messages[str(message_id)] for message_id in messages_at_tick_for_agent ]
+      for proposition,belief_value in agent_beliefs.items():
+        for message in messages:
+          message_value = message[proposition]
+          exposure_by_belief[proposition][int(belief_value)].append(int(message_value))
+  return exposure_by_belief
+
+def message_belief_by_belief_analysis(beliefs, messages_believed, all_messages):
+  '''
+  Generates a dictionary of all belief values believed by each belief value
+  from 0-6, keyed on belief value 0-6, with values as lists containing
+  message belief values. The dictionary is keyed by proposition, so the
+  construction has a copy for each proposition.
+
+  :param beliefs: The belief_data object returned from process_message_data
+  :param messages_believed: The messages_bel_data object returned from process_message_data
+  :param all_messages: The messages_heard_data object returned from process_message_data
+  '''
+  # exposure_by_belief = { proposition: { agent_b: { message_b: [] for message_b in range(7) } for agent_b in range(7) } for proposition in beliefs['0'][0] }
+  exposure_by_belief = { proposition: { agent_b: [] for agent_b in range(7) } for proposition in beliefs['0'][0] }
+  for tick in beliefs:
+    beliefs_at_tick = beliefs[tick]
+    for agent_id in range(len(beliefs_at_tick)):
+      if tick not in messages_believed[agent_id]:
+        continue
+      agent_beliefs = beliefs_at_tick[agent_id]
+      messages_at_tick_for_agent = messages_believed[agent_id][tick]
+      messages = [ all_messages[str(message_id)] for message_id in messages_at_tick_for_agent ]
+      for proposition,belief_value in agent_beliefs.items():
+        for message in messages:
+          message_value = message[proposition]
+          exposure_by_belief[proposition][int(belief_value)].append(int(message_value))
+  return exposure_by_belief
+
+def message_distance_analysis(belief_data, messages_heard_data, messages_bel_data, all_messages):
   ticks = len(belief_data)
   belief_diffs = []
   heard_diffs = []
@@ -1020,6 +1080,45 @@ def plot_chi_sq_data(chi2_data, props, title, out_path, out_filename):
   ax.plot([ data[1] for data in chi2_data ])
   plt.savefig(f'{out_path}/{out_filename}')
   plt.close()
+
+def colors_for_belief(resolution):
+  rgb_to_hex = lambda rgb: '%02x%02x%02x' % tuple(rgb)
+  line_color = lambda key: f"#{rgb_to_hex([ 255 - round((255/(resolution-1))*int(key)), 0, round((255/(resolution-1)) * int(key)) ])}"
+  return { str(bel): line_color(bel) for bel in range(resolution) }
+
+def graph_messages_interaction_by_belief(title, message_interaction, interaction_str):
+  '''
+  Create a plot of several subplots -- one per belief value -- graphing bar charts
+  of some number of message interactions per message belief value. By interactions,
+  this just means either exposure, belief, sharing, etc.
+
+  :param title: The graph title.
+  :param message_interaction: A dictionary keyed on proposition, with values as
+  dictionaries keyed on belief value with values as lists of message values. The
+  output from message_exposure_by_belief_analysis is an example of this data
+  structure.
+  :param interaction_str: A string to use in the y-axis to label the interaction
+  as "Number of messages ___" (e.g., heard, believed, shared, etc.)
+  '''
+  fig, axs = plt.subplots(1, 7, figsize=(12,3), sharey=True, constrained_layout=True)
+  # This is just a placeholder because we only did experiments
+  # with one proposition at the time of this function creation
+  proposition = 'A'
+  belief_resolution = 7
+  colors = colors_for_belief(belief_resolution)
+  for belief_value,messages in message_interaction[proposition].items():
+    ax = axs[int(belief_value)]
+    x = list(range(belief_resolution))
+    y = [ len([ message for message in messages if message == bel_value ]) for bel_value in range(belief_resolution) ]
+    hatches = [ 'xxx' if i == belief_value else '' for i in range(belief_resolution) ]
+    ax.bar(x, y, color=colors.values(), hatch=hatches, edgecolor='white')
+    ax.set_xlabel(f'B = {belief_value}')
+    ax.set_xticks(list(range(belief_resolution)))
+    ax.set_xticklabels(list(range(belief_resolution)))
+  plt.title(title)
+  fig.supxlabel('Belief Values')
+  fig.supylabel(f'Number of messages {interaction_str}')
+  plt.show()
 
 """
 ##################
