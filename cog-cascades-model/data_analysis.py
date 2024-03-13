@@ -1,4 +1,4 @@
-import pickle
+import ast
 from enum import Enum
 from random import *
 from utils import *
@@ -1235,7 +1235,7 @@ def read_dataframe_with_simulation_data(path):
   df.drop(columns=['Unnamed: 0'], inplace=True)
   for i in range(len(df)):
     raw_data = df.iloc[i]['data']
-    df.at[i,'data'] = np.fromstring(raw_data[1:-1].replace('\n','').replace('0. ','0 '),sep=' ')
+    df.at[i,'data'] = np.array(ast.literal_eval(raw_data.replace(';',',')))
   return df
 
 def process_top_exp_all_results(top_df, param_order, path, results_dir):
