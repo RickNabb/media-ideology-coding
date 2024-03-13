@@ -1883,7 +1883,9 @@ to output-message-data [ path uniqueid ]
   let bel-over-time-py list-as-py-array (map [ tick-entry -> (word "{" (item 0 tick-entry) ": " (list-as-py-array (map [ bels -> list-as-py-dict-rec bels true false ] (item 1 tick-entry)) false) "}") ] beliefs-over-time) false
   let messages-heard-py list-as-py-array (map [ cit -> [ list-as-py-array (map [ tick-entry -> (word "{" (item 0 tick-entry) ": " (list-as-py-array (item 1 tick-entry) false) "}") ] messages-heard) false ] of cit ] (sort citizens)) false
   let messages-believed-py list-as-py-array (map [ cit -> [ list-as-py-array (map [ tick-entry -> (word "{" (item 0 tick-entry) ": " (list-as-py-array (item 1 tick-entry) false) "}") ] messages-believed) false ] of cit ] (sort citizens)) false
-  let messages-sent-py list-as-py-array (map [ med -> [ list-as-py-dict-rec messages-sent true false ] of med ] (sort medias)) false
+  ; This is the old version without being keyed on media
+;  let messages-sent-py list-as-py-array (map [ med -> [ list-as-py-dict-rec (list idee messages-sent) true false ] of med ] (sort medias)) false
+  let messages-sent-py list-as-py-dict (map [ med -> [ (list idee list-as-py-dict-rec (map [ message -> message ] messages-sent) true false)] of med ] (sort medias)) true false
   py:run (word "write_message_data('" path "'," "'" uniqueid "'," bel-over-time-py "," messages-heard-py "," messages-believed-py "," messages-sent-py ")")
 end
 

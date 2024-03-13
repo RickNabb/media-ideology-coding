@@ -386,11 +386,36 @@ def nlogo_graph_to_nx_with_media(citizens, friend_links, media, subscribers):
       G.nodes[cit_id][attr] = agent[attr]
     for attr in agent['prior']:
       G.nodes[cit_id][attr] = agent[attr]
+    if 'groups' in agent:
+      G.nodes[cit_id]['groups'] = agent['groups']
   for link in links:
     link_split = link.split(' ')
     end1 = link_split[1]
     end2 = link_split[2].replace(')','')
     G.add_edge(int(end1), int(end2))
+  return G
+
+def nlogo_saved_graph_to_nx(citizens, social_links, media, subscribers):
+  G = nx.Graph()
+  links = social_links + subscribers
+  for cit in citizens:
+    cit_id = int(cit[0])
+    cit_belief = int(cit[1])
+    cit_group = cit[2]
+    G.add_node(cit_id)
+    # TODO: Change this eventually -- this is also hardcoded into the
+    # graph saving so that only proposition 'A' is saved
+    G.nodes[cit_id]['A'] = cit_belief
+    G.nodes[cit_id]['groups'] = cit_group
+  for m in media:
+    media_id = int(m[0])
+    media_name = m[1]
+    media_belief = int(m[2])
+    G.add_node(media_id)
+    G.nodes[media_id]['name'] = media_name
+    G.nodes[media_id]['A'] = media_belief
+  for link in links:
+    G.add_edge(int(link[0]), int(link[1]))
   return G
 
 def citizen_media_connections_by_zeta(citizen_beliefs, citizen_memories, zeta, citizen_memory_len, num_media, topics, trust_fn):

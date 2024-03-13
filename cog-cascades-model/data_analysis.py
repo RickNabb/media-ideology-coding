@@ -16,6 +16,7 @@ from sklearn.linear_model import LinearRegression
 import math
 import matplotlib.pyplot as plt
 from nlogo_io import *
+from nlogo_graphs import nlogo_saved_graph_to_nx
 from messaging import dist_to_agent_brain, believe_message
 # import statsmodels.formula.api as smf
 
@@ -291,15 +292,21 @@ def process_message_data(in_path, rand_id):
   messages_bel_data = messages_belief_data
 
   messages_sent_data = json.load(messages_sent_file)
-  all_messages = { }
-  for media_messages in messages_sent_data:
-    all_messages.update(media_messages)
+  # messages_sent = { }
+  # for media_messages in messages_sent_data:
+  #   messages_sent.update(media_messages)
 
   citizen_beliefs_file.close()
   messages_believed_file.close()
   messages_heard_file.close()
   messages_sent_file.close()
-  return belief_data, messages_heard_data, messages_bel_data, all_messages
+  return belief_data, messages_heard_data, messages_bel_data, messages_sent_data
+
+def combine_all_messages_no_media(messages_sent):
+  all_messages = {}
+  for media_name,messages in messages_sent.items():
+    all_messages.update(messages)
+  return all_messages
 
 def message_exposure_by_belief_analysis(beliefs, messages_heard, all_messages):
   '''
@@ -310,7 +317,8 @@ def message_exposure_by_belief_analysis(beliefs, messages_heard, all_messages):
 
   :param beliefs: The belief_data object returned from process_message_data
   :param messages_heard: The messages_heard_data object returned from process_message_data
-  :param all_messages: The messages_heard_data object returned from process_message_data
+  :param all_messages: A dictionary of messages keyed by id with contents inside as
+  another dictionary (the result of combine_all_messages_no_media)
   '''
   # exposure_by_belief = { proposition: { agent_b: { message_b: [] for message_b in range(7) } for agent_b in range(7) } for proposition in beliefs['0'][0] }
   exposure_by_belief = { proposition: { agent_b: [] for agent_b in range(7) } for proposition in beliefs['0'][0] }
@@ -337,7 +345,8 @@ def message_belief_by_belief_analysis(beliefs, messages_believed, all_messages):
 
   :param beliefs: The belief_data object returned from process_message_data
   :param messages_believed: The messages_bel_data object returned from process_message_data
-  :param all_messages: The messages_heard_data object returned from process_message_data
+  :param all_messages: A dictionary of messages keyed by id with contents inside as
+  another dictionary (the result of combine_all_messages_no_media)
   '''
   # exposure_by_belief = { proposition: { agent_b: { message_b: [] for message_b in range(7) } for agent_b in range(7) } for proposition in beliefs['0'][0] }
   exposure_by_belief = { proposition: { agent_b: [] for agent_b in range(7) } for proposition in beliefs['0'][0] }
@@ -389,6 +398,45 @@ def message_distance_analysis(belief_data, messages_heard_data, messages_bel_dat
     belief_diffs.append((belief_diffs_at_tick.mean(), belief_diffs_at_tick.var()))
     heard_diffs.append((heard_diffs_at_tick.mean(), heard_diffs_at_tick.var()))
   return { 'believed': np.array(belief_diffs), 'heard': np.array(heard_diffs) }
+
+def message_exposure_by_group_analysis(data_path, rand_id, graph_path):
+  (citizens, cit_social, media_arr, media_sub_arr) = read_graph(graph_path)
+  graph = nlogo_saved_graph_to_nx(citizens, cit_social, media_arr, media_sub_arr)
+
+  groups = set([ cit[2] for cit in citizens ])
+  media_names = set([ media[1] for media in media_arr ])
+
+  beliefs, messages_heard, messages_believed, messages_sent = process_message_data(data_path, rand_id)
+  all_messages = combine_all_messages_no_media(messages_sent)
+  message_id_to_name = {}
+  for media_name, messages in messages_sent.items():
+    for message in messages:
+      message_id_to_name[message] = media_name
+
+  exposure_by_group = { proposition: { 
+    group: { 
+      media_name: [] for media_name in media_names
+      } for group in groups
+    } for proposition in beliefs['0'][0]
+  }
+  for tick in beliefs:
+    beliefs_at_tick = beliefs[tick]
+    for agent_id in range(len(beliefs_at_tick)):
+      if tick not in messages_heard[agent_id]:
+        continue
+      agent_beliefs = beliefs_at_tick[agent_id]
+      agent_group = graph.nodes[agent_id]['groups']
+      messages_at_tick_for_agent = messages_heard[agent_id][tick]
+      # messages = [ all_messages[str(message_id)] for message_id in messages_at_tick_for_agent ]
+      for proposition,belief_value in agent_beliefs.items():
+        for message_id in messages_at_tick_for_agent:
+          message = all_messages[str(message_id)]
+          message_value = message[proposition]
+          message_sender = message_id_to_name[str(message_id)]
+          exposure_by_group[proposition][agent_group][message_sender].append(int(message_value))
+  return exposure_by_group
+
+# def message_exposure_by_group_analysis(messages_heard, all_messages, graph_data):
 
 def process_multi_message_data(in_path):
   '''
@@ -1118,6 +1166,54 @@ def graph_messages_interaction_by_belief(title, message_interaction, interaction
   plt.title(title)
   fig.supxlabel('Belief Values')
   fig.supylabel(f'Number of messages {interaction_str}')
+  plt.show()
+
+def graph_message_interaction_by_group(title, message_interaction, interaction_str):
+  proposition = 'A'
+  belief_resolution = 7
+  belief_colors = colors_for_belief(belief_resolution)
+  messages_by_group = message_interaction[proposition]
+  num_groups = len(messages_by_group)
+  group_to_color = { 'DEM': 'blue', 'MOD': 'purple', 'REP': 'red' }
+  media_to_color = {
+    'CARLSON': 'red',
+    'INGRAHAM': 'red',
+    'HANNITY': 'red',
+    'FOX': 'purple',
+    'BREITBART': 'red',
+    'NYT': 'purple',
+    'VOX': 'blue',
+    'KOS': 'blue'
+  }
+  fig, axs = plt.subplots(2, num_groups, figsize=(9,3), sharey=True, constrained_layout=True)
+  i = 0
+  group_order = ['DEM','MOD','REP']
+  for group in group_order:
+    messages_by_media = messages_by_group[group]
+    # For the upper axis, group messages by sender
+    ax = axs[0,i]
+    x = list(range(len(messages_by_media)))
+    y = [ len(messages) for messages in messages_by_media.values() ]
+    colors = [ media_to_color[media_name] for media_name in messages_by_media.keys() ]
+
+    ax.bar(x, y, color=colors)
+    # ax.set_xlabel(group)
+    ax.set_xticks(range(len(messages_by_media)))
+    ax.set_xticklabels([ media_name for media_name in messages_by_media.keys() ], rotation=45)
+
+    # For the lower axis, group messages by belief value
+    ax = axs[1,i]
+    x = list(range(belief_resolution))
+    all_messages_for_group = []
+    for media_name, messages in messages_by_media.items():
+      all_messages_for_group += messages
+    y = [ len([ message for message in all_messages_for_group if message == bel_value ]) for bel_value in range(belief_resolution) ]
+    ax.bar(x, y, color=belief_colors.values())
+    ax.set_xlabel(group)
+    ax.set_xticks(range(belief_resolution))
+    ax.set_xticklabels(list(range(belief_resolution)))
+    i += 1
+  # fig.supylabel(f'Number of messages {interaction_str}')
   plt.show()
 
 """
