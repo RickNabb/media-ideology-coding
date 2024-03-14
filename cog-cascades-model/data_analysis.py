@@ -308,6 +308,30 @@ def combine_all_messages_no_media(messages_sent):
     all_messages.update(messages)
   return all_messages
 
+def message_exposure_by_belief_multi_analysis(message_multidata):
+  '''
+  Combines several data structures in the same format as what is returned
+  by message_belief_by_belief_analysis into one data structure of the same
+  shape.
+
+  :param message_multidata: A list of 4-tuples containing the results
+  from running process_message_data on each rand_id in a directory:
+  (beliefs, messages_heard, messages_believed, messages_sent)
+  '''
+  combined_exposure_by_belief = { }
+  for message_data in message_multidata:
+    beliefs, messages_heard, _, messages_sent = message_data
+    exposure_by_belief = message_exposure_by_belief_analysis(beliefs, messages_heard, combine_all_messages_no_media(messages_sent))
+    for proposition, agent_belief in exposure_by_belief.items():
+      if proposition not in combined_exposure_by_belief:
+        combined_exposure_by_belief[proposition] = {}
+      beliefs_for_proposition = combined_exposure_by_belief[proposition]
+      for belief_value, belief_list in agent_belief.items():
+        if belief_value not in beliefs_for_proposition:
+          beliefs_for_proposition[belief_value] = []
+        beliefs_for_proposition[belief_value] += belief_list
+  return combined_exposure_by_belief
+
 def message_exposure_by_belief_analysis(beliefs, messages_heard, all_messages):
   '''
   Generates a dictionary of all belief values heard by each belief value
@@ -335,6 +359,30 @@ def message_exposure_by_belief_analysis(beliefs, messages_heard, all_messages):
           message_value = message[proposition]
           exposure_by_belief[proposition][int(belief_value)].append(int(message_value))
   return exposure_by_belief
+
+def message_belief_by_belief_multi_analysis(message_multidata):
+  '''
+  Combines several data structures in the same format as what is returned
+  by message_belief_by_belief_analysis into one data structure of the same
+  shape.
+
+  :param message_multidata: A list of 4-tuples containing the results
+  from running process_message_data on each rand_id in a directory:
+  (beliefs, messages_heard, messages_believed, messages_sent)
+  '''
+  combined_exposure_by_belief = { }
+  for message_data in message_multidata:
+    beliefs, _, messages_believed, messages_sent = message_data
+    exposure_by_belief = message_belief_by_belief_analysis(beliefs, messages_believed, combine_all_messages_no_media(messages_sent))
+    for proposition, agent_belief in exposure_by_belief.items():
+      if proposition not in combined_exposure_by_belief:
+        combined_exposure_by_belief[proposition] = {}
+      beliefs_for_proposition = combined_exposure_by_belief[proposition]
+      for belief_value, belief_list in agent_belief.items():
+        if belief_value not in beliefs_for_proposition:
+          beliefs_for_proposition[belief_value] = []
+        beliefs_for_proposition[belief_value] += belief_list
+  return combined_exposure_by_belief
 
 def message_belief_by_belief_analysis(beliefs, messages_believed, all_messages):
   '''
@@ -1908,42 +1956,54 @@ def analysis_dfs():
   cognitive_er_df_mean = pd.read_csv(f'{data_path}/cognitive-er-mean.csv')
   cognitive_ws_df_mean = pd.read_csv(f'{data_path}/cognitive-ws-mean.csv')
   cognitive_ba_df_mean = pd.read_csv(f'{data_path}/cognitive-ba-mean.csv')
+  cognitive_ba_group_h_df_mean = pd.read_csv(f'{data_path}/cognitive-ba-group-homophily-mean.csv')
   simple_er_df_mean = pd.read_csv(f'{data_path}/simple-er-mean.csv')
   simple_ws_df_mean = pd.read_csv(f'{data_path}/simple-ws-mean.csv')
   simple_ba_df_mean = pd.read_csv(f'{data_path}/simple-ba-mean.csv')
+  simple_ba_group_h_df_mean = pd.read_csv(f'{data_path}/simple-ba-group-homophily-mean.csv')
   complex_er_df_mean = pd.read_csv(f'{data_path}/complex-er-mean.csv')
   complex_ws_df_mean = pd.read_csv(f'{data_path}/complex-ws-mean.csv')
   complex_ba_df_mean = pd.read_csv(f'{data_path}/complex-ba-mean.csv')
+  complex_ba_group_h_df_mean = pd.read_csv(f'{data_path}/complex-ba-group-homophily-mean.csv')
 
   cognitive_er_df_all = pd.read_csv(f'{data_path}/cognitive-er-all.csv')
   cognitive_ws_df_all = pd.read_csv(f'{data_path}/cognitive-ws-all.csv')
   cognitive_ba_df_all = pd.read_csv(f'{data_path}/cognitive-ba-all.csv')
+  cognitive_ba_group_h_df_all = pd.read_csv(f'{data_path}/cognitive-ba-group-homophily-all.csv')
   simple_er_df_all = pd.read_csv(f'{data_path}/simple-er-all.csv')
   simple_ws_df_all = pd.read_csv(f'{data_path}/simple-ws-all.csv')
   simple_ba_df_all = pd.read_csv(f'{data_path}/simple-ba-all.csv')
+  simple_ba_group_h_df_all = pd.read_csv(f'{data_path}/simple-ba-group-homophily-all.csv')
   complex_er_df_all = pd.read_csv(f'{data_path}/complex-er-all.csv')
   complex_ws_df_all = pd.read_csv(f'{data_path}/complex-ws-all.csv')
   complex_ba_df_all = pd.read_csv(f'{data_path}/complex-ba-all.csv')
+  complex_ba_group_h_df_all = pd.read_csv(f'{data_path}/complex-ba-group-homophily-all.csv')
 
   dfs = {
     'cognitive_er_mean': cognitive_er_df_mean,
     'cognitive_ws_mean': cognitive_ws_df_mean,
     'cognitive_ba_mean': cognitive_ba_df_mean,
+    'cognitive_ba_group_h_mean': cognitive_ba_group_h_df_mean,
     'simple_er_mean': simple_er_df_mean,
     'simple_ws_mean': simple_ws_df_mean,
     'simple_ba_mean': simple_ba_df_mean,
+    'simple_ba_group_h_mean': simple_ba_group_h_df_mean,
     'complex_er_mean': complex_er_df_mean,
     'complex_ws_mean': complex_ws_df_mean,
     'complex_ba_mean': complex_ba_df_mean,
+    'complex_ba_group_h_mean': complex_ba_group_h_df_mean,
     'cognitive_er_all': cognitive_er_df_all,
     'cognitive_ws_all': cognitive_ws_df_all,
     'cognitive_ba_all': cognitive_ba_df_all,
+    'cognitive_ba_group_h_all': cognitive_ba_group_h_df_all,
     'simple_er_all': simple_er_df_all,
     'simple_ws_all': simple_ws_df_all,
     'simple_ba_all': simple_ba_df_all,
+    'simple_ba_group_h_all': simple_ba_group_h_df_all,
     'complex_er_all': complex_er_df_all,
     'complex_ws_all': complex_ws_df_all,
     'complex_ba_all': complex_ba_df_all,
+    'complex_ba_group_h_all': complex_ba_group_h_df_all,
   } 
   return dfs
 
