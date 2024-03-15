@@ -448,6 +448,21 @@ def message_distance_analysis(belief_data, messages_heard_data, messages_bel_dat
   return { 'believed': np.array(belief_diffs), 'heard': np.array(heard_diffs) }
 
 def message_exposure_by_group_analysis(data_path, rand_id, graph_path):
+  '''
+  For a given simulation run data, analyze which consumer agents were
+  exposed to which messages and from which media producers.
+
+  :param data_path: Path to a specific set of runs including the graph
+  number (so only repetitions from BehaviorSpace).
+  :param rand_id: The ID of the run to analyze results for.
+  :param graph_path: Path to the graph that generated results for this
+  run.
+
+  :return: A dictionary keyed by proposition, with values as dictionaries
+  keyed by group name, and those values as dictionaries keyed by media name
+  with values as a list of belief values of messages exposed. See the
+  exposure_by_group variable.
+  '''
   (citizens, cit_social, media_arr, media_sub_arr) = read_graph(graph_path)
   graph = nlogo_saved_graph_to_nx(citizens, cit_social, media_arr, media_sub_arr)
 
@@ -483,8 +498,6 @@ def message_exposure_by_group_analysis(data_path, rand_id, graph_path):
           message_sender = message_id_to_name[str(message_id)]
           exposure_by_group[proposition][agent_group][message_sender].append(int(message_value))
   return exposure_by_group
-
-# def message_exposure_by_group_analysis(messages_heard, all_messages, graph_data):
 
 def process_multi_message_data(in_path):
   '''
@@ -1356,7 +1369,7 @@ def process_select_exp_outputs_mean(param_combos, plots, path, results_dir):
   for combo in param_combos:
     for (plot_name, plot_types) in plots.items():
       # print(plot_name, plot_types)
-      (multi_data, props, model_params) = process_multi_chart_data(f'{path}/{"/".join(combo)}', plot_name)
+      (multi_data, props, _, _) = process_multi_chart_data(f'{path}/{"/".join(combo)}', plot_name)
       if plot_name == 'opinion-timeseries':
         props['y min'] = 0
         props['y max'] = 100
@@ -1472,6 +1485,13 @@ def dataframe_as_multidata(df):
       multidata[key][pen_name] = np.vstack([data,row.data])
           # means[key] = np.vstack([means[key], data_vector])
   return multidata
+
+def write_dataframe_with_simulation_data(df, path):
+  write_safe_df = df.copy()
+  for i in range(len(write_safe_df)):
+    data = write_safe_df.iloc[i]['data']
+    write_safe_df.at[i,'data'] = str(data.tolist()).replace(',',';')
+  write_safe_df.to_csv(path)
 
 def read_dataframe_with_simulation_data(path):
   df = pd.read_csv(path)
@@ -1943,11 +1963,16 @@ def timeseries_similarity_scores_for_simulations(df, target_data):
     'euclidean': lambda simulated, empirical: np.sqrt(np.sum((empirical - simulated) ** 2)),
     'mape': lambda simulated, empirical: np.mean(np.abs((empirical - simulated) / empirical))
   }
-  df_comparison_results = pd.DataFrame(columns=list(df.columns) + list(metrics.keys()))
+  columns_minus_data = list(df.columns)
+  index_of_data = columns_minus_data.index('data')
+  columns_minus_data.remove('data')
+  df_comparison_results = pd.DataFrame(columns=columns_minus_data + list(metrics.keys()))
 
   for row in df.iterrows():
     metric_results = [ metric_fn(row[1]['data'][:64], target_data[row[1]['pen_name']]) for metric_fn in metrics.values() ]
-    df_comparison_results.loc[len(df_comparison_results)] = list(row[1]) + metric_results
+    values = list(row[1])
+    values.pop(index_of_data)
+    df_comparison_results.loc[len(df_comparison_results)] = values + metric_results
 
   return df_comparison_results
 
@@ -2133,253 +2158,144 @@ def process_experiment_data_to_dfs():
       mean_df = mean_multidata_as_dataframe(multidata_measure, all_params)
       mean_df.to_csv(mean_filename)
 
-def process_all_cognitive_exp_metrics():
-  er_metrics = metrics_for_cognitive_contagion_param_sweep_ER(f'{DATA_DIR}/cognitive-contagion-sweep-ER')
-  ws_metrics = metrics_for_cognitive_contagion_param_sweep_WS(f'{DATA_DIR}/cognitive-contagion-sweep-WS')
-  ba_metrics = metrics_for_cognitive_contagion_param_sweep_BA(f'{DATA_DIR}/cognitive-contagion-sweep-BA')
-  ba_group_homophily_metrics = metrics_for_cognitive_contagion_param_sweep_BA_group_homophily(f'{DATA_DIR}/cognitive-contagion-sweep-BA-group-homophily')
+def process_all_exp_metrics():
+  cascade_types = [ CASCADE_TYPES.SIMPLE, CASCADE_TYPES.COMPLEX, CASCADE_TYPES.COGNITIVE ]
+  graph_topologies = [ GRAPH_TYPES.ER, GRAPH_TYPES.WS, GRAPH_TYPES.BA, GRAPH_TYPES.BA_GROUP_H ]
 
-  er_metrics[0].to_csv('./data/analyses/cognitive-er-all.csv')
-  er_metrics[1].to_csv('./data/analyses/cognitive-er-mean.csv')
-  ws_metrics[0].to_csv('./data/analyses/cognitive-ws-all.csv')
-  ws_metrics[1].to_csv('./data/analyses/cognitive-ws-mean.csv')
-  ba_metrics[0].to_csv('./data/analyses/cognitive-ba-all.csv')
-  ba_metrics[0].to_csv('./data/analyses/cognitive-ba-all.csv')
-  ba_group_homophily_metrics[1].to_csv('./data/analyses/cognitive-ba-group-homophily-mean.csv')
-  ba_group_homophily_metrics[1].to_csv('./data/analyses/cognitive-ba-group-homophily-mean.csv')
-
-  er_all_top = top_matches_for_metrics(er_metrics[0])
-  er_mean_top = top_matches_for_metrics(er_metrics[1])
-  ws_all_top = top_matches_for_metrics(ws_metrics[0])
-  ws_mean_top = top_matches_for_metrics(ws_metrics[1])
-  ba_all_top = top_matches_for_metrics(ba_metrics[0])
-  ba_mean_top = top_matches_for_metrics(ba_metrics[1])
-  ba_group_homophily_all_top = top_matches_for_metrics(ba_group_homophily_metrics[0])
-  ba_group_homophily_mean_top = top_matches_for_metrics(ba_group_homophily_metrics[1])
-
-  er_all_top.to_csv('./data/analyses/cognitive-er-all_top.csv')
-  er_mean_top.to_csv('./data/analyses/cognitive-er-mean_top.csv')
-  ws_all_top.to_csv('./data/analyses/cognitive-ws-all_top.csv')
-  ws_mean_top.to_csv('./data/analyses/cognitive-ws-mean_top.csv')
-  ba_all_top.to_csv('./data/analyses/cognitive-ba-all_top.csv')
-  ba_mean_top.to_csv('./data/analyses/cognitive-ba-mean_top.csv')
-  ba_group_homophily_all_top.to_csv('./data/analyses/cognitive-ba-group-homophily-all_top.csv')
-  ba_group_homophily_mean_top.to_csv('./data/analyses/cognitive-ba-group-homophily-mean_top.csv')
-
-  # process_cognitive_contagion_param_sweep_ER_top(er_all_top, f'{DATA_DIR}/cognitive-contagion-sweep-ER', 'results-all')
-  # process_cognitive_contagion_param_sweep_WS_top(ws_all_top, f'{DATA_DIR}/cognitive-contagion-sweep-WS', 'results-all')
-  # process_cognitive_contagion_param_sweep_BA_top(ba_all_top, f'{DATA_DIR}/cognitive-contagion-sweep-BA', 'results-all')
-  # process_cognitive_contagion_param_sweep_BA_group_homophily_top(ba_group_homophily_all_top, f'{DATA_DIR}/cognitive-contagion-sweep-BA-group-homophily', 'results-all')
-  process_cognitive_contagion_param_sweep_ER_top_mean(er_mean_top, f'{DATA_DIR}/cognitive-contagion-sweep-ER', 'results-mean')
-  process_cognitive_contagion_param_sweep_WS_top_mean(ws_mean_top, f'{DATA_DIR}/cognitive-contagion-sweep-WS', 'results-mean')
-  process_cognitive_contagion_param_sweep_BA_top_mean(ba_mean_top, f'{DATA_DIR}/cognitive-contagion-sweep-BA', 'results-mean')
-  process_cognitive_contagion_param_sweep_BA_group_homophily_top_mean(ba_group_homophily_mean_top, f'{DATA_DIR}/cognitive-contagion-sweep-BA-group-homophily', 'results-mean')
-
-def process_all_complex_exp_metrics():
+  metric_functions = {
+    (CASCADE_TYPES.SIMPLE, GRAPH_TYPES.ER): metrics_for_simple_contagion_param_sweep_ER,
+    (CASCADE_TYPES.SIMPLE, GRAPH_TYPES.WS): metrics_for_simple_contagion_param_sweep_WS,
+    (CASCADE_TYPES.SIMPLE, GRAPH_TYPES.BA): metrics_for_simple_contagion_param_sweep_BA,
+    (CASCADE_TYPES.SIMPLE, GRAPH_TYPES.BA_GROUP_H): metrics_for_simple_contagion_param_sweep_BA_group_homophily,
+    (CASCADE_TYPES.COMPLEX, GRAPH_TYPES.ER): metrics_for_complex_contagion_param_sweep_ER,
+    (CASCADE_TYPES.COMPLEX, GRAPH_TYPES.WS): metrics_for_complex_contagion_param_sweep_WS,
+    (CASCADE_TYPES.COMPLEX, GRAPH_TYPES.BA): metrics_for_complex_contagion_param_sweep_BA,
+    (CASCADE_TYPES.COMPLEX, GRAPH_TYPES.BA_GROUP_H): metrics_for_complex_contagion_param_sweep_BA_group_homophily,
+    (CASCADE_TYPES.COGNITIVE, GRAPH_TYPES.ER): metrics_for_cognitive_contagion_param_sweep_ER,
+    (CASCADE_TYPES.COGNITIVE, GRAPH_TYPES.WS): metrics_for_cognitive_contagion_param_sweep_WS,
+    (CASCADE_TYPES.COGNITIVE, GRAPH_TYPES.BA): metrics_for_cognitive_contagion_param_sweep_BA,
+    (CASCADE_TYPES.COGNITIVE, GRAPH_TYPES.BA_GROUP_H): metrics_for_cognitive_contagion_param_sweep_BA_group_homophily,
+  }
+  processing_functions = {
+    (CASCADE_TYPES.SIMPLE, GRAPH_TYPES.ER): {
+      'mean': process_simple_contagion_param_sweep_ER_top_mean,
+      'all': process_simple_contagion_param_sweep_ER_top_all,
+    },
+    (CASCADE_TYPES.SIMPLE, GRAPH_TYPES.WS): {
+      'mean': process_simple_contagion_param_sweep_WS_top_mean,
+      'all': process_simple_contagion_param_sweep_WS_top_all,
+    },
+    (CASCADE_TYPES.SIMPLE, GRAPH_TYPES.BA): {
+      'mean': process_simple_contagion_param_sweep_BA_top_mean,
+      'all': process_simple_contagion_param_sweep_BA_top_all,
+    },
+    (CASCADE_TYPES.SIMPLE, GRAPH_TYPES.BA_GROUP_H): {
+      'mean': process_simple_contagion_param_sweep_BA_group_homophily_top_mean,
+      'all': process_simple_contagion_param_sweep_BA_group_homophily_top_all,
+    },
+    (CASCADE_TYPES.COMPLEX, GRAPH_TYPES.ER): {
+      'mean': process_complex_contagion_param_sweep_ER_top_mean,
+      'all': process_complex_contagion_param_sweep_ER_top_all,
+    },
+    (CASCADE_TYPES.COMPLEX, GRAPH_TYPES.WS): {
+      'mean': process_complex_contagion_param_sweep_WS_top_mean,
+      'all': process_complex_contagion_param_sweep_WS_top_all,
+    },
+    (CASCADE_TYPES.COMPLEX, GRAPH_TYPES.BA): {
+      'mean': process_complex_contagion_param_sweep_BA_top_mean,
+      'all': process_complex_contagion_param_sweep_BA_top_all,
+    },
+    (CASCADE_TYPES.COMPLEX, GRAPH_TYPES.BA_GROUP_H): {
+      'mean': process_complex_contagion_param_sweep_BA_group_homophily_top_mean,
+      'all': process_complex_contagion_param_sweep_BA_group_homophily_top_all,
+    },
+    (CASCADE_TYPES.COGNITIVE, GRAPH_TYPES.ER): {
+      'mean': process_cognitive_contagion_param_sweep_ER_top_mean,
+      'all': process_cognitive_contagion_param_sweep_ER_top_all,
+    },
+    (CASCADE_TYPES.COGNITIVE, GRAPH_TYPES.WS): {
+      'mean': process_cognitive_contagion_param_sweep_WS_top_mean,
+      'all': process_cognitive_contagion_param_sweep_WS_top_all,
+    },
+    (CASCADE_TYPES.COGNITIVE, GRAPH_TYPES.BA): {
+      'mean': process_cognitive_contagion_param_sweep_BA_top_mean,
+      'all': process_cognitive_contagion_param_sweep_BA_top_all,
+    },
+    (CASCADE_TYPES.COGNITIVE, GRAPH_TYPES.BA_GROUP_H): {
+      'mean': process_cognitive_contagion_param_sweep_BA_group_homophily_top_mean,
+      'all': process_cognitive_contagion_param_sweep_BA_group_homophily_top_all,
+    }
+  }
+  metrics = {
+    (CASCADE_TYPES.SIMPLE, GRAPH_TYPES.ER): [],
+    (CASCADE_TYPES.SIMPLE, GRAPH_TYPES.WS): [],
+    (CASCADE_TYPES.SIMPLE, GRAPH_TYPES.BA): [],
+    (CASCADE_TYPES.SIMPLE, GRAPH_TYPES.BA_GROUP_H): [],
+    (CASCADE_TYPES.COMPLEX, GRAPH_TYPES.ER): [],
+    (CASCADE_TYPES.COMPLEX, GRAPH_TYPES.WS): [],
+    (CASCADE_TYPES.COMPLEX, GRAPH_TYPES.BA): [],
+    (CASCADE_TYPES.COMPLEX, GRAPH_TYPES.BA_GROUP_H): [],
+    (CASCADE_TYPES.COGNITIVE, GRAPH_TYPES.ER): [],
+    (CASCADE_TYPES.COGNITIVE, GRAPH_TYPES.WS): [],
+    (CASCADE_TYPES.COGNITIVE, GRAPH_TYPES.BA): [],
+    (CASCADE_TYPES.COGNITIVE, GRAPH_TYPES.BA_GROUP_H): [],
+  }
+  top_dfs = {
+    (CASCADE_TYPES.SIMPLE, GRAPH_TYPES.ER): { 'all': None, 'mean': None },
+    (CASCADE_TYPES.SIMPLE, GRAPH_TYPES.WS): { 'all': None, 'mean': None },
+    (CASCADE_TYPES.SIMPLE, GRAPH_TYPES.BA): { 'all': None, 'mean': None },
+    (CASCADE_TYPES.SIMPLE, GRAPH_TYPES.BA_GROUP_H): { 'all': None, 'mean': None },
+    (CASCADE_TYPES.COMPLEX, GRAPH_TYPES.ER): { 'all': None, 'mean': None },
+    (CASCADE_TYPES.COMPLEX, GRAPH_TYPES.WS): { 'all': None, 'mean': None },
+    (CASCADE_TYPES.COMPLEX, GRAPH_TYPES.BA): { 'all': None, 'mean': None },
+    (CASCADE_TYPES.COMPLEX, GRAPH_TYPES.BA_GROUP_H): { 'all': None, 'mean': None },
+    (CASCADE_TYPES.COGNITIVE, GRAPH_TYPES.ER): { 'all': None, 'mean': None },
+    (CASCADE_TYPES.COGNITIVE, GRAPH_TYPES.WS): { 'all': None, 'mean': None },
+    (CASCADE_TYPES.COGNITIVE, GRAPH_TYPES.BA): { 'all': None, 'mean': None },
+    (CASCADE_TYPES.COGNITIVE, GRAPH_TYPES.BA_GROUP_H): { 'all': None, 'mean': None },
+  }
   data_path = './data/analyses'
-  er_metrics = []
-  if exists(f'{data_path}/complex-er-all.csv') and exists(f'{data_path}/simple-er-mean.csv'):
-    print('Read in ER metric data')
-    er_metrics.append(read_dataframe_with_simulation_data(f'{data_path}/complex-er-all.csv'))
-    er_metrics.append(read_dataframe_with_simulation_data(f'{data_path}/complex-er-mean.csv'))
-  else:
-    er_metrics = metrics_for_complex_contagion_param_sweep_ER(f'{DATA_DIR}/complex-contagion-sweep-ER')
-    er_metrics[0].to_csv(f'{data_path}/complex-er-all.csv')
-    er_metrics[1].to_csv(f'{data_path}/complex-er-mean.csv')
+  gt_directory_names = {
+    GRAPH_TYPES.ER: 'ER',
+    GRAPH_TYPES.WS: 'WS',
+    GRAPH_TYPES.BA: 'BA',
+    GRAPH_TYPES.BA_GROUP_H: 'BA-group-homophily'
+  }
 
-  ws_metrics = []
-  if exists(f'{data_path}/complex-ws-all.csv') and exists(f'{data_path}/complex-ws-mean.csv'):
-    print('Read in WS metric data')
-    ws_metrics.append(read_dataframe_with_simulation_data(f'{data_path}/complex-ws-all.csv'))
-    ws_metrics.append(read_dataframe_with_simulation_data(f'{data_path}/complex-ws-mean.csv'))
-  else:
-    ws_metrics = metrics_for_complex_contagion_param_sweep_WS(f'{DATA_DIR}/complex-contagion-sweep-WS')
-    ws_metrics[0].to_csv(f'{data_path}/complex-ws-all.csv')
-    ws_metrics[1].to_csv(f'{data_path}/complex-ws-mean.csv')
+  for cascade_type in cascade_types:
+    for graph_topology in graph_topologies:
+      ct_str = cascade_type.value
+      gt_str = graph_topology.value
+      ct_gt_combo = (cascade_type,graph_topology)
+      gt_dir_name = gt_directory_names[graph_topology]
 
-  ba_metrics = []
-  if exists(f'{data_path}/complex-ba-all.csv') and exists(f'{data_path}/complex-ba-mean.csv'):
-    print('Read in BA metric data')
-    ba_metrics.append(read_dataframe_with_simulation_data(f'{data_path}/complex-ba-all.csv'))
-    ba_metrics.append(read_dataframe_with_simulation_data(f'{data_path}/complex-ba-mean.csv'))
-  else:
-    ba_metrics = metrics_for_complex_contagion_param_sweep_BA(f'{DATA_DIR}/complex-contagion-sweep-BA')
-    ba_metrics[0].to_csv(f'{data_path}/complex-ba-all.csv')
-    ba_metrics[1].to_csv(f'{data_path}/complex-ba-mean.csv')
+      # Generate metrics for all and mean data
+      if exists(f'{data_path}/{ct_str}-{gt_str}-all.csv') and exists(f'{data_path}/{ct_str}-{gt_str}-mean.csv'):
+        print(f'Read in existing {ct_str} {gt_str} metric data')
+        metrics[ct_gt_combo].append(pd.read_csv(f'{data_path}/{ct_str}-{gt_str}-all.csv'))
+        metrics[ct_gt_combo].append(pd.read_csv(f'{data_path}/{ct_str}-{gt_str}-mean.csv'))
+      else:
+        metrics[ct_gt_combo] = metric_functions[(cascade_type,graph_topology)](f'{DATA_DIR}/{ct_str}-contagion-sweep-{gt_dir_name}')
+        metrics[ct_gt_combo][0].to_csv(f'{data_path}/{ct_str}-{gt_str}-all.csv')
+        metrics[ct_gt_combo][1].to_csv(f'{data_path}/{ct_str}-{gt_str}-mean.csv')
+      metrics_all = metrics[ct_gt_combo][0]
+      metrics_mean = metrics[ct_gt_combo][1]
 
-  ba_group_homophily_metrics = []
-  if exists(f'{data_path}/complex-ba-group-homophily-all.csv') and exists(f'{data_path}/complex-ba-group-homophily-mean.csv'):
-    print('Read in BA group homophily metric data')
-    ba_group_homophily_metrics.append(read_dataframe_with_simulation_data(f'{data_path}/complex-ba-group-homophily-all.csv'))
-    ba_group_homophily_metrics.append(read_dataframe_with_simulation_data(f'{data_path}/complex-ba-group-homophily-mean.csv'))
-  else:
-    ba_group_homophily_metrics = metrics_for_complex_contagion_param_sweep_BA_group_homophily(f'{DATA_DIR}/complex-contagion-sweep-BA-group-homophily')
-    ba_group_homophily_metrics[0].to_csv(f'{data_path}/complex-ba-group-homophily-all.csv')
-    ba_group_homophily_metrics[1].to_csv(f'{data_path}/complex-ba-group-homophily-mean.csv')
+      # Get top results for all and mean
+      if exists(f'{data_path}/{ct_str}-{gt_str}-all_top.csv'):
+        top_dfs[ct_gt_combo]['all'] = pd.read_csv(f'{data_path}/{ct_str}-{gt_str}-all_top.csv')
+      else:
+        top_dfs[ct_gt_combo]['all'] = top_matches_for_metrics(metrics_all)
+        top_dfs[ct_gt_combo]['all'].to_csv(f'{data_path}/{ct_str}-{gt_str}-all_top.csv')
+      if exists(f'{data_path}/{ct_str}-{gt_str}-mean_top.csv'):
+        top_dfs[ct_gt_combo]['mean'] = pd.read_csv(f'{data_path}/{ct_str}-{gt_str}-mean_top.csv')
+      else:
+        top_dfs[ct_gt_combo]['mean'] = top_matches_for_metrics(metrics_mean)
+        top_dfs[ct_gt_combo]['mean'].to_csv(f'{data_path}/{ct_str}-{gt_str}-mean_top.csv')
 
-  er_all_top = None
-  er_mean_top = None
-  if exists(f'{data_path}/complex-er-all_top.csv'):
-    er_all_top = read_dataframe_with_simulation_data(f'{data_path}/complex-er-all_top.csv')
-  else:
-    er_all_top = top_matches_for_metrics(er_metrics[0])
-    er_all_top.to_csv(f'{data_path}/complex-er-all_top.csv')
-  if exists(f'{data_path}/complex-er-mean_top.csv'):
-    er_mean_top = read_dataframe_with_simulation_data(f'{data_path}/complex-er-mean_top.csv')
-  else:
-    er_mean_top = top_matches_for_metrics(er_metrics[1])
-    er_mean_top.to_csv(f'{data_path}/complex-er-mean_top.csv')
-
-  ws_all_top = None
-  ws_mean_top = None
-  if exists(f'{data_path}/complex-ws-all_top.csv'):
-    ws_all_top = read_dataframe_with_simulation_data(f'{data_path}/complex-ws-all_top.csv')
-  else:
-    ws_all_top = top_matches_for_metrics(ws_metrics[0])
-    ws_all_top.to_csv(f'{data_path}/complex-ws-all_top.csv')
-  if exists(f'{data_path}/complex-ws-mean_top.csv'):
-    ws_mean_top = read_dataframe_with_simulation_data(f'{data_path}/complex-ws-mean_top.csv')
-  else:
-    ws_mean_top = top_matches_for_metrics(ws_metrics[1])
-    ws_mean_top.to_csv(f'{data_path}/complex-ws-mean_top.csv')
-
-  ba_all_top = None
-  ba_mean_top = None
-  if exists(f'{data_path}/complex-ba-all_top.csv'):
-    ba_all_top = read_dataframe_with_simulation_data(f'{data_path}/complex-ba-all_top.csv')
-  else:
-    ba_all_top = top_matches_for_metrics(ba_metrics[0])
-    ba_all_top.to_csv(f'{data_path}/complex-ba-all_top.csv')
-  if exists(f'{data_path}/complex-ba-mean_top.csv'):
-    ba_mean_top = read_dataframe_with_simulation_data(f'{data_path}/complex-ba-mean_top.csv')
-  else:
-    ba_mean_top = top_matches_for_metrics(ba_metrics[1])
-    ba_mean_top.to_csv(f'{data_path}/complex-ba-mean_top.csv')
-
-  ba_group_homophily_all_top = None
-  ba_group_homophily_mean_top = None
-  if exists(f'{data_path}/complex-ba-group-homophily-all_top.csv'):
-    ba_group_homophily_all_top = read_dataframe_with_simulation_data(f'{data_path}/complex-ba-group-homophily-all_top.csv')
-  else:
-    ba_group_homophily_all_top = top_matches_for_metrics(ba_group_homophily_metrics[0])
-    ba_group_homophily_all_top.to_csv(f'{data_path}/complex-ba-group-homophily-all_top.csv')
-  if exists(f'{data_path}/complex-ba-group-homophily-mean_top.csv'):
-    ba_group_homophily_mean_top = read_dataframe_with_simulation_data(f'{data_path}/complex-ba-group-homophily-mean_top.csv')
-  else:
-    ba_group_homophily_mean_top = top_matches_for_metrics(ba_group_homophily_metrics[1])
-    ba_group_homophily_mean_top.to_csv(f'{data_path}/complex-ba-group-homophily-mean_top.csv')
-
-  # process_complex_contagion_param_sweep_ER_top(er_all_top, f'{DATA_DIR}/complex-contagion-sweep-ER', 'results-all')
-  # process_complex_contagion_param_sweep_WS_top(ws_all_top, f'{DATA_DIR}/complex-contagion-sweep-WS', 'results-all')
-  # process_complex_contagion_param_sweep_BA_top(ba_all_top, f'{DATA_DIR}/complex-contagion-sweep-BA', 'results-all')
-  # process_complex_contagion_param_sweep_BA_group_homophily_top(ba_group_homophily_all_top, f'{DATA_DIR}/complex-contagion-sweep-BA-group-homophily', 'results-all')
-  process_complex_contagion_param_sweep_ER_top_mean(er_mean_top, f'{DATA_DIR}/complex-contagion-sweep-ER', 'results-mean')
-  process_complex_contagion_param_sweep_WS_top_mean(ws_mean_top, f'{DATA_DIR}/complex-contagion-sweep-WS', 'results-mean')
-  process_complex_contagion_param_sweep_BA_top_mean(ba_mean_top, f'{DATA_DIR}/complex-contagion-sweep-BA', 'results-mean')
-  process_complex_contagion_param_sweep_BA_group_homophily_top_mean(ba_group_homophily_mean_top, f'{DATA_DIR}/complex-contagion-sweep-BA-group-homophily', 'results-mean')
-
-def process_all_simple_exp_metrics():
-  data_path = './data/analyses'
-  er_metrics = []
-  if exists(f'{data_path}/simple-er-all.csv') and exists(f'{data_path}/simple-er-mean.csv'):
-    print('Read in ER metric data')
-    er_metrics.append(read_dataframe_with_simulation_data(f'{data_path}/simple-er-all.csv'))
-    er_metrics.append(read_dataframe_with_simulation_data(f'{data_path}/simple-er-mean.csv'))
-  else:
-    er_metrics = metrics_for_simple_contagion_param_sweep_ER(f'{DATA_DIR}/simple-contagion-sweep-ER')
-    er_metrics[0].to_csv(f'{data_path}/simple-er-all.csv')
-    er_metrics[1].to_csv(f'{data_path}/simple-er-mean.csv')
-
-  ws_metrics = []
-  if exists(f'{data_path}/simple-ws-all.csv') and exists(f'{data_path}/simple-ws-mean.csv'):
-    print('Read in WS metric data')
-    ws_metrics.append(read_dataframe_with_simulation_data(f'{data_path}/simple-ws-all.csv'))
-    ws_metrics.append(read_dataframe_with_simulation_data(f'{data_path}/simple-ws-mean.csv'))
-  else:
-    ws_metrics = metrics_for_simple_contagion_param_sweep_WS(f'{DATA_DIR}/simple-contagion-sweep-WS')
-    ws_metrics[0].to_csv(f'{data_path}/simple-ws-all.csv')
-    ws_metrics[1].to_csv(f'{data_path}/simple-ws-mean.csv')
-
-  ba_metrics = []
-  if exists(f'{data_path}/simple-ba-all.csv') and exists(f'{data_path}/simple-ba-mean.csv'):
-    print('Read in BA metric data')
-    ba_metrics.append(read_dataframe_with_simulation_data(f'{data_path}/simple-ba-all.csv'))
-    ba_metrics.append(read_dataframe_with_simulation_data(f'{data_path}/simple-ba-mean.csv'))
-  else:
-    ba_metrics = metrics_for_simple_contagion_param_sweep_BA(f'{DATA_DIR}/simple-contagion-sweep-BA')
-    ba_metrics[0].to_csv(f'{data_path}/simple-ba-all.csv')
-    ba_metrics[1].to_csv(f'{data_path}/simple-ba-mean.csv')
-
-  ba_group_homophily_metrics = []
-  if exists(f'{data_path}/simple-ba-group-homophily-all.csv') and exists(f'{data_path}/simple-ba-group-homophily-mean.csv'):
-    print('Read in BA group homophily metric data')
-    ba_group_homophily_metrics.append(read_dataframe_with_simulation_data(f'{data_path}/simple-ba-group-homophily-all.csv'))
-    ba_group_homophily_metrics.append(read_dataframe_with_simulation_data(f'{data_path}/simple-ba-group-homophily-mean.csv'))
-  else:
-    ba_group_homophily_metrics = metrics_for_simple_contagion_param_sweep_BA_group_homophily(f'{DATA_DIR}/simple-contagion-sweep-BA-group-homophily')
-    ba_group_homophily_metrics[0].to_csv(f'{data_path}/simple-ba-group-homophily-all.csv')
-    ba_group_homophily_metrics[1].to_csv(f'{data_path}/simple-ba-group-homophily-mean.csv')
-
-  er_all_top = None
-  er_mean_top = None
-  if exists(f'{data_path}/simple-er-all_top.csv'):
-    er_all_top = read_dataframe_with_simulation_data(f'{data_path}/simple-er-all_top.csv')
-  else:
-    er_all_top = top_matches_for_metrics(er_metrics[0])
-    er_all_top.to_csv(f'{data_path}/simple-er-all_top.csv')
-  if exists(f'{data_path}/simple-er-mean_top.csv'):
-    er_mean_top = read_dataframe_with_simulation_data(f'{data_path}/simple-er-mean_top.csv')
-  else:
-    er_mean_top = top_matches_for_metrics(er_metrics[1])
-    er_mean_top.to_csv(f'{data_path}/simple-er-mean_top.csv')
-
-  ws_all_top = None
-  ws_mean_top = None
-  if exists(f'{data_path}/simple-ws-all_top.csv'):
-    ws_all_top = read_dataframe_with_simulation_data(f'{data_path}/simple-ws-all_top.csv')
-  else:
-    ws_all_top = top_matches_for_metrics(ws_metrics[0])
-    ws_all_top.to_csv(f'{data_path}/simple-ws-all_top.csv')
-  if exists(f'{data_path}/simple-ws-mean_top.csv'):
-    ws_mean_top = read_dataframe_with_simulation_data(f'{data_path}/simple-ws-mean_top.csv')
-  else:
-    ws_mean_top = top_matches_for_metrics(ws_metrics[1])
-    ws_mean_top.to_csv(f'{data_path}/simple-ws-mean_top.csv')
-
-  ba_all_top = None
-  ba_mean_top = None
-  if exists(f'{data_path}/simple-ba-all_top.csv'):
-    ba_all_top = read_dataframe_with_simulation_data(f'{data_path}/simple-ba-all_top.csv')
-  else:
-    ba_all_top = top_matches_for_metrics(ba_metrics[0])
-    ba_all_top.to_csv(f'{data_path}/simple-ba-all_top.csv')
-  if exists(f'{data_path}/simple-ba-mean_top.csv'):
-    ba_mean_top = read_dataframe_with_simulation_data(f'{data_path}/simple-ba-mean_top.csv')
-  else:
-    ba_mean_top = top_matches_for_metrics(ba_metrics[1])
-    ba_mean_top.to_csv(f'{data_path}/simple-ba-mean_top.csv')
-
-  ba_group_homophily_all_top = None
-  ba_group_homophily_mean_top = None
-  if exists(f'{data_path}/simple-ba-group-homophily-all_top.csv'):
-    ba_group_homophily_all_top = read_dataframe_with_simulation_data(f'{data_path}/simple-ba-group-homophily-all_top.csv')
-  else:
-    ba_group_homophily_all_top = top_matches_for_metrics(ba_group_homophily_metrics[0])
-    ba_group_homophily_all_top.to_csv(f'{data_path}/simple-ba-group-homophily-all_top.csv')
-  if exists(f'{data_path}/simple-ba-group-homophily-mean_top.csv'):
-    ba_group_homophily_mean_top = read_dataframe_with_simulation_data(f'{data_path}/simple-ba-group-homophily-mean_top.csv')
-  else:
-    ba_group_homophily_mean_top = top_matches_for_metrics(ba_group_homophily_metrics[1])
-    ba_group_homophily_mean_top.to_csv(f'{data_path}/simple-ba-group-homophily-mean_top.csv')
-
-  # process_simple_contagion_param_sweep_ER_top(er_all_top, f'{DATA_DIR}/simple-contagion-sweep-ER', 'results-all')
-  # process_simple_contagion_param_sweep_WS_top(ws_all_top, f'{DATA_DIR}/simple-contagion-sweep-WS', 'results-all')
-  # process_simple_contagion_param_sweep_BA_top(ba_all_top, f'{DATA_DIR}/simple-contagion-sweep-BA', 'results-all')
-  # process_simple_contagion_param_sweep_BA_group_homophily_top(ba_group_homophily_all_top, f'{DATA_DIR}/simple-contagion-sweep-BA-group-homophily', 'results-all')
-  process_simple_contagion_param_sweep_ER_top_mean(er_mean_top, f'{DATA_DIR}/simple-contagion-sweep-ER', 'results-mean')
-  process_simple_contagion_param_sweep_WS_top_mean(ws_mean_top, f'{DATA_DIR}/simple-contagion-sweep-WS', 'results-mean')
-  process_simple_contagion_param_sweep_BA_top_mean(ba_mean_top, f'{DATA_DIR}/simple-contagion-sweep-BA', 'results-mean')
-  process_simple_contagion_param_sweep_BA_group_homophily_top_mean(ba_group_homophily_mean_top, f'{DATA_DIR}/simple-contagion-sweep-BA-group-homophily', 'results-mean')
+      # Graph the top results
+      # processing_functions[ct_gt_combo]['all'](top_dfs[ct_gt_combo]['all'], f'{DATA_DIR}/{ct_str}-contagion-sweep-{gt_dir_name}', 'results-all')
+      # processing_functions[ct_gt_combo]['mean'](top_dfs[ct_gt_combo]['mean'], f'{DATA_DIR}/{ct_str}-contagion-sweep-{gt_dir_name}', 'results-mean')
 
 '''
 ================
