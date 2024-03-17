@@ -1871,6 +1871,8 @@ GRAPH_TYPE_DIRECTORY_NAMES = {
   GRAPH_TYPES.BA: 'BA',
   GRAPH_TYPES.BA_GROUP_H: 'BA-group-homophily'
 }
+NUM_REPETITIONS = 10
+NUM_RUNS = 30
 
 def opinion_metrics_for_param_sweep_exp(path, cascade_type, graph_topology):
   gallup_dict = read_gallup_data_into_dict('../labeled-data/public/gallup-polling.csv')
@@ -2013,59 +2015,67 @@ def timeseries_similarity_scores_for_simulations(df, target_data):
 
 def analysis_dfs():
   data_path = ANALYSIS_DATA_DIR
-  cognitive_er_df_mean = pd.read_csv(f'{data_path}/cognitive-er-mean.csv')
-  cognitive_ws_df_mean = pd.read_csv(f'{data_path}/cognitive-ws-mean.csv')
-  cognitive_ba_df_mean = pd.read_csv(f'{data_path}/cognitive-ba-mean.csv')
-  cognitive_ba_group_h_df_mean = pd.read_csv(f'{data_path}/cognitive-ba-group-homophily-mean.csv')
-  simple_er_df_mean = pd.read_csv(f'{data_path}/simple-er-mean.csv')
-  simple_ws_df_mean = pd.read_csv(f'{data_path}/simple-ws-mean.csv')
-  simple_ba_df_mean = pd.read_csv(f'{data_path}/simple-ba-mean.csv')
-  simple_ba_group_h_df_mean = pd.read_csv(f'{data_path}/simple-ba-group-homophily-mean.csv')
-  complex_er_df_mean = pd.read_csv(f'{data_path}/complex-er-mean.csv')
-  complex_ws_df_mean = pd.read_csv(f'{data_path}/complex-ws-mean.csv')
-  complex_ba_df_mean = pd.read_csv(f'{data_path}/complex-ba-mean.csv')
-  complex_ba_group_h_df_mean = pd.read_csv(f'{data_path}/complex-ba-group-homophily-mean.csv')
-
-  cognitive_er_df_all = pd.read_csv(f'{data_path}/cognitive-er-all.csv')
-  cognitive_ws_df_all = pd.read_csv(f'{data_path}/cognitive-ws-all.csv')
-  cognitive_ba_df_all = pd.read_csv(f'{data_path}/cognitive-ba-all.csv')
-  cognitive_ba_group_h_df_all = pd.read_csv(f'{data_path}/cognitive-ba-group-homophily-all.csv')
-  simple_er_df_all = pd.read_csv(f'{data_path}/simple-er-all.csv')
-  simple_ws_df_all = pd.read_csv(f'{data_path}/simple-ws-all.csv')
-  simple_ba_df_all = pd.read_csv(f'{data_path}/simple-ba-all.csv')
-  simple_ba_group_h_df_all = pd.read_csv(f'{data_path}/simple-ba-group-homophily-all.csv')
-  complex_er_df_all = pd.read_csv(f'{data_path}/complex-er-all.csv')
-  complex_ws_df_all = pd.read_csv(f'{data_path}/complex-ws-all.csv')
-  complex_ba_df_all = pd.read_csv(f'{data_path}/complex-ba-all.csv')
-  complex_ba_group_h_df_all = pd.read_csv(f'{data_path}/complex-ba-group-homophily-all.csv')
-
-  dfs = {
-    'cognitive_er_mean': cognitive_er_df_mean,
-    'cognitive_ws_mean': cognitive_ws_df_mean,
-    'cognitive_ba_mean': cognitive_ba_df_mean,
-    'cognitive_ba_group_h_mean': cognitive_ba_group_h_df_mean,
-    'simple_er_mean': simple_er_df_mean,
-    'simple_ws_mean': simple_ws_df_mean,
-    'simple_ba_mean': simple_ba_df_mean,
-    'simple_ba_group_h_mean': simple_ba_group_h_df_mean,
-    'complex_er_mean': complex_er_df_mean,
-    'complex_ws_mean': complex_ws_df_mean,
-    'complex_ba_mean': complex_ba_df_mean,
-    'complex_ba_group_h_mean': complex_ba_group_h_df_mean,
-    'cognitive_er_all': cognitive_er_df_all,
-    'cognitive_ws_all': cognitive_ws_df_all,
-    'cognitive_ba_all': cognitive_ba_df_all,
-    'cognitive_ba_group_h_all': cognitive_ba_group_h_df_all,
-    'simple_er_all': simple_er_df_all,
-    'simple_ws_all': simple_ws_df_all,
-    'simple_ba_all': simple_ba_df_all,
-    'simple_ba_group_h_all': simple_ba_group_h_df_all,
-    'complex_er_all': complex_er_df_all,
-    'complex_ws_all': complex_ws_df_all,
-    'complex_ba_all': complex_ba_df_all,
-    'complex_ba_group_h_all': complex_ba_group_h_df_all,
-  } 
+  dfs = {}
+  for cascade_type in CASCADE_TYPES:
+    ct_str = cascade_type.value
+    for graph_type in GRAPH_TYPES:
+      gt_str = graph_type.value
+      for all_mean in ['all','mean']:
+        entire_name = f'{ct_str}-{gt_str}-{all_mean}'
+        dfs[entire_name] = pd.read_csv(f'{data_path}/{entire_name}.csv')
+        dfs[entire_name].drop(columns=['Unnamed: 0'], inplace=True)
   return dfs
+
+def pen_name_mean_analysis_dfs():
+  data_path = f'{ANALYSIS_DATA_DIR}/pen_means'
+  dfs = {}
+  for cascade_type in CASCADE_TYPES:
+    ct_str = cascade_type.value
+    for graph_type in GRAPH_TYPES:
+      gt_str = graph_type.value
+      for all_mean in ['all','mean']:
+        entire_name = f'{ct_str}-{gt_str}-{all_mean}'
+        dfs[entire_name] = pd.read_csv(f'{data_path}/{entire_name}.csv')
+        dfs[entire_name].drop(columns=['Unnamed: 0'], inplace=True)
+  return dfs
+
+def mean_analysis_dfs_along_pen_name():
+  dfs = analysis_dfs()
+  dfs_mean_pen = {}
+  measures = ['pearson','euclidean','mape']
+  for df_name,df in dfs.items():
+    param_columns = list_subtract(list(df.columns), (['pen_name','rand_id'] + measures))
+    mean_df = None
+    if 'all' in df_name:
+      mean_df = pd.DataFrame(columns=param_columns+['rand_id']+measures)
+    else:
+      mean_df = pd.DataFrame(columns=param_columns+measures)
+
+    param_values = {
+      param: df[param].unique() for param in param_columns
+    }
+    param_combos = itertools.product(*param_values.values())
+    for combo in param_combos:
+      param_to_value = { param_columns[i]: combo[i] for i in range(len(combo)) }
+      query = ' and '.join([ f'{param} == "{value}"' if type(value) == str else f'{param} == {value}' for param, value in param_to_value.items() ])
+      # print(query)
+      res = df.query(query)
+      if len(res) > 0:
+        measure_means = {}
+        for measure in measures:
+          all_runs_data = res[measure]
+          measure_means[measure] = all_runs_data.mean()
+        param_to_value_no_measures = { param: value for param,value in param_to_value.items() if param not in measures }
+        # print(mean_df.columns)
+        # print(list(param_to_value_no_measures.values()) + list(measure_means.values()))
+        if 'all' in df_name:
+          mean_df.loc[len(mean_df)] = list(param_to_value_no_measures.values()) + [res.iloc[0]['rand_id']] + list(measure_means.values())
+        else:
+          mean_df.loc[len(mean_df)] = list(param_to_value_no_measures.values()) + list(measure_means.values())
+      else:
+        print(f'Missing rows for param combo: {combo}')
+    dfs_mean_pen[df_name] = mean_df
+  return dfs_mean_pen
 
 def write_mean_top_results_latex():
   '''
@@ -2076,53 +2086,53 @@ def write_mean_top_results_latex():
       \\begin{tabular}{c|c|c|c|c}
       \\textbf{$n$} & \\textbf{Cascade Type} & \\textbf{Graph Topology} & \\textbf{Mean $n$ (Means)} & \\textbf{Mean $n$ (All)}\\\\
       \\hline
-      \\multirow{12}{*}{50} & \\multirow{4}{*}{Simple} & ER & simple_er_mean_50 & simple_er_all_50 \\\\
+      \\multirow{12}{*}{50} & \\multirow{4}{*}{Simple} & ER & simple-er-mean-50 & simple-er-all-50 \\\\
       \\cline{3-5}
-      & & WS & simple_ws_mean_50 & simple_ws_all_50 \\\\
+      & & WS & simple-ws-mean-50 & simple-ws-all-50 \\\\
       \\cline{3-5}
-      & & BA & simple_ba_mean_50 & simple_ba_all_50 \\\\
+      & & BA & simple-ba-mean-50 & simple-ba-all-50 \\\\
       \\cline{3-5}
-      & & BA-hg & simple_ba_group_h_mean_50 & simple_ba_group_h_all_50 \\\\
+      & & BA-hg & simple-ba-group-homophily-mean-50 & simple-ba-group-homophily-all-50 \\\\
       \\cline{2-5}
-      & \\multirow{4}{*}{Complex} & ER & complex_er_mean_50 & complex_er_all_50 \\\\
+      & \\multirow{4}{*}{Complex} & ER & complex-er-mean-50 & complex-er-all-50 \\\\
       \\cline{3-5}
-      & & WS & complex_ws_mean_50 & complex_ws_all_50 \\\\
+      & & WS & complex-ws-mean-50 & complex-ws-all-50 \\\\
       \\cline{3-5}
-      & & BA & complex_ba_mean_50 & complex_ba_all_50 \\\\
+      & & BA & complex-ba-mean-50 & complex-ba-all-50 \\\\
       \\cline{3-5}
-      & & BA-hg & complex_ba_group_h_mean_50 & complex_ba_group_h_all_50 \\\\
+      & & BA-hg & complex-ba-group-homophily-mean-50 & complex-ba-group-homophily-all-50 \\\\
       \\cline{2-5}
-      & \\multirow{4}{*}{Cognitive} & ER & cognitive_er_mean_50 & cognitive_er_all_50 \\\\
+      & \\multirow{4}{*}{Cognitive} & ER & cognitive-er-mean-50 & cognitive-er-all-50 \\\\
       \\cline{3-5}
-      & & WS & cognitive_ws_mean_50 & cognitive_ws_all_50 \\\\
+      & & WS & cognitive-ws-mean-50 & cognitive-ws-all-50 \\\\
       \\cline{3-5}
-      & & BA & cognitive_ba_mean_50 & cognitive_ba_all_50 \\\\
+      & & BA & cognitive-ba-mean-50 & cognitive-ba-all-50 \\\\
       \\cline{3-5}
-      & & BA-hg & cognitive_ba_group_h_mean_50 & cognitive_ba_group_h_all_50 \\\\
+      & & BA-hg & cognitive-ba-group-homophily-mean-50 & cognitive-ba-group-homophily-all-50 \\\\
       \\hline
-      \\multirow{12}{*}{100} & \\multirow{4}{*}{Simple} & ER & simple_er_mean_100 & simple_er_all_100 \\\\
+      \\multirow{12}{*}{100} & \\multirow{4}{*}{Simple} & ER & simple-er-mean-100 & simple-er-all-100 \\\\
       \\cline{3-5}
-      & & WS & simple_ws_mean_100 & simple_ws_all_100 \\\\
+      & & WS & simple-ws-mean-100 & simple-ws-all-100 \\\\
       \\cline{3-5}
-      & & BA & simple_ba_mean_100 & simple_ba_all_100 \\\\
+      & & BA & simple-ba-mean-100 & simple-ba-all-100 \\\\
       \\cline{3-5}
-      & & BA-hg & simple_ba_group_h_mean_100 & simple_ba_group_h_all_100 \\\\
+      & & BA-hg & simple-ba-group-homophily-mean-100 & simple-ba-group-homophily-all-100 \\\\
       \\cline{2-5}
-      & \\multirow{4}{*}{Complex} & ER & complex_er_mean_100 & complex_er_all_100 \\\\
+      & \\multirow{4}{*}{Complex} & ER & complex-er-mean-100 & complex-er-all-100 \\\\
       \\cline{3-5}
-      & & WS & complex_ws_mean_100 & complex_ws_all_100 \\\\
+      & & WS & complex-ws-mean-100 & complex-ws-all-100 \\\\
       \\cline{3-5}
-      & & BA & complex_ba_mean_100 & complex_ba_all_100 \\\\
+      & & BA & complex-ba-mean-100 & complex-ba-all-100 \\\\
       \\cline{3-5}
-      & & BA-hg & complex_ba_group_h_mean_100 & complex_ba_group_h_all_100 \\\\
+      & & BA-hg & complex-ba-group-homophily-mean-100 & complex-ba-group-homophily-all-100 \\\\
       \\cline{2-5}
-      & \\multirow{4}{*}{Cognitive} & ER & cognitive_er_mean_100 & cognitive_er_all_100 \\\\
+      & \\multirow{4}{*}{Cognitive} & ER & cognitive-er-mean-100 & cognitive-er-all-100 \\\\
       \\cline{3-5}
-      & & WS & cognitive_ws_mean_100 & cognitive_ws_all_100 \\\\
+      & & WS & cognitive-ws-mean-100 & cognitive-ws-all-100 \\\\
       \\cline{3-5}
-      & & BA & cognitive_ba_mean_100 & cognitive_ba_all_100 \\\\
+      & & BA & cognitive-ba-mean-100 & cognitive-ba-all-100 \\\\
       \\cline{3-5}
-      & & BA-hg & cognitive_ba_group_h_mean_100 & cognitive_ba_group_h_all_100 \\\\
+      & & BA-hg & cognitive-ba-group-homophily-mean-100 & cognitive-ba-group-homophily-all-100 \\\\
     \\end{tabular}
     \\caption{}
     \\label{tab:results-mean-top}
@@ -2133,14 +2143,14 @@ def write_mean_top_results_latex():
     min_for_top_all = min([ val['mape'] for df_name, val in mean_measures.items() if 'all' in df_name ])
     min_for_top_mean = min([ val['mape'] for df_name, val in mean_measures.items() if 'mean' in df_name ])
     for df_name, measures in mean_measures.items():
-      keyword = f'{df_name}_{top}'
+      keyword = f'{df_name}-{top}'
       measure_value = measures['mape']
       if measure_value == min_for_top_all or measure_value == min_for_top_mean:
         latex_format = latex_format.replace(keyword, f'\\textbf{{{str(measure_value.round(3))}}}')
       else:
         latex_format = latex_format.replace(keyword, str(measure_value.round(3)))
 
-  with open(f'{ANALYSIS_DATA_DIR}/mean-top-mape.tex','w') as f:
+  with open(f'{ANALYSIS_DATA_DIR}/pen_means/mean-top-mape.tex','w') as f:
     f.write(latex_format)
 
 def write_mean_top_results_json():
@@ -2152,11 +2162,11 @@ def write_mean_top_results_json():
   '''
   mean_results = mean_top_results([10,50,100])
   for top, mean_measures in mean_results.items():
-    with open(f'{ANALYSIS_DATA_DIR}/mean-top-{top}-mape.json', 'w') as f:
+    with open(f'{ANALYSIS_DATA_DIR}/pen_means/mean-top-{top}-mape.json', 'w') as f:
       json.dump(mean_measures, f)
 
 def mean_top_results(tops):
-  dfs = analysis_dfs()
+  dfs = pen_name_mean_analysis_dfs()
   measures = ['mape']
   mean_results = {}
   for top in tops:
@@ -2179,8 +2189,92 @@ def mean_top_measures(dfs, measures, num_top):
     measure: df.sort_values(by=measure).head(num_top)[measure].mean() for measure in measures
   } for df_name, df in dfs.items() }
 
+def write_num_high_scoring_metrics_latex():
+  latex_format = """\\begin{table}[]
+      \\centering
+      \\begin{tabular}{p{0.1\linewidth} | p{0.15\linewidth} | p{0.2\linewidth} | p{0.2\linewidth} | p{0.1\linewidth} | p{0.1\linewidth}}
+      \\textbf{Cascade Type} & \\textbf{Graph Topology} & \\textbf{Number of Runs (Mean)} & \\textbf{Number of Runs (All)} & \\textbf{Mean Total} & \\textbf{All Total} \\\\
+      \\hline
+      \\multirow{4}{*}{Simple} & ER & simple-er-mean & simple-er-mean & \\multirow{4}{*}{simple-mean-total} & \\multirow{4}{*}{simple-all-total} \\\\
+      \\cline{2-4}
+      & WS & simple-ws-mean & simple-ws-all & & \\\\
+      \\cline{2-4}
+      & BA & simple-ba-mean & simple-ba-all & & \\\\
+      \\cline{2-4}
+      & BA-hg & simple-ba-group-homophily-mean & simple-ba-group-homophily-all & & \\\\
+      \\hline
+      \\multirow{4}{*}{Complex} & ER & complex-er-mean & complex-er-mean & \\multirow{4}{*}{complex-mean-total} & \\multirow{4}{*}{complex-all-total} \\\\
+      \\cline{2-4}
+      & WS & complex-ws-mean & complex-ws-all & & \\\\
+      \\cline{2-4}
+      & BA & complex-ba-mean & complex-ba-all & & \\\\
+      \\cline{2-4}
+      & BA-hg & complex-ba-group-homophily-mean & complex-ba-group-homophily-all & & \\\\
+      \\hline
+      \\multirow{4}{*}{Cognitive} & ER & cognitive-er-mean & cognitive-er-mean & \\multirow{4}{*}{cognitive-mean-total} & \\multirow{4}{*}{cognitive-all-total} \\\\
+      \\cline{2-4}
+      & WS & cognitive-ws-mean & cognitive-ws-all & & \\\\
+      \\cline{2-4}
+      & BA & cognitive-ba-mean & cognitive-ba-all & & \\\\
+      \\cline{2-4}
+      & BA-hg & cognitive-ba-group-homophily-mean & cognitive-ba-group-homophily-all & & \\\\
+    \\end{tabular}
+    \\caption{}
+    \\label{tab:results-high-scoring}
+  \\end{table}"""
+
+  results, high_scoring_dfs = num_high_scoring_metrics()
+  totals_means = {}
+  totals_all = {}
+  for cascade_type in CASCADE_TYPES:
+    ct_str = cascade_type.value
+    ct_mean_runs = [ num_runs for df_name,num_runs in results.items() if (f'{ct_str}' in df_name and 'mean' in df_name) ]
+    ct_all_runs = [ num_runs for df_name,num_runs in results.items() if (f'{ct_str}' in df_name and 'all' in df_name) ]
+    totals_means[ct_str] = sum(ct_mean_runs)
+    totals_all[ct_str] = sum(ct_all_runs)
+
+    highest_mean = max(ct_mean_runs)
+    highest_all = max(ct_all_runs)
+
+    for graph_type in GRAPH_TYPES:
+      gt_str = graph_type.value
+      df_name_mean = f'{ct_str}-{gt_str}-mean' 
+      mean_score = results[df_name_mean]
+      if mean_score == highest_mean:
+        latex_format = latex_format.replace(df_name_mean, f'\\textbf{{{str(results[df_name_mean])}}}')
+      else:
+        latex_format = latex_format.replace(df_name_mean, str(results[df_name_mean]))
+      df_name_all = f'{ct_str}-{gt_str}-all' 
+      all_score = results[df_name_all]
+      if all_score == highest_all:
+        latex_format = latex_format.replace(df_name_all, f'\\textbf{{{str(results[df_name_all])}}}')
+      else:
+        latex_format = latex_format.replace(df_name_all, str(results[df_name_all]))
+
+  highest_total_mean = max(list(totals_means.values()))
+  highest_total_all = max(list(totals_all.values()))
+  for cascade_type in CASCADE_TYPES:
+    ct_str = cascade_type.value
+    total_mean = totals_means[ct_str]
+    if total_mean == highest_total_mean:
+      latex_format = latex_format.replace(f'{ct_str}-mean-total', f'\\textbf{{{total_mean}}}')
+    else:
+      latex_format = latex_format.replace(f'{ct_str}-mean-total', str(total_mean))
+    total_all = totals_all[ct_str]
+    if total_all == highest_total_all:
+      latex_format = latex_format.replace(f'{ct_str}-all-total', f'\\textbf{{{total_all}}}')
+    else:
+      latex_format = latex_format.replace(f'{ct_str}-all-total', str(total_all))
+
+  with open(f'{ANALYSIS_DATA_DIR}/pen_means/num-high-scores.tex','w') as f:
+    f.write(latex_format)
+
 def num_high_scoring_metrics():
-  dfs = analysis_dfs()
+  '''
+  For each analysis dataframe, calculate the number of runs it yielded where the MAPE
+  metric was greater than a certain threshold.
+  '''
+  dfs = pen_name_mean_analysis_dfs()
   mape_threshold = 0.25
 
   high_scoring_dfs = { df_name: df[df['mape'] <= mape_threshold] for df_name,df in dfs.items() }
