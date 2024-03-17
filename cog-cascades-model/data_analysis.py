@@ -20,7 +20,9 @@ from nlogo_graphs import nlogo_saved_graph_to_nx
 from messaging import dist_to_agent_brain, believe_message
 # import statsmodels.formula.api as smf
 
-DATA_DIR = 'D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data'
+SIM_RAW_DATA_DIR = 'D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data'
+SIM_DF_DATA_DIR = './data'
+ANALYSIS_DATA_DIR = './data/analyses'
 
 """
 STATS STUFF
@@ -1422,6 +1424,32 @@ def get_all_multidata(param_combos, params, plots, path):
 def missing_values_in_multidata(multidata):
   return { key: val for key,val in multidata.items() if val == -1 }
 
+def all_dataframe_to_mean_dataframe(all_df):
+  '''
+  Convert a dataframe containing data for each run of a simulation
+  parameter combination to a dataframe taking the mean across runs
+  (but not across graphs, or the 'repetition' column).
+
+  :param all_df: The dataframe containing all simulation result rows.
+  '''
+  param_columns = list_subtract(list(all_df.columns), ['measure','run','rand_id','data'])
+  mean_df = pd.DataFrame(columns=param_columns + ['measure','data'])
+  param_values = {
+    param: all_df[param].unique() for param in param_columns
+  }
+  param_combos = itertools.product(*param_values.values())
+  for combo in param_combos:
+    param_to_value = { param_columns[i]: combo[i] for i in range(len(combo)) }
+    query = ' and '.join([ f'{param} == "{value}"' if type(value) == str else f'{param} == {value}' for param, value in param_to_value.items() ])
+    res = all_df.query(query)
+    if len(res) > 0:
+      all_runs_data = res['data']
+      stacked_data = np.vstack(all_runs_data)
+      mean_df.loc[len(mean_df)] = list(param_to_value.values()) + [res.iloc[0]['measure'], stacked_data.mean(0)]
+    else:
+      print(f'Missing rows for param combo: {combo}')
+  return mean_df
+
 def multidata_as_dataframe(multidata, columns):
   '''
   
@@ -1463,7 +1491,7 @@ def mean_multidata_as_dataframe(multidata, columns):
     param_combo = param_measure[0]
     measure = param_measure[1]
     for (pen_name,runs_data) in data.items():
-      df.loc[len(df.index)] = list(param_combo) + [measure,pen_name,str(runs_data.tolist()).replace(',',';')]
+      df.loc[len(df.index)] = list(param_combo) + [measure,pen_name,str(runs_data.mean(0).tolist()).replace(',',';')]
   return df
 
 def dataframe_as_multidata(df):
@@ -1819,28 +1847,35 @@ class GRAPH_TYPES(Enum):
   ER = 'er'
   WS = 'ws'
   BA = 'ba'
-  BA_GROUP_H = 'ba_group_homophily'
+  BA_GROUP_H = 'ba-group-homophily'
 
 class CASCADE_TYPES(Enum):
   SIMPLE = 'simple'
   COMPLEX = 'complex'
   COGNITIVE = 'cognitive'
 
+CASCADE_PARAMETERS = {
+  CASCADE_TYPES.SIMPLE: ['simple_spread_chance'],
+  CASCADE_TYPES.COMPLEX: ['complex_spread_ratio'],
+  CASCADE_TYPES.COGNITIVE: ['cognitive_translate','cognitive_exponent'],
+}
+GRAPH_PARAMETERS = {
+  GRAPH_TYPES.ER: ['er_p'],
+  GRAPH_TYPES.WS: ['ws_p', 'ws_k'],
+  GRAPH_TYPES.BA: ['ba_m'],
+  GRAPH_TYPES.BA_GROUP_H: ['ba_m','group_homophily']
+}
+GRAPH_TYPE_DIRECTORY_NAMES = {
+  GRAPH_TYPES.ER: 'ER',
+  GRAPH_TYPES.WS: 'WS',
+  GRAPH_TYPES.BA: 'BA',
+  GRAPH_TYPES.BA_GROUP_H: 'BA-group-homophily'
+}
+
 def opinion_metrics_for_param_sweep_exp(path, cascade_type, graph_topology):
   gallup_dict = read_gallup_data_into_dict('../labeled-data/public/gallup-polling.csv')
   cascade_type_str = cascade_type.value
   graph_topology_str = graph_topology.value
-  cascade_columns = {
-    CASCADE_TYPES.SIMPLE: ['simple_spread_chance'],
-    CASCADE_TYPES.COMPLEX: ['complex_spread_ratio'],
-    CASCADE_TYPES.COGNITIVE: ['cognitive_translate','cognitive_exponent'],
-  }
-  graph_columns = {
-    GRAPH_TYPES.ER: ['er_p'],
-    GRAPH_TYPES.WS: ['ws_p', 'ws_k'],
-    GRAPH_TYPES.BA: ['ba_m'],
-    GRAPH_TYPES.BA_GROUP_H: ['ba_m','group_homophily']
-  }
   multidata_functions = {
     (CASCADE_TYPES.SIMPLE,GRAPH_TYPES.ER): get_simple_contagion_param_sweep_ER_multidata,
     (CASCADE_TYPES.COMPLEX,GRAPH_TYPES.ER): get_complex_contagion_param_sweep_ER_multidata,
@@ -1855,10 +1890,10 @@ def opinion_metrics_for_param_sweep_exp(path, cascade_type, graph_topology):
     (CASCADE_TYPES.COMPLEX,GRAPH_TYPES.BA_GROUP_H): get_complex_contagion_param_sweep_BA_group_homophily_multidata,
     (CASCADE_TYPES.COGNITIVE,GRAPH_TYPES.BA_GROUP_H): get_cognitive_contagion_param_sweep_BA_group_homophily_multidata,
   }
-  columns = cascade_columns[cascade_type] + graph_columns[graph_topology] + ['repetition']
+  columns = CASCADE_PARAMETERS[cascade_type] + GRAPH_PARAMETERS[graph_topology] + ['repetition']
   measure = 'opinion-timeseries'
 
-  data_path = './data'
+  data_path = SIM_DF_DATA_DIR
   all_data_file = f'{data_path}/{cascade_type_str}-{graph_topology_str}-all.csv'
   mean_data_file = f'{data_path}/{cascade_type_str}-{graph_topology_str}-mean.csv'
   all_run_metrics = None
@@ -1977,7 +2012,7 @@ def timeseries_similarity_scores_for_simulations(df, target_data):
   return df_comparison_results
 
 def analysis_dfs():
-  data_path = './data/analyses'
+  data_path = ANALYSIS_DATA_DIR
   cognitive_er_df_mean = pd.read_csv(f'{data_path}/cognitive-er-mean.csv')
   cognitive_ws_df_mean = pd.read_csv(f'{data_path}/cognitive-ws-mean.csv')
   cognitive_ba_df_mean = pd.read_csv(f'{data_path}/cognitive-ba-mean.csv')
@@ -2032,7 +2067,114 @@ def analysis_dfs():
   } 
   return dfs
 
+def write_mean_top_results_latex():
+  '''
+  Write out the results of write_mean_top_results as LaTeX tables.
+  '''
+  latex_format = """\\begin{table}[]
+      \\centering
+      \\begin{tabular}{c|c|c|c|c}
+      \\textbf{$n$} & \\textbf{Cascade Type} & \\textbf{Graph Topology} & \\textbf{Mean $n$ (Means)} & \\textbf{Mean $n$ (All)}\\\\
+      \\hline
+      \\multirow{12}{*}{50} & \\multirow{4}{*}{Simple} & ER & simple_er_mean_50 & simple_er_all_50 \\\\
+      \\cline{3-5}
+      & & WS & simple_ws_mean_50 & simple_ws_all_50 \\\\
+      \\cline{3-5}
+      & & BA & simple_ba_mean_50 & simple_ba_all_50 \\\\
+      \\cline{3-5}
+      & & BA-hg & simple_ba_group_h_mean_50 & simple_ba_group_h_all_50 \\\\
+      \\cline{2-5}
+      & \\multirow{4}{*}{Complex} & ER & complex_er_mean_50 & complex_er_all_50 \\\\
+      \\cline{3-5}
+      & & WS & complex_ws_mean_50 & complex_ws_all_50 \\\\
+      \\cline{3-5}
+      & & BA & complex_ba_mean_50 & complex_ba_all_50 \\\\
+      \\cline{3-5}
+      & & BA-hg & complex_ba_group_h_mean_50 & complex_ba_group_h_all_50 \\\\
+      \\cline{2-5}
+      & \\multirow{4}{*}{Cognitive} & ER & cognitive_er_mean_50 & cognitive_er_all_50 \\\\
+      \\cline{3-5}
+      & & WS & cognitive_ws_mean_50 & cognitive_ws_all_50 \\\\
+      \\cline{3-5}
+      & & BA & cognitive_ba_mean_50 & cognitive_ba_all_50 \\\\
+      \\cline{3-5}
+      & & BA-hg & cognitive_ba_group_h_mean_50 & cognitive_ba_group_h_all_50 \\\\
+      \\hline
+      \\multirow{12}{*}{100} & \\multirow{4}{*}{Simple} & ER & simple_er_mean_100 & simple_er_all_100 \\\\
+      \\cline{3-5}
+      & & WS & simple_ws_mean_100 & simple_ws_all_100 \\\\
+      \\cline{3-5}
+      & & BA & simple_ba_mean_100 & simple_ba_all_100 \\\\
+      \\cline{3-5}
+      & & BA-hg & simple_ba_group_h_mean_100 & simple_ba_group_h_all_100 \\\\
+      \\cline{2-5}
+      & \\multirow{4}{*}{Complex} & ER & complex_er_mean_100 & complex_er_all_100 \\\\
+      \\cline{3-5}
+      & & WS & complex_ws_mean_100 & complex_ws_all_100 \\\\
+      \\cline{3-5}
+      & & BA & complex_ba_mean_100 & complex_ba_all_100 \\\\
+      \\cline{3-5}
+      & & BA-hg & complex_ba_group_h_mean_100 & complex_ba_group_h_all_100 \\\\
+      \\cline{2-5}
+      & \\multirow{4}{*}{Cognitive} & ER & cognitive_er_mean_100 & cognitive_er_all_100 \\\\
+      \\cline{3-5}
+      & & WS & cognitive_ws_mean_100 & cognitive_ws_all_100 \\\\
+      \\cline{3-5}
+      & & BA & cognitive_ba_mean_100 & cognitive_ba_all_100 \\\\
+      \\cline{3-5}
+      & & BA-hg & cognitive_ba_group_h_mean_100 & cognitive_ba_group_h_all_100 \\\\
+    \\end{tabular}
+    \\caption{}
+    \\label{tab:results-mean-top}
+  \\end{table}"""
+
+  mean_results = mean_top_results([50,100])
+  for top, mean_measures in mean_results.items():
+    min_for_top_all = min([ val['mape'] for df_name, val in mean_measures.items() if 'all' in df_name ])
+    min_for_top_mean = min([ val['mape'] for df_name, val in mean_measures.items() if 'mean' in df_name ])
+    for df_name, measures in mean_measures.items():
+      keyword = f'{df_name}_{top}'
+      measure_value = measures['mape']
+      if measure_value == min_for_top_all or measure_value == min_for_top_mean:
+        latex_format = latex_format.replace(keyword, f'\\textbf{{{str(measure_value.round(3))}}}')
+      else:
+        latex_format = latex_format.replace(keyword, str(measure_value.round(3)))
+
+  with open(f'{ANALYSIS_DATA_DIR}/mean-top-mape.tex','w') as f:
+    f.write(latex_format)
+
+def write_mean_top_results_json():
+  '''
+  Write out the mean of the top X measures for the analysis data. This
+  hardcodes a series of X to take the means across, and can be changed
+  to supoprt different analyses. This writes the results out to JSON
+  in the analyses directory.
+  '''
+  mean_results = mean_top_results([10,50,100])
+  for top, mean_measures in mean_results.items():
+    with open(f'{ANALYSIS_DATA_DIR}/mean-top-{top}-mape.json', 'w') as f:
+      json.dump(mean_measures, f)
+
+def mean_top_results(tops):
+  dfs = analysis_dfs()
+  measures = ['mape']
+  mean_results = {}
+  for top in tops:
+    mean_measures = mean_top_measures(dfs, measures, top)
+    mean_results[top] = mean_measures
+  return mean_results
+
 def mean_top_measures(dfs, measures, num_top):
+  '''
+  Take the mean of the num_top rows for each measure in measures, across
+  all dataframes in dfs. Return this as a dictionary keyed by dataframe
+  name with values for each measure name and mean.
+
+  :param dfs: The analysis dataframes to analyse.
+  :param measures: A list of all measure names (as strings) to take.
+  :param num_top: An integer to use as the number of rows (top rows after
+  sorting) to take the mean across.
+  '''
   return { df_name: {
     measure: df.sort_values(by=measure).head(num_top)[measure].mean() for measure in measures
   } for df_name, df in dfs.items() }
@@ -2106,57 +2248,55 @@ def top_params_df(high_scoring_dfs):
   # top_params_df.to_csv(f'{data_path}/top-params.csv')
 
 def process_experiment_data_to_dfs():
-  data_out = './data'
-  contagion_types_tested = ['simple','complex','cognitive']
-  graph_topos_tested = ['er','ws','ba']
+  data_out = SIM_DF_DATA_DIR
+  contagion_types_tested = [ CASCADE_TYPES.SIMPLE, CASCADE_TYPES.COMPLEX, CASCADE_TYPES.COGNITIVE ] #['simple','complex','cognitive']
+  graph_topos_tested = [ GRAPH_TYPES.ER, GRAPH_TYPES.WS, GRAPH_TYPES.BA, GRAPH_TYPES.BA_GROUP_H ] #['er','ws','ba','ba-group-homophily']
   contagion_graph_combos = itertools.product(contagion_types_tested,graph_topos_tested)
-  parameters = {
-    'simple': ['simple_spread_chance'],
-    'complex': ['complex_spread_ratio'],
-    'cognitive': ['cognitive_translate','cognitive_exponent'],
-    'er': ['er_p'],
-    'ws': ['ws_p', 'ws_k'],
-    'ba': ['ba_m']
-  }
   fns = {
-    'simple_er': get_simple_contagion_param_sweep_ER_multidata,
-    'simple_ws': get_simple_contagion_param_sweep_WS_multidata,
-    'simple_ba': get_simple_contagion_param_sweep_BA_multidata,
-    'simple_ba_homophily': get_simple_contagion_param_sweep_BA_group_homophily_multidata,
-    'complex_er': get_complex_contagion_param_sweep_ER_multidata,
-    'complex_ws': get_complex_contagion_param_sweep_WS_multidata,
-    'complex_ba': get_complex_contagion_param_sweep_BA_multidata,
-    'complex_ba_homophily': get_complex_contagion_param_sweep_BA_group_homophily_multidata,
-    'cognitive_er': get_cognitive_contagion_param_sweep_ER_multidata,
-    'cognitive_ws': get_cognitive_contagion_param_sweep_WS_multidata,
-    'cognitive_ba': get_cognitive_contagion_param_sweep_BA_multidata,
-    'cognitive_ba_homophily': get_cognitive_contagion_param_sweep_BA_group_homophily_multidata,
+    (CASCADE_TYPES.SIMPLE, GRAPH_TYPES.ER): get_simple_contagion_param_sweep_ER_multidata,
+    (CASCADE_TYPES.SIMPLE, GRAPH_TYPES.WS): get_simple_contagion_param_sweep_WS_multidata,
+    (CASCADE_TYPES.SIMPLE, GRAPH_TYPES.BA): get_simple_contagion_param_sweep_BA_multidata,
+    (CASCADE_TYPES.SIMPLE, GRAPH_TYPES.BA_GROUP_H): get_simple_contagion_param_sweep_BA_group_homophily_multidata,
+    (CASCADE_TYPES.COMPLEX, GRAPH_TYPES.ER): get_complex_contagion_param_sweep_ER_multidata,
+    (CASCADE_TYPES.COMPLEX, GRAPH_TYPES.WS): get_complex_contagion_param_sweep_WS_multidata,
+    (CASCADE_TYPES.COMPLEX, GRAPH_TYPES.BA): get_complex_contagion_param_sweep_BA_multidata,
+    (CASCADE_TYPES.COMPLEX, GRAPH_TYPES.BA_GROUP_H): get_complex_contagion_param_sweep_BA_group_homophily_multidata,
+    (CASCADE_TYPES.COGNITIVE, GRAPH_TYPES.ER): get_cognitive_contagion_param_sweep_ER_multidata,
+    (CASCADE_TYPES.COGNITIVE, GRAPH_TYPES.WS): get_cognitive_contagion_param_sweep_WS_multidata,
+    (CASCADE_TYPES.COGNITIVE, GRAPH_TYPES.BA): get_cognitive_contagion_param_sweep_BA_multidata,
+    (CASCADE_TYPES.COGNITIVE, GRAPH_TYPES.BA_GROUP_H): get_cognitive_contagion_param_sweep_BA_group_homophily_multidata,
   }
   measures_to_report = ['opinion-timeseries']
   for combo in contagion_graph_combos:
-    all_filename = f'{data_out}/{combo[0]}-{combo[1]}-all.csv' 
-    mean_filename = f'{data_out}/{combo[0]}-{combo[1]}-mean.csv'
+    cascade_type = combo[0]
+    graph_type = combo[1]
+    ct_str = cascade_type.value
+    gt_str = graph_type.value
+    all_filename = f'{data_out}/{ct_str}-{gt_str}-all.csv' 
+    mean_filename = f'{data_out}/{ct_str}-{gt_str}-mean.csv'
     if exists(all_filename) and exists(mean_filename):
-      print(f'Skipping {combo[0]}-{combo[1]} both because data exists')
+      print(f'Skipping {ct_str}-{gt_str} both because data exists')
       continue
 
-    multidata = fns[f'{combo[0]}_{combo[1]}'](f'{DATA_DIR}/{combo[0]}-contagion-sweep-{combo[1].upper()}')
-    multidata_measure = { key: val for key, val in multidata.items() if key[1] in measures_to_report }
-    all_params = parameters[combo[0]] + parameters[combo[1]] + ['repetition']
-
+    all_df = None
     if exists(all_filename):
-      print(f'Skipping {combo[0]}-{combo[1]}-all because data exists')
+      print(f'Skipping {ct_str}-{gt_str}-all because data exists')
+      all_df = read_dataframe_with_simulation_data(all_filename)
     else:
       print('Generating all runs dataframe...')
+      multidata = fns[(cascade_type,graph_type)](f'{SIM_RAW_DATA_DIR}/{ct_str}-contagion-sweep-{GRAPH_TYPE_DIRECTORY_NAMES[graph_type]}')
+      multidata_measure = { key: val for key, val in multidata.items() if key[1] in measures_to_report }
+      all_params = CASCADE_PARAMETERS[cascade_type] + GRAPH_PARAMETERS[graph_type] + ['repetition']
       all_df = multidata_as_dataframe(multidata_measure, all_params)
       all_df.to_csv(all_filename)
 
     if exists(mean_filename):
-      print(f'Skipping {combo[0]}-{combo[1]}-mean because data exists')
+      print(f'Skipping {ct_str}-{gt_str}-mean because data exists')
     else:
       print('Generating mean runs dataframe...')
-      mean_df = mean_multidata_as_dataframe(multidata_measure, all_params)
-      mean_df.to_csv(mean_filename)
+      # mean_df = mean_multidata_as_dataframe(multidata_measure, all_params)
+      mean_df = all_dataframe_to_mean_dataframe(all_df)
+      write_dataframe_with_simulation_data(mean_df, mean_filename)
 
 def process_all_exp_metrics():
   cascade_types = [ CASCADE_TYPES.SIMPLE, CASCADE_TYPES.COMPLEX, CASCADE_TYPES.COGNITIVE ]
@@ -2254,20 +2394,14 @@ def process_all_exp_metrics():
     (CASCADE_TYPES.COGNITIVE, GRAPH_TYPES.BA): { 'all': None, 'mean': None },
     (CASCADE_TYPES.COGNITIVE, GRAPH_TYPES.BA_GROUP_H): { 'all': None, 'mean': None },
   }
-  data_path = './data/analyses'
-  gt_directory_names = {
-    GRAPH_TYPES.ER: 'ER',
-    GRAPH_TYPES.WS: 'WS',
-    GRAPH_TYPES.BA: 'BA',
-    GRAPH_TYPES.BA_GROUP_H: 'BA-group-homophily'
-  }
+  data_path = ANALYSIS_DATA_DIR
 
   for cascade_type in cascade_types:
     for graph_topology in graph_topologies:
       ct_str = cascade_type.value
       gt_str = graph_topology.value
       ct_gt_combo = (cascade_type,graph_topology)
-      gt_dir_name = gt_directory_names[graph_topology]
+      gt_dir_name = GRAPH_TYPE_DIRECTORY_NAMES[graph_topology]
 
       # Generate metrics for all and mean data
       if exists(f'{data_path}/{ct_str}-{gt_str}-all.csv') and exists(f'{data_path}/{ct_str}-{gt_str}-mean.csv'):
@@ -2275,7 +2409,7 @@ def process_all_exp_metrics():
         metrics[ct_gt_combo].append(pd.read_csv(f'{data_path}/{ct_str}-{gt_str}-all.csv'))
         metrics[ct_gt_combo].append(pd.read_csv(f'{data_path}/{ct_str}-{gt_str}-mean.csv'))
       else:
-        metrics[ct_gt_combo] = metric_functions[(cascade_type,graph_topology)](f'{DATA_DIR}/{ct_str}-contagion-sweep-{gt_dir_name}')
+        metrics[ct_gt_combo] = metric_functions[(cascade_type,graph_topology)](f'{SIM_RAW_DATA_DIR}/{ct_str}-contagion-sweep-{gt_dir_name}')
         metrics[ct_gt_combo][0].to_csv(f'{data_path}/{ct_str}-{gt_str}-all.csv')
         metrics[ct_gt_combo][1].to_csv(f'{data_path}/{ct_str}-{gt_str}-mean.csv')
       metrics_all = metrics[ct_gt_combo][0]
