@@ -1896,6 +1896,7 @@ to convert-world-data-to-message-data [ path ]
     let ids item 1 path-id
     foreach ids [ id ->
       show (word "Generating message data for " pth ": " id)
+      import-world (word pth "/" id "_world.csv")
       output-message-data pth read-from-string(id)
     ]
   ]
@@ -2547,7 +2548,7 @@ CHOOSER
 spread-type
 spread-type
 "simple" "complex" "cognitive"
-0
+2
 
 TEXTBOX
 302
@@ -2576,7 +2577,7 @@ INPUTBOX
 244
 929
 load-graph-path
-D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/simple-contagion-sweep-ER/graphs/0.05-0.01-0.csv
+D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/cognitive-contagion-sweep-BA-group-homophily/graphs/15-0-5-0.25-2.csv
 1
 0
 String
@@ -2587,7 +2588,7 @@ INPUTBOX
 247
 995
 save-graph-path
-D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/19-Feb-2024-simple-contagion-sweep-ER-TEST/graphs/0.1-0.05-3.csv
+D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/cognitive-contagion-sweep-BA-group-homophily/graphs/15-2-5-0.75-3.csv
 1
 0
 String
@@ -2618,7 +2619,7 @@ simple-spread-chance
 simple-spread-chance
 0
 1
-0.01
+0.75
 0.01
 1
 NIL
@@ -2734,7 +2735,7 @@ cognitive-exponent
 cognitive-exponent
 -10
 10
-3.0
+5.0
 1
 1
 NIL
@@ -2821,7 +2822,7 @@ CHOOSER
 graph-type
 graph-type
 "erdos-renyi" "watts-strogatz" "barabasi-albert" "ba-homophilic" "mag" "facebook" "kronecker"
-0
+3
 
 SLIDER
 257
@@ -2832,7 +2833,7 @@ erdos-renyi-p
 erdos-renyi-p
 0
 1
-0.05
+0.5
 0.01
 1
 NIL
@@ -3405,7 +3406,7 @@ repetition
 repetition
 0
 10
-0.0
+2.0
 1
 1
 NIL
@@ -3794,7 +3795,7 @@ group-homophily
 group-homophily
 0
 1
-0.75
+0.25
 0.01
 1
 NIL
