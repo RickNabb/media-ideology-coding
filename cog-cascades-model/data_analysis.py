@@ -1479,7 +1479,7 @@ def graph_parameter_distribution(df, cascade_type, graph_type, title):
   # fig.supylabel('Parameter')
   plt.show()
 
-def plot_opinion_timeseries_against_polling(all_run_data_df, polling_data):
+def plot_opinion_timeseries_against_polling(all_run_data_df, polling_data, output_path='', output_filename=''):
   line_names = ['dem','mod','rep'] 
   line_colors = { 'dem': '#0000ff', 'mod': '#aa00aa', 'rep': '#ff0000' }
   run_data = {
@@ -1494,7 +1494,7 @@ def plot_opinion_timeseries_against_polling(all_run_data_df, polling_data):
     ax.plot(dates, polling_data[line_name], color=line_colors[line_name])
     mean_sim_data = run_data[line_name].mean(0) 
     std_sim_data = np.array(run_data[line_name]).std(0) 
-    ax.plot(dates, mean_sim_data, color=line_colors[line_name])
+    ax.plot(dates, mean_sim_data, color=line_colors[line_name], linestyle='dashed')
     ax.fill_between(dates, mean_sim_data-std_sim_data, mean_sim_data+std_sim_data, facecolor=f'{line_colors[line_name]}44')
 
   ax.set_xticks(dates)
@@ -1502,7 +1502,11 @@ def plot_opinion_timeseries_against_polling(all_run_data_df, polling_data):
   ax.set_xlabel('Date')
   plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=7))
   plt.gcf().autofmt_xdate()
-  plt.show()
+
+  if output_path != '':
+    plt.savefig(f'{output_path}/{output_filename}')
+  else:
+    plt.show()
 
 """
 ##################
@@ -2218,7 +2222,8 @@ def metrics_for_complex_contagion_param_sweep_BA_group_homophily(path):
   return opinion_metrics_for_param_sweep_exp(path, CASCADE_TYPES.COMPLEX, GRAPH_TYPES.BA_GROUP_H)
 
 def top_matches_for_metrics(metrics_df):
-  ranked = metrics_df.sort_values(by=['mape','pearson'], ascending=[True,False])
+  metrics_df['mape*pearson'] = (1 - metrics_df['mape']) * metrics_df['pearson']
+  ranked = metrics_df.sort_values(by=['mape*pearson'], ascending=False)
   # ranked = metrics_df.sort_values(by=['pearson','mape'], ascending=[False,True])
   return ranked.head(10)
 
@@ -2700,6 +2705,34 @@ def top_params_df_table_df(high_scoring_dfs):
   return top_params_df
   # top_params_df.to_csv(f'{data_path}/top-params.csv')
 
+def plot_sim_run_from_df(data_df, top_df, output_dir='', output_prefix=''):
+  '''
+  Plot several rows of top results from analysis of simulation data
+  against the empirical polling data. This plots the mean of
+  all run repetitions with its standard deviation, getting each
+  individual run data from data_df, and the top parameter combinations
+  from top_df.
+
+  :param data_df: A dataframe containing all run data for a given
+  simulation cascade type X graph type.
+  :param top_df: A dataframe containing the top matches of simulated
+  data against polling data.
+  :output_dir: Optional -- string specifying the directory to save
+  plot figures in.
+  :output_prefix: Optional -- the beginning of the filename used to
+  save plot figurse (this is currently set as the contagion X graph
+  combination)
+  '''
+  num_rows_to_plot = 10
+  top_rows = top_df.iloc[0:num_rows_to_plot,:]
+  query_cols = list_subtract(list(top_df.columns), ['measure','mape','pearson','euclidean','mape*pearson'])
+  for row in top_rows.iterrows():
+    row_data = row[1]
+    query = ' and '.join([ f'{col}=={row_data[col]}' for col in query_cols ])
+    data_rows = data_df.query(query)
+    gallup_dict = read_gallup_data_into_dict('../labeled-data/public/polling-data.csv')
+    plot_opinion_timeseries_against_polling(data_rows, gallup_dict, output_dir, f'{output_prefix}-{"-".join([str(row_data[col]) for col in query_cols])}.png')
+
 def process_experiment_data_to_dfs():
   data_out = SIM_DF_DATA_DIR
   contagion_types_tested = [ CASCADE_TYPES.SIMPLE, CASCADE_TYPES.COMPLEX, CASCADE_TYPES.COGNITIVE ] #['simple','complex','cognitive']
@@ -2859,8 +2892,12 @@ def process_all_exp_metrics():
       # Generate metrics for all and mean data
       if exists(f'{data_path}/{ct_str}-{gt_str}-all.csv') and exists(f'{data_path}/{ct_str}-{gt_str}-mean.csv'):
         print(f'Read in existing {ct_str} {gt_str} metric data')
-        metrics[ct_gt_combo].append(pd.read_csv(f'{data_path}/{ct_str}-{gt_str}-all.csv'))
-        metrics[ct_gt_combo].append(pd.read_csv(f'{data_path}/{ct_str}-{gt_str}-mean.csv'))
+        all_df = pd.read_csv(f'{data_path}/{ct_str}-{gt_str}-all.csv')
+        mean_df = pd.read_csv(f'{data_path}/{ct_str}-{gt_str}-mean.csv')
+        all_df.drop(columns=['Unnamed: 0'], inplace=True)
+        mean_df.drop(columns=['Unnamed: 0'], inplace=True)
+        metrics[ct_gt_combo].append(all_df)
+        metrics[ct_gt_combo].append(mean_df)
       else:
         metrics[ct_gt_combo] = metric_functions[(cascade_type,graph_topology)](f'{SIM_RAW_DATA_DIR}/{ct_str}-contagion-sweep-{gt_dir_name}')
         metrics[ct_gt_combo][0].to_csv(f'{data_path}/{ct_str}-{gt_str}-all.csv')
@@ -2871,41 +2908,47 @@ def process_all_exp_metrics():
       # Get top results for all and mean
       if exists(f'{data_path}/{ct_str}-{gt_str}-all_top.csv'):
         top_dfs[ct_gt_combo]['all'] = pd.read_csv(f'{data_path}/{ct_str}-{gt_str}-all_top.csv')
+        top_dfs[ct_gt_combo]['all'].drop(columns=['Unnamed: 0'], inplace=True)
       else:
         top_dfs[ct_gt_combo]['all'] = top_matches_for_metrics(metrics_all)
         top_dfs[ct_gt_combo]['all'].to_csv(f'{data_path}/{ct_str}-{gt_str}-all_top.csv')
       if exists(f'{data_path}/{ct_str}-{gt_str}-mean_top.csv'):
         top_dfs[ct_gt_combo]['mean'] = pd.read_csv(f'{data_path}/{ct_str}-{gt_str}-mean_top.csv')
+        top_dfs[ct_gt_combo]['mean'].drop(columns=['Unnamed: 0'], inplace=True)
       else:
         top_dfs[ct_gt_combo]['mean'] = top_matches_for_metrics(metrics_mean)
         top_dfs[ct_gt_combo]['mean'].to_csv(f'{data_path}/{ct_str}-{gt_str}-mean_top.csv')
 
       # Graph the top results
+      all_df = read_dataframe_with_simulation_data(f'{SIM_DF_DATA_DIR}/{ct_str}-{gt_str}-all.csv')
+      if 'Unnamed: 0' in all_df.columns:
+        all_df.drop(columns=['Unnamed: 0'], inplace=True)
+      poll_plot_output_dir = f'{data_path}/sim-poll-plots'
+      # if not os.path.isdir(poll_plot_output_dir):
+      #   os.mkdir(poll_plot_output_dir)
+      plot_sim_run_from_df(all_df, top_dfs[ct_gt_combo]['mean'], output_dir=poll_plot_output_dir, output_prefix=f'{ct_str}-{gt_str}')
       # processing_functions[ct_gt_combo]['all'](top_dfs[ct_gt_combo]['all'], f'{SIM_RAW_DATA_DIR}/{ct_str}-contagion-sweep-{gt_dir_name}', 'results-all')
-      processing_functions[ct_gt_combo]['mean'](top_dfs[ct_gt_combo]['mean'], f'{SIM_RAW_DATA_DIR}/{ct_str}-contagion-sweep-{gt_dir_name}', 'results-mean')
+      # processing_functions[ct_gt_combo]['mean'](top_dfs[ct_gt_combo]['mean'], f'{SIM_RAW_DATA_DIR}/{ct_str}-contagion-sweep-{gt_dir_name}', 'results-mean')
 
 def get_df_columns_in_order():
-  data_paths = [ SIM_DF_DATA_DIR, ANALYSIS_DATA_DIR, f'{ANALYSIS_DATA_DIR}/pen-means' ]
+  # data_paths = [ SIM_DF_DATA_DIR, ANALYSIS_DATA_DIR, f'{ANALYSIS_DATA_DIR}/pen-means' ]
+  data_paths = [ SIM_DF_DATA_DIR, f'{ANALYSIS_DATA_DIR}/pen-means' ]
   dfs = {}
   select_graph_types = [ GRAPH_TYPES.BA_GROUP_H ]
   for data_path in data_paths:
     for cascade_type in CASCADE_TYPES:
       ct_str = cascade_type.value
       cascade_params = CASCADE_PARAMETERS[cascade_type]
-      for graph_type in select_graph_types:
-      # for graph_type in GRAPH_TYPES:
+      # for graph_type in select_graph_types:
+      for graph_type in GRAPH_TYPES:
         gt_str = graph_type.value
         graph_params = GRAPH_PARAMETERS[graph_type]
         for all_mean in ['all','mean']:
           filename = f'{ct_str}-{gt_str}-{all_mean}.csv'
           full_path = f'{data_path}/{filename}'
           print(f'Fixing {full_path}...')
-          df = None
-          if data_path == SIM_DF_DATA_DIR:
-            df = read_dataframe_with_simulation_data(full_path)
-          else:
-            df = pd.read_csv(full_path)
-            df.drop(columns=['Unnamed: 0'], inplace=True)
+          df = pd.read_csv(full_path)
+          df.drop(columns=['Unnamed: 0'], inplace=True)
           renamed_df = df.copy()
           ct_gt_column_order = graph_params + cascade_params
           non_ct_gt_cols = list_subtract(list_subtract(list(df.columns), cascade_params), graph_params)
@@ -2927,10 +2970,7 @@ def get_df_columns_in_order():
             # renamed_df.rename(columns={df_col: new_col}, inplace=True)
             renamed_df.columns.values[i] = all_cols[i]
           dfs[full_path] = renamed_df
-          if data_path == SIM_DF_DATA_DIR:
-            write_dataframe_with_simulation_data(renamed_df, full_path)
-          else:
-            renamed_df.to_csv(full_path)
+          renamed_df.to_csv(full_path)
   return dfs
 
 '''
