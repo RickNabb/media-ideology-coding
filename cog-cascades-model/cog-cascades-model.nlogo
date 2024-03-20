@@ -2548,7 +2548,7 @@ CHOOSER
 spread-type
 spread-type
 "simple" "complex" "cognitive"
-2
+1
 
 TEXTBOX
 302
@@ -2567,7 +2567,7 @@ SWITCH
 862
 load-graph?
 load-graph?
-0
+1
 1
 -1000
 
@@ -2577,7 +2577,7 @@ INPUTBOX
 244
 929
 load-graph-path
-D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/cognitive-contagion-sweep-BA-group-homophily/graphs/15-0-5-0.25-2.csv
+D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/complex-contagion-sweep-BA-group-homophily/graphs/10-0.5-0.5-7.csv
 1
 0
 String
@@ -2588,7 +2588,7 @@ INPUTBOX
 247
 995
 save-graph-path
-D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/cognitive-contagion-sweep-BA-group-homophily/graphs/15-2-5-0.75-3.csv
+D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/complex-contagion-sweep-BA-group-homophily/graphs/15-0.9-0.75-9.csv
 1
 0
 String
@@ -2634,7 +2634,7 @@ complex-spread-ratio
 complex-spread-ratio
 0
 1
-0.9
+0.5
 0.01
 1
 NIL
@@ -2735,7 +2735,7 @@ cognitive-exponent
 cognitive-exponent
 -10
 10
-5.0
+3.0
 1
 1
 NIL
@@ -2822,7 +2822,7 @@ CHOOSER
 graph-type
 graph-type
 "erdos-renyi" "watts-strogatz" "barabasi-albert" "ba-homophilic" "mag" "facebook" "kronecker"
-3
+0
 
 SLIDER
 257
@@ -2898,7 +2898,7 @@ ba-m
 ba-m
 0
 20
-15.0
+10.0
 1
 1
 NIL
@@ -3406,7 +3406,7 @@ repetition
 repetition
 0
 10
-2.0
+7.0
 1
 1
 NIL
@@ -3795,7 +3795,7 @@ group-homophily
 group-homophily
 0
 1
-0.25
+0.5
 0.01
 1
 NIL
@@ -3822,6 +3822,60 @@ curr-group-homophily
 3
 1
 11
+
+PLOT
+1889
+375
+2152
+527
+DEM-a-histogram
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 1 -16777216 true "" "plot-pen-reset  ;; erase what we plotted before\nset-plot-x-range -1 (belief-resolution + 1)\n\nhistogram [dict-value brain \"A\"] of citizens with [groups = [\"DEM\"]]"
+
+PLOT
+1889
+694
+2152
+854
+REP-a-histogram
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 1 -16777216 true "" "plot-pen-reset  ;; erase what we plotted before\nset-plot-x-range -1 (belief-resolution + 1)\n\nhistogram [dict-value brain \"A\"] of citizens with [groups = [\"REP\"]]"
+
+PLOT
+1890
+532
+2149
+684
+MOD-a-histogram
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 1 -16777216 true "" "plot-pen-reset  ;; erase what we plotted before\nset-plot-x-range -1 (belief-resolution + 1)\n\nhistogram [dict-value brain \"A\"] of citizens with [groups = [\"MOD\"]]"
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -4327,8 +4381,6 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
       <value value="0.5"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="watts-strogatz-k">
-      <value value="2"/>
-      <value value="3"/>
       <value value="5"/>
       <value value="10"/>
       <value value="15"/>
@@ -4367,7 +4419,6 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
       <value value="&quot;simple&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="simple-spread-chance">
-      <value value="0.01"/>
       <value value="0.05"/>
       <value value="0.1"/>
       <value value="0.25"/>
@@ -4440,7 +4491,6 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
       <value value="&quot;barabasi-albert&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="ba-m">
-      <value value="3"/>
       <value value="5"/>
       <value value="10"/>
       <value value="15"/>
@@ -4479,7 +4529,6 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
       <value value="&quot;simple&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="simple-spread-chance">
-      <value value="0.01"/>
       <value value="0.05"/>
       <value value="0.1"/>
       <value value="0.25"/>
@@ -4787,8 +4836,6 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
       <value value="0.5"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="watts-strogatz-k">
-      <value value="2"/>
-      <value value="3"/>
       <value value="5"/>
       <value value="10"/>
       <value value="15"/>
@@ -4849,7 +4896,6 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
       <value value="0"/>
       <value value="1"/>
       <value value="2"/>
-      <value value="3"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="contagion-on?">
       <value value="false"/>
@@ -4917,7 +4963,6 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
       <value value="&quot;barabasi-albert&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="ba-m">
-      <value value="3"/>
       <value value="5"/>
       <value value="10"/>
       <value value="15"/>
@@ -4978,7 +5023,6 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
       <value value="0"/>
       <value value="1"/>
       <value value="2"/>
-      <value value="3"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="contagion-on?">
       <value value="false"/>
@@ -5163,8 +5207,6 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
       <value value="0.5"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="watts-strogatz-k">
-      <value value="2"/>
-      <value value="3"/>
       <value value="5"/>
       <value value="10"/>
       <value value="15"/>
@@ -5203,12 +5245,10 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
       <value value="&quot;complex&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="complex-spread-ratio">
-      <value value="0.05"/>
       <value value="0.1"/>
       <value value="0.25"/>
       <value value="0.5"/>
       <value value="0.75"/>
-      <value value="0.9"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="contagion-on?">
       <value value="false"/>
@@ -5276,7 +5316,6 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
       <value value="&quot;barabasi-albert&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="ba-m">
-      <value value="3"/>
       <value value="5"/>
       <value value="10"/>
       <value value="15"/>
@@ -5315,12 +5354,10 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
       <value value="&quot;complex&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="complex-spread-ratio">
-      <value value="0.05"/>
       <value value="0.1"/>
       <value value="0.25"/>
       <value value="0.5"/>
       <value value="0.75"/>
-      <value value="0.9"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="contagion-on?">
       <value value="false"/>
@@ -5388,7 +5425,6 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
       <value value="&quot;ba-homophilic&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="ba-m">
-      <value value="3"/>
       <value value="5"/>
       <value value="10"/>
       <value value="15"/>
@@ -5439,12 +5475,10 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
       <value value="&quot;complex&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="complex-spread-ratio">
-      <value value="0.05"/>
       <value value="0.1"/>
       <value value="0.25"/>
       <value value="0.5"/>
       <value value="0.75"/>
-      <value value="0.9"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="contagion-on?">
       <value value="false"/>
@@ -5512,7 +5546,6 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
       <value value="&quot;ba-homophilic&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="ba-m">
-      <value value="3"/>
       <value value="5"/>
       <value value="10"/>
       <value value="15"/>
@@ -5563,12 +5596,10 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
       <value value="&quot;complex&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="complex-spread-ratio">
-      <value value="0.05"/>
       <value value="0.1"/>
       <value value="0.25"/>
       <value value="0.5"/>
       <value value="0.75"/>
-      <value value="0.9"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="contagion-on?">
       <value value="false"/>
@@ -5636,7 +5667,6 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
       <value value="&quot;ba-homophilic&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="ba-m">
-      <value value="3"/>
       <value value="5"/>
       <value value="10"/>
       <value value="15"/>
@@ -5693,12 +5723,10 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
       <value value="&quot;complex&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="complex-spread-ratio">
-      <value value="0.05"/>
       <value value="0.1"/>
       <value value="0.25"/>
       <value value="0.5"/>
       <value value="0.75"/>
-      <value value="0.9"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="contagion-on?">
       <value value="false"/>
@@ -5778,7 +5806,6 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
       <value value="0.75"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="ba-m">
-      <value value="3"/>
       <value value="5"/>
       <value value="10"/>
       <value value="15"/>
@@ -5817,7 +5844,6 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
       <value value="&quot;simple&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="simple-spread-chance">
-      <value value="0.01"/>
       <value value="0.05"/>
       <value value="0.1"/>
       <value value="0.25"/>
@@ -5999,8 +6025,6 @@ carefully [
       <value value="0.5"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="watts-strogatz-k">
-      <value value="2"/>
-      <value value="3"/>
       <value value="5"/>
       <value value="10"/>
       <value value="15"/>
@@ -6039,7 +6063,6 @@ carefully [
       <value value="&quot;simple&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="simple-spread-chance">
-      <value value="0.01"/>
       <value value="0.05"/>
       <value value="0.1"/>
       <value value="0.25"/>
@@ -6108,7 +6131,6 @@ carefully [
       <value value="&quot;barabasi-albert&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="ba-m">
-      <value value="3"/>
       <value value="5"/>
       <value value="10"/>
       <value value="15"/>
@@ -6147,7 +6169,6 @@ carefully [
       <value value="&quot;simple&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="simple-spread-chance">
-      <value value="0.01"/>
       <value value="0.05"/>
       <value value="0.1"/>
       <value value="0.25"/>
@@ -6329,8 +6350,6 @@ carefully [
       <value value="0.5"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="watts-strogatz-k">
-      <value value="2"/>
-      <value value="3"/>
       <value value="5"/>
       <value value="10"/>
       <value value="15"/>
@@ -6369,12 +6388,10 @@ carefully [
       <value value="&quot;complex&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="complex-spread-ratio">
-      <value value="0.05"/>
       <value value="0.1"/>
       <value value="0.25"/>
       <value value="0.5"/>
       <value value="0.75"/>
-      <value value="0.9"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="contagion-on?">
       <value value="false"/>
@@ -6438,7 +6455,6 @@ carefully [
       <value value="&quot;barabasi-albert&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="ba-m">
-      <value value="3"/>
       <value value="5"/>
       <value value="10"/>
       <value value="15"/>
@@ -6477,12 +6493,10 @@ carefully [
       <value value="&quot;complex&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="complex-spread-ratio">
-      <value value="0.05"/>
       <value value="0.1"/>
       <value value="0.25"/>
       <value value="0.5"/>
       <value value="0.75"/>
-      <value value="0.9"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="contagion-on?">
       <value value="false"/>
@@ -6676,8 +6690,6 @@ carefully [
       <value value="0.5"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="watts-strogatz-k">
-      <value value="2"/>
-      <value value="3"/>
       <value value="5"/>
       <value value="10"/>
       <value value="15"/>
@@ -6738,7 +6750,6 @@ carefully [
       <value value="0"/>
       <value value="1"/>
       <value value="2"/>
-      <value value="3"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="contagion-on?">
       <value value="false"/>
@@ -6802,7 +6813,6 @@ carefully [
       <value value="&quot;barabasi-albert&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="ba-m">
-      <value value="3"/>
       <value value="5"/>
       <value value="10"/>
       <value value="15"/>
@@ -6863,7 +6873,6 @@ carefully [
       <value value="0"/>
       <value value="1"/>
       <value value="2"/>
-      <value value="3"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="contagion-on?">
       <value value="false"/>
@@ -6927,7 +6936,6 @@ carefully [
       <value value="&quot;ba-homophilic&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="ba-m">
-      <value value="3"/>
       <value value="5"/>
       <value value="10"/>
       <value value="15"/>
@@ -6978,12 +6986,10 @@ carefully [
       <value value="&quot;complex&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="complex-spread-ratio">
-      <value value="0.05"/>
       <value value="0.1"/>
       <value value="0.25"/>
       <value value="0.5"/>
       <value value="0.75"/>
-      <value value="0.9"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="contagion-on?">
       <value value="false"/>
@@ -7059,7 +7065,6 @@ carefully [
       <value value="0.75"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="ba-m">
-      <value value="3"/>
       <value value="5"/>
       <value value="10"/>
       <value value="15"/>
@@ -7098,7 +7103,6 @@ carefully [
       <value value="&quot;simple&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="simple-spread-chance">
-      <value value="0.01"/>
       <value value="0.05"/>
       <value value="0.1"/>
       <value value="0.25"/>
@@ -7171,7 +7175,6 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
       <value value="&quot;ba-homophilic&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="ba-m">
-      <value value="3"/>
       <value value="5"/>
       <value value="10"/>
       <value value="15"/>
@@ -7244,7 +7247,6 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
       <value value="0"/>
       <value value="1"/>
       <value value="2"/>
-      <value value="3"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="contagion-on?">
       <value value="false"/>
@@ -7308,7 +7310,6 @@ carefully [
       <value value="&quot;ba-homophilic&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="ba-m">
-      <value value="3"/>
       <value value="5"/>
       <value value="10"/>
       <value value="15"/>
@@ -7381,7 +7382,6 @@ carefully [
       <value value="0"/>
       <value value="1"/>
       <value value="2"/>
-      <value value="3"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="contagion-on?">
       <value value="false"/>
