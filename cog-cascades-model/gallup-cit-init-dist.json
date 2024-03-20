@@ -2,19 +2,19 @@
   "DEM": {
     "n": 100,
     "beliefs": {
-      "MASK": [ "matched_normal", 5.3946, 1, [5,6], 65, 1 ]
+      "MASK": [ "matched_normal", 5.7892, 2, [5,6], 65, 2 ]
     }
   },
   "MOD": {
     "n": 100,
     "beliefs": {
-      "MASK": [ "matched_normal", 4.9644, 1, [5, 6], 49, 1 ]
+      "MASK": [ "matched_normal", 4.9288, 2, [5, 6], 49, 2 ]
     }
   },
   "REP": {
     "n": 100,
     "beliefs": {
-      "MASK": [ "matched_normal", 4.8267, 1, [5,6], 43, 1 ]
+      "MASK": [ "matched_normal", 4.6533, 2, [5,6], 43, 2 ]
     }
   }
 }
