@@ -1,3 +1,4 @@
+from datetime import date, timedelta
 import ast
 from enum import Enum
 from random import *
@@ -15,6 +16,7 @@ from scipy.stats import chi2_contingency, truncnorm, pearsonr
 from sklearn.linear_model import LinearRegression
 import math
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 from nlogo_io import *
 from nlogo_graphs import nlogo_saved_graph_to_nx
 from messaging import dist_to_agent_brain, believe_message
@@ -23,6 +25,11 @@ from messaging import dist_to_agent_brain, believe_message
 SIM_RAW_DATA_DIR = 'D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data'
 SIM_DF_DATA_DIR = './data'
 ANALYSIS_DATA_DIR = './data/analyses'
+
+# Pulled from https://stackoverflow.com/questions/1060279/iterating-through-a-range-of-dates-in-python
+def daterange(start_date, end_date):
+  for n in range(int((end_date - start_date).days)):
+    yield start_date + timedelta(n)
 
 """
 STATS STUFF
@@ -1470,6 +1477,31 @@ def graph_parameter_distribution(df, cascade_type, graph_type, title):
   axs[0].set_ylabel('Number of runs with\nparameter as value')
   # fig.set_constrained_layout(True)
   # fig.supylabel('Parameter')
+  plt.show()
+
+def plot_opinion_timeseries_against_polling(all_run_data_df, polling_data):
+  line_names = ['dem','mod','rep'] 
+  line_colors = { 'dem': '#0000ff', 'mod': '#aa00aa', 'rep': '#ff0000' }
+  run_data = {
+    line_name: all_run_data_df[all_run_data_df['pen_name'] == line_name]['data'] for line_name in line_names
+  }
+  start_date = date(2020, 4, 6)
+  end_date = date(2020, 6, 9)
+  dates = list(daterange(start_date, end_date))
+
+  fig, ax = plt.subplots(figsize=(8, 4))
+  for line_name in line_names:
+    ax.plot(dates, polling_data[line_name], color=line_colors[line_name])
+    mean_sim_data = run_data[line_name].mean(0) 
+    std_sim_data = np.array(run_data[line_name]).std(0) 
+    ax.plot(dates, mean_sim_data, color=line_colors[line_name])
+    ax.fill_between(dates, mean_sim_data-std_sim_data, mean_sim_data+std_sim_data, facecolor=f'{line_colors[line_name]}44')
+
+  ax.set_xticks(dates)
+  ax.set_xticklabels([f'{date.month}-{date.day}' for date in dates], rotation=-45, ha='left', fontsize=12)
+  ax.set_xlabel('Date')
+  plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=7))
+  plt.gcf().autofmt_xdate()
   plt.show()
 
 """

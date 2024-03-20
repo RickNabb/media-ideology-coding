@@ -1,4 +1,5 @@
 import os
+import json
 import math
 import numpy as np
 from scipy.stats import truncnorm
@@ -124,6 +125,31 @@ def normal_dist(maxx, mean, sigma, n):
   # sigma=mean/3
   dist = truncnorm((lower - mean) / sigma, (upper - mean) / sigma, loc=mean, scale=sigma)
   return np.array(list(map(lambda el: math.floor(el), dist.rvs(n))))
+
+def test_initial_belief_distribution():
+  distribution_data = json.load(open('./gallup-cit-init-dist.json', 'r'))
+  distributions = { group: { belief: [] for belief in data['beliefs'].keys() } for group, data in distribution_data.items() }
+  for group, specs in distribution_data.items():
+    for belief_name, params in specs['beliefs'].items():
+      for i in range(100):
+        dist = params[0]
+        if dist == 'normal':
+          mean = params[1]
+          std = params[2]
+          distributions[group][belief_name].append(normal_dist(6, mean, std, specs['n']))
+  supportive_beliefs = {
+    group: {
+      belief: [ [ len([bel for bel in dist if bel >= 5]) for dist in distributions[group][belief] ] ] for belief in data['beliefs'].keys()
+    } for group, data in distribution_data.items()
+  }
+  means_and_vars = {
+    group: { belief: {
+      'mean': np.array(supportive_beliefs[group][belief]).mean(),
+      'var': np.array(supportive_beliefs[group][belief]).var(),
+      'std': np.array(supportive_beliefs[group][belief]).std()
+    } for belief in data['beliefs'].keys() }
+  for group,data in distribution_data.items() }
+  return means_and_vars
 
 def list_subtract(l1, l2):
   return [ el for el in l1 if el not in l2 ]
