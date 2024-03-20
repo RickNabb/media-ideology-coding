@@ -228,6 +228,9 @@ to create-citizenz
         if dist-type = "normal" [
           set belief-list normal-dist (belief-resolution - 1) (item 1 init-type) (item 2 init-type) en
         ]
+        if dist-type = "matched_normal" [
+          set belief-list matched-normal-dist (belief-resolution - 1) (item 1 init-type) (item 2 init-type) en (item 3 init-type) (item 4 init-type) (item 5 init-type)
+        ]
         if dist-type = "polarized" [
           let l normal-dist (belief-resolution - 1) 1 0.5 (ceiling (en / 2))
           let r normal-dist (belief-resolution - 1) (belief-resolution - 2) 0.5 (floor (en / 2))
@@ -1399,6 +1402,27 @@ to-report normal-dist [ maxx mu sigma en ]
   )
 end
 
+;; Return a series of samples drawn from a normal distribution from [0, maxx]
+;; with mean mu, std sigma; where each of en samples has k entries. This
+;; distribution is potentially re-rolled until the sample taken from it
+;; has target-count values contained in target-vals within a threshold thresh.
+;; This has a higher chance of guaranteeing less variant distributions, even with
+;; higher sigmas.
+;; @param maxx - The maximum to draw from.
+;; @param mu - The mean of the distribution.
+;; @param sigma - The std deviation of the distribution.
+;; @param en - The number of samples to draw.
+;; @param target-vals - A list of values to check counts for against target-count
+;; @param target-count - The number of values in the dist that should match values
+;; in target-vals
+;; @param thresh - A threshold within which the distribution count and target-count
+;; can be.
+to-report matched-normal-dist [ maxx mu sigma en target-vals target-count thresh ]
+  report py:runresult(
+    word "matched_normal_dist(" maxx "," mu "," sigma "," en "," (list-as-py-array target-vals false) "," target-count "," thresh ")"
+  )
+end
+
 to-report load-messages-over-time [ filename ]
 ;  if not file-exists? (word path "/" belief-resolution "/" media-ecosystem-file) [
 ;    error "Messaging directory does not exist for current resolution and ecosystem type"
@@ -2548,7 +2572,7 @@ CHOOSER
 spread-type
 spread-type
 "simple" "complex" "cognitive"
-1
+2
 
 TEXTBOX
 302
@@ -2822,7 +2846,7 @@ CHOOSER
 graph-type
 graph-type
 "erdos-renyi" "watts-strogatz" "barabasi-albert" "ba-homophilic" "mag" "facebook" "kronecker"
-0
+2
 
 SLIDER
 257

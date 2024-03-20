@@ -126,6 +126,17 @@ def normal_dist(maxx, mean, sigma, n):
   dist = truncnorm((lower - mean) / sigma, (upper - mean) / sigma, loc=mean, scale=sigma)
   return np.array(list(map(lambda el: math.floor(el), dist.rvs(n))))
 
+def matched_normal_dist(maxx, mean, sigma, n, target_vals, target_count, threshold):
+  sample_val_count = 0
+  dist = []
+  while abs(sample_val_count - target_count) > threshold:
+    dist = normal_dist(maxx, mean, sigma, n)
+    vals = np.zeros(len(dist)).astype(bool)
+    for val in target_vals:
+      vals = vals | (dist == val)
+    sample_val_count = vals.sum()
+  return dist
+
 def test_initial_belief_distribution():
   distribution_data = json.load(open('./gallup-cit-init-dist.json', 'r'))
   distributions = { group: { belief: [] for belief in data['beliefs'].keys() } for group, data in distribution_data.items() }
@@ -137,6 +148,13 @@ def test_initial_belief_distribution():
           mean = params[1]
           std = params[2]
           distributions[group][belief_name].append(normal_dist(6, mean, std, specs['n']))
+        elif dist == 'matched_normal':
+          mean = params[1]
+          std = params[2]
+          target_val = params[3]
+          target_count = params[4]
+          threshold = params[5]
+          distributions[group][belief_name].append(matched_normal_dist(6, mean, std, specs['n'], target_val, target_count, threshold))
   supportive_beliefs = {
     group: {
       belief: [ [ len([bel for bel in dist if bel >= 5]) for dist in distributions[group][belief] ] ] for belief in data['beliefs'].keys()
