@@ -656,7 +656,7 @@ to institutions-predetermined-tactic
         ask medias with [ idee = media-idee ] [
           let a (dict-value m "A")
           repeat message-repeats [
-            show (word "Media " media-idee " sent " m)
+;            show (word "Media " media-idee " sent " m)
             send-media-message-to-subscribers self (list (list "A" a))
           ]
         ]
@@ -2762,7 +2762,7 @@ cognitive-exponent
 cognitive-exponent
 -10
 10
-5.0
+3.0
 1
 1
 NIL
@@ -2814,7 +2814,7 @@ cognitive-translate
 cognitive-translate
 -10
 20
-2.0
+0.0
 1
 1
 NIL

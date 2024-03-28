@@ -1145,18 +1145,31 @@ def message_format_beliefs_over_time(mask_wearing_df, articles_all_df):
   :mask_wearing_df: The codes df
   :articles_all_df: A dataframe with mediacloud data for each article.
   '''
-  convert_datetime = lambda date_str: datetime.datetime.strptime(date_str.split(' ')[0], '%Y-%m-%d')
+  convert_datetime = lambda date_str: datetime.datetime.strptime(date_str.split(' ')[0], '%Y-%m-%d').date()
+  articles_no_nan = articles_all_df.dropna(subset=['publish_date'])
   article_beliefs = article_belief_values_for_codes(mask_wearing_df)
   native_ids = list(article_beliefs.keys())
   message_data = pd.DataFrame(columns=['native_id','belief','step','media_id'])
-  timestamps = articles_all_df[articles_all_df['stories_id'].isin(native_ids)]['publish_date'].unique()
-  min_timestamp = convert_datetime(min(timestamps))
+  start_date = date(2020, 4, 6)
+  end_date = date(2020, 6, 9)
+  dates = daterange(start_date, end_date)
+  # timestamps = articles_all_df[articles_all_df['stories_id'].isin(native_ids)]['publish_date'].unique()
+  min_timestamp = start_date
 
-  for native_id, bel in article_beliefs.items():
-    step = (convert_datetime(articles_all_df[articles_all_df['stories_id']==native_id]['publish_date'].iloc[0]) - min_timestamp).days
-    media_id = articles_all_df[articles_all_df['stories_id']==native_id]['media_name'].iloc[0]
-    message_data.loc[len(message_data)] = [ native_id, bel, step, media_id ]
-  return message_data
+  for day in dates:
+    tick = (day - min_timestamp).days
+    articles_for_date = articles_no_nan[articles_no_nan['publish_date'].str.contains(str(day))]['stories_id']
+    codes_for_date = mask_wearing_df[mask_wearing_df['native_id'].isin(articles_for_date)]
+    article_beliefs_for_date = { article_id: article_beliefs[article_id] for article_id in codes_for_date['native_id'].unique() }
+    for article_id, belief in article_beliefs_for_date.items():
+      media_id = articles_no_nan[articles_no_nan['stories_id']==article_id]['media_name'].iloc[0]
+      message_data.loc[len(message_data)] = [ article_id, belief, tick, media_id ]
+
+  # for native_id, bel in article_beliefs.items():
+  #   step = (convert_datetime(articles_all_df[articles_all_df['stories_id']==native_id]['publish_date'].iloc[0]) - min_timestamp).days
+  #   media_id = articles_all_df[articles_all_df['stories_id']==native_id]['media_name'].iloc[0]
+  #   message_data.loc[len(message_data)] = [ native_id, bel, step, media_id ]
+  return message_data[message_data['step']>0]
 
 def article_belief_values_for_codes(mask_wearing_df):
   article_ids = mask_wearing_df['native_id'].unique()
@@ -1171,10 +1184,10 @@ def article_belief_value_for_id(native_id, mask_wearing_df):
   :param native_id: Note, this is the full article id
   '''
   article_rows = mask_wearing_df[mask_wearing_df['native_id'] == native_id]
-  paragraph_ids = article_rows['article_id'].unique()
+  paragraph_ids = article_rows['paragraph_id'].unique()
   paragraph_attr_code_pairs = {
     par_id: {
-      row[1]['attribute']: row[1]['code'] for row in article_rows[article_rows['article_id']==par_id].iterrows()
+      row[1]['attribute']: row[1]['code'] for row in article_rows[article_rows['paragraph_id']==par_id].iterrows()
     }
     for par_id in paragraph_ids
   }
