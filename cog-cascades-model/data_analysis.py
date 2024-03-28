@@ -366,7 +366,10 @@ def message_exposure_by_belief_analysis(beliefs, messages_heard, all_messages):
       for proposition,belief_value in agent_beliefs.items():
         for message in messages:
           message_value = message[proposition]
-          exposure_by_belief[proposition][int(belief_value)].append(int(message_value))
+          if int(belief_value) in exposure_by_belief[proposition]:
+            exposure_by_belief[proposition][int(belief_value)].append(int(message_value))
+          # else:
+            # Shrug
   return exposure_by_belief
 
 def message_belief_by_belief_multi_analysis(message_multidata):
@@ -418,7 +421,8 @@ def message_belief_by_belief_analysis(beliefs, messages_believed, all_messages):
       for proposition,belief_value in agent_beliefs.items():
         for message in messages:
           message_value = message[proposition]
-          exposure_by_belief[proposition][int(belief_value)].append(int(message_value))
+          if int(belief_value) in exposure_by_belief[proposition]:
+            exposure_by_belief[proposition][int(belief_value)].append(int(message_value))
   return exposure_by_belief
 
 def message_distance_analysis(belief_data, messages_heard_data, messages_bel_data, all_messages):
@@ -1334,7 +1338,7 @@ def colors_for_belief(resolution):
   line_color = lambda key: f"#{rgb_to_hex([ 255 - round((255/(resolution-1))*int(key)), 0, round((255/(resolution-1)) * int(key)) ])}"
   return { str(bel): line_color(bel) for bel in range(resolution) }
 
-def graph_messages_interaction_by_belief(title, message_interaction, interaction_str):
+def graph_messages_interaction_by_belief(title, message_interaction, interaction_str, out_path='', out_name=''):
   '''
   Create a plot of several subplots -- one per belief value -- graphing bar charts
   of some number of message interactions per message belief value. By interactions,
@@ -1371,9 +1375,13 @@ def graph_messages_interaction_by_belief(title, message_interaction, interaction
   plt.title(title)
   fig.supxlabel('Belief Values', fontsize=14)
   fig.supylabel(f'Number of messages {interaction_str}', fontsize=14)
-  plt.show()
+  if out_path != '' and out_name != '':
+    plt.savefig(f'{out_path}/{out_name}')
+    plt.close()
+  else:
+    plt.show()
 
-def graph_message_interaction_by_media_by_group(title, message_interaction, interaction_str):
+def graph_message_interaction_by_media_by_group(title, message_interaction, interaction_str, out_path='', out_name=''):
   proposition = 'A'
   messages_by_group = message_interaction[proposition]
   num_groups = len(messages_by_group)
@@ -1388,30 +1396,36 @@ def graph_message_interaction_by_media_by_group(title, message_interaction, inte
     'VOX': 'blue',
     'KOS': 'blue'
   }
+  media_order = [ 'KOS', 'VOX', 'NYT', 'FOX', 'BREITBART', "HANNITY", 'INGRAHAM', 'CARLSON' ]
   fig, axs = plt.subplots(1, num_groups, figsize=(3*num_groups,3), sharey='row', constrained_layout=True)
   i = 0
   group_order = ['DEM','MOD','REP']
   for group in group_order:
     messages_by_media = messages_by_group[group]
+    ordered_messages_by_media = { media: messages_by_media[media] for media in media_order }
     # For the upper axis, group messages by sender
     ax = axs[i]
-    x = list(range(len(messages_by_media)))
-    y = [ np.array([ len(run_messages) for run_messages in all_run_messages_from_media ]).mean().round() for all_run_messages_from_media in messages_by_media.values() ]
-    y_err = [ np.array([ len(run_messages) for run_messages in all_run_messages_from_media ]).std() for all_run_messages_from_media in messages_by_media.values() ]
-    colors = [ media_to_color[media_name] for media_name in messages_by_media.keys() ]
+    x = list(range(len(ordered_messages_by_media)))
+    y = [ np.array([ len(run_messages) for run_messages in all_run_messages_from_media ]).mean().round() for all_run_messages_from_media in ordered_messages_by_media.values() ]
+    y_err = [ np.array([ len(run_messages) for run_messages in all_run_messages_from_media ]).std() for all_run_messages_from_media in ordered_messages_by_media.values() ]
+    colors = [ media_to_color[media_name] for media_name in ordered_messages_by_media.keys() ]
 
     bars = ax.bar(x, y, yerr=y_err, ecolor='black', capsize=2, color=colors)
     ax.bar_label(bars)
     ax.set_xlabel(group, fontsize=12)
-    ax.set_xticks(range(len(messages_by_media)))
-    ax.set_xticklabels([ media_name for media_name in messages_by_media.keys() ], rotation=45, fontsize=8)
+    ax.set_xticks(range(len(ordered_messages_by_media)))
+    ax.set_xticklabels([ media_name for media_name in ordered_messages_by_media.keys() ], rotation=45, fontsize=8)
     ax.spines[['top','right']].set_visible(False)
     i += 1
   fig.supylabel(f'Number of messages {interaction_str}', fontsize=14)
   fig.supxlabel(f'Group and message producer', fontsize=14)
-  plt.show()
+  if out_path != '' and out_name != '':
+    plt.savefig(f'{out_path}/{out_name}')
+    plt.close()
+  else:
+    plt.show()
 
-def graph_message_interaction_by_belief_by_group(title, message_interaction, interaction_str):
+def graph_message_interaction_by_belief_by_group(title, message_interaction, interaction_str, out_path='', out_name=''):
   proposition = 'A'
   belief_resolution = 7
   belief_colors = colors_for_belief(belief_resolution)
@@ -1441,7 +1455,11 @@ def graph_message_interaction_by_belief_by_group(title, message_interaction, int
     i += 1
   fig.supylabel(f'Number of messages {interaction_str}', fontsize=14)
   fig.supxlabel(f'Group and belief value', fontsize=14)
-  plt.show()
+  if out_path != '' and out_name != '':
+    plt.savefig(f'{out_path}/{out_name}')
+    plt.close()
+  else:
+    plt.show()
 
 def graph_parameter_distribution(df, cascade_type, graph_type, title):
   '''
@@ -1465,7 +1483,7 @@ def graph_parameter_distribution(df, cascade_type, graph_type, title):
     param = list(param_values.keys())[i]
     possible_values = param_values[param]
     subax = axs[i]
-    param_counts = { str(key): val for key, val in dict(df[param].value_counts()).items() }
+    param_counts = { key: val for key, val in dict(df[param].value_counts()).items() }
     x = list(range(len(possible_values)))
     y = [ param_counts[value] if (value in param_counts) else 0 for value in possible_values ]
     subax.bar(x,y)
@@ -1505,6 +1523,7 @@ def plot_opinion_timeseries_against_polling(all_run_data_df, polling_data, outpu
 
   if output_path != '':
     plt.savefig(f'{output_path}/{output_filename}')
+    plt.close()
   else:
     plt.show()
 
@@ -1700,7 +1719,7 @@ def multidata_as_dataframe(multidata, columns):
     measure = param_measure[1]
     for (pen_name,runs_data) in data.items():
       for run in range(len(runs_data)):
-        df.loc[len(df.index)] = list(param_combo) + [measure,pen_name,run,global_vars[run]['behavior-rand'],str(runs_data[run].tolist()).replace(',',';')]
+        df.loc[len(df.index)] = list(param_combo) + [measure,pen_name,run,global_vars[run]['behavior-rand'],runs_data[run]]
   return df
 
 def mean_multidata_as_dataframe(multidata, columns):
@@ -1721,7 +1740,7 @@ def mean_multidata_as_dataframe(multidata, columns):
     param_combo = param_measure[0]
     measure = param_measure[1]
     for (pen_name,runs_data) in data.items():
-      df.loc[len(df.index)] = list(param_combo) + [measure,pen_name,str(runs_data.mean(0).tolist()).replace(',',';')]
+      df.loc[len(df.index)] = list(param_combo) + [measure,pen_name,runs_data.mean(0)]
   return df
 
 def dataframe_as_multidata(df):
@@ -1958,14 +1977,17 @@ def process_complex_contagion_param_sweep_BA_top_mean(top_df, path, results_dir)
   process_top_exp_mean_results(top_df, param_order, path, results_dir)
 
 def get_param_sweep_multidata(cascade_type, graph_type, path):
-  cascade_params = CASCADE_PARAMETERS[cascade_type]
-  graph_params = GRAPH_PARAMETERS[graph_type]
-  cascade_param_values = CASCADE_PARAM_VALUES[cascade_type]
-  graph_param_values = CASCADE_PARAM_VALUES[graph_type]
-  repetition = list(str, range(NUM_REPETITIONS))
+  cascade_param_values = { param: str(value) for param, value in CASCADE_PARAM_VALUES[cascade_type].items() }
+  graph_param_values = { param: str(value) for param, value in GRAPH_PARAM_VALUES[graph_type].items() }
+  repetition = list(map(str, range(NUM_REPETITIONS)))
+  combined_values = {}
+  combined_values.update(cascade_param_values)
+  combined_values.update(graph_param_values)
+  combined_values.update({'repetition': repetition})
+  param_order =SIM_PARAM_ORDERS[(cascade_type, graph_type)] 
   measure_multidata = get_all_multidata(
-    cascade_param_values + graph_param_values + [repetition],
-    cascade_params + graph_params + ['repetition'],
+    [ combined_values[param] for param in param_order ],
+    param_order,
     {'percent-agent-beliefs': [PLOT_TYPES.LINE, PLOT_TYPES.STACK],
     'opinion-timeseries': [PLOT_TYPES.LINE]},
     path)
@@ -2111,31 +2133,44 @@ GRAPH_PARAMETERS = {
 }
 CASCADE_PARAM_VALUES = {
   CASCADE_TYPES.SIMPLE: {
-    'simple_spread_chance': ['0.01','0.05','0.1','0.25','0.5','0.75']
+    'simple_spread_chance': [0.01,0.05,0.1,0.25,0.5,0.75]
   },
   CASCADE_TYPES.COMPLEX: {
-    'complex_spread_ratio': ['0.05','0.1','0.25','0.5','0.75','0.9']
+    'complex_spread_ratio': [0.1,0.25,0.5,0.75]
   },
   CASCADE_TYPES.COGNITIVE: {
-    'cognitive_exponent': ['1','2','3','4','5'],
-    'cognitive_translate': ['0','1','2','3']
+    'cognitive_exponent': [1,2,3,4,5],
+    'cognitive_translate': [0,1,2]
   }
 }
 GRAPH_PARAM_VALUES = {
   GRAPH_TYPES.ER: {
-    'er_p': ['0.05','0.1','0.25','0.5']
+    'er_p': [0.05,0.1,0.25,0.5]
   },
   GRAPH_TYPES.WS: {
-    'ws_p': ['0.1','0.25','0.5'],
-    'ws_k': ['2','3','5','10','15']
+    'ws_p': [0.1,0.25,0.5],
+    'ws_k': [2,3,5,10,15]
   },
   GRAPH_TYPES.BA: {
-    'ba_m': ['3','5','10','15'] 
+    'ba_m': [5,10,15] 
   },
   GRAPH_TYPES.BA_GROUP_H: {
-    'ba_m': ['3','5','10','15'],
-    'group_homophily': ['0.1','0.25','0.5','0.75']
+    'ba_m': [5,10,15],
+    'group_homophily': [0.1,0.25,0.5,0.75]
   }
+}
+PARAM_TYPES = {
+  'simple_spread_chance': float,
+  'complex_spread_ratio': float,
+  'cognitive_exponent': int,
+  'cognitive_translate': int,
+  'er_p': float,
+  'ws_p': float,
+  'ws_k': int,
+  'ba_m': int,
+  'group_homophily': float,
+  'repetition': int,
+  'run': int
 }
 
 GRAPH_TYPE_DIRECTORY_NAMES = {
@@ -2144,6 +2179,15 @@ GRAPH_TYPE_DIRECTORY_NAMES = {
   GRAPH_TYPES.BA: 'BA',
   GRAPH_TYPES.BA_GROUP_H: 'BA-group-homophily'
 }
+SIM_PARAM_ORDERS = {
+  (CASCADE_TYPES.SIMPLE, GRAPH_TYPES.BA): ['ba_m','simple_spread_chance','repetition'],
+  (CASCADE_TYPES.COMPLEX, GRAPH_TYPES.BA): [ 'ba_m','complex_spread_ratio', 'repetition'],
+  (CASCADE_TYPES.COGNITIVE, GRAPH_TYPES.BA): [ 'ba_m', 'cognitive_translate','cognitive_exponent', 'repetition'],
+  (CASCADE_TYPES.SIMPLE, GRAPH_TYPES.BA_GROUP_H): ['ba_m','simple_spread_chance', 'group_homophily', 'repetition'],
+  (CASCADE_TYPES.COMPLEX, GRAPH_TYPES.BA_GROUP_H): ['ba_m', 'complex_spread_ratio','group_homophily','repetition'],
+  (CASCADE_TYPES.COGNITIVE, GRAPH_TYPES.BA_GROUP_H): ['ba_m','cognitive_translate','cognitive_exponent','group_homophily','repetition']
+}
+    
 NUM_REPETITIONS = 10
 NUM_RUNS = 30
 
@@ -2223,7 +2267,7 @@ def metrics_for_complex_contagion_param_sweep_BA_group_homophily(path):
 
 def top_matches_for_metrics(metrics_df):
   metrics_df['mape*pearson'] = (1 - metrics_df['mape']) * metrics_df['pearson']
-  ranked = metrics_df.sort_values(by=['mape*pearson'], ascending=False)
+  ranked = metrics_df.sort_values(by=['mape'], ascending=True)
   # ranked = metrics_df.sort_values(by=['pearson','mape'], ascending=[False,True])
   return ranked.head(10)
 
@@ -2289,10 +2333,11 @@ def timeseries_similarity_scores_for_simulations(df, target_data):
 
 def analysis_dfs():
   data_path = ANALYSIS_DATA_DIR
+  graph_types = [ GRAPH_TYPES.BA, GRAPH_TYPES.BA_GROUP_H ]
   dfs = {}
   for cascade_type in CASCADE_TYPES:
     ct_str = cascade_type.value
-    for graph_type in GRAPH_TYPES:
+    for graph_type in graph_types:
       gt_str = graph_type.value
       for all_mean in ['all','mean']:
         entire_name = f'{ct_str}-{gt_str}-{all_mean}'
@@ -2303,9 +2348,10 @@ def analysis_dfs():
 def pen_name_mean_analysis_dfs():
   data_path = f'{ANALYSIS_DATA_DIR}/pen-means'
   dfs = {}
+  graph_types = [GRAPH_TYPES.BA, GRAPH_TYPES.BA_GROUP_H]
   for cascade_type in CASCADE_TYPES:
     ct_str = cascade_type.value
-    for graph_type in GRAPH_TYPES:
+    for graph_type in graph_types:
       gt_str = graph_type.value
       for all_mean in ['all','mean']:
         entire_name = f'{ct_str}-{gt_str}-{all_mean}'
@@ -2313,39 +2359,75 @@ def pen_name_mean_analysis_dfs():
         dfs[entire_name].drop(columns=['Unnamed: 0'], inplace=True)
   return dfs
 
+def add_combo_measures_to_analysis_dfs(dfs):
+  for df_name, df in dfs.items():
+    df_copy = df.copy()
+    df_copy['mape*pearson'] = (1 - df['mape']) * df['pearson']
+    dfs[df_name] = df_copy
+  return dfs
+
+def analysis_df_name_to_cascade_graph_type(df_name):
+  '''
+  Return a tuple of CASCADE_TYPE, GRAPH_TYPE from a dataframe name (they should be named
+  according to the convention CT.value-GT.value-[all,mean'].csv)
+  '''
+  cascade_type = None
+  graph_type = None
+  # Use this list just so 'ba-group-homophily' doesn't improperly come back as GRAPH_TYPES.BA
+  graph_types_ordered = [ GRAPH_TYPES.BA_GROUP_H, GRAPH_TYPES.BA, GRAPH_TYPES.ER, GRAPH_TYPES.WS ]
+  for ct in CASCADE_TYPES:
+    if ct.value in df_name:
+      cascade_type = ct
+      break
+  for gt in graph_types_ordered:
+    if gt.value in df_name:
+      graph_type = gt
+      break
+  return (cascade_type,graph_type)
+
 def mean_analysis_dfs_along_pen_name():
   dfs = analysis_dfs()
   dfs_mean_pen = {}
   measures = ['pearson','euclidean','mape']
   for df_name,df in dfs.items():
-    param_columns = list_subtract(list(df.columns), (['pen_name','rand_id'] + measures))
+    print(f'Processing {df_name}...')
+    (cascade_type, graph_type) = analysis_df_name_to_cascade_graph_type(df_name)
+
+    param_columns = [ param for param in SIM_PARAM_ORDERS[(cascade_type, graph_type)] ]
+    if 'all' in df_name:
+      param_columns += ['run']
+    # param_columns += measures
+
     mean_df = None
     if 'all' in df_name:
       mean_df = pd.DataFrame(columns=param_columns+['rand_id']+measures)
     else:
       mean_df = pd.DataFrame(columns=param_columns+measures)
 
-    param_values = {
-      param: df[param].unique() for param in param_columns
-    }
+    combined_param_values = {}
+    combined_param_values.update(CASCADE_PARAM_VALUES[cascade_type].copy())
+    combined_param_values.update(GRAPH_PARAM_VALUES[graph_type].copy())
+    param_values = { param: combined_param_values[param] for param in param_columns if (param != 'repetition' and param != 'run') }
+    param_values.update({ 'repetition': list(range(NUM_REPETITIONS))})
+    if 'all' in df_name:
+      param_values.update({ 'run': list(range(NUM_RUNS)) })
+
     param_combos = itertools.product(*param_values.values())
     for combo in param_combos:
-      param_to_value = { param_columns[i]: combo[i] for i in range(len(combo)) }
+      param_to_value = { param_columns[i]: PARAM_TYPES[param_columns[i]](combo[i]) for i in range(len(combo)) }
       query = ' and '.join([ f'{param} == "{value}"' if type(value) == str else f'{param} == {value}' for param, value in param_to_value.items() ])
-      # print(query)
       res = df.query(query)
       if len(res) > 0:
         measure_means = {}
         for measure in measures:
           all_runs_data = res[measure]
           measure_means[measure] = all_runs_data.mean()
-        param_to_value_no_measures = { param: value for param,value in param_to_value.items() if param not in measures }
         # print(mean_df.columns)
         # print(list(param_to_value_no_measures.values()) + list(measure_means.values()))
         if 'all' in df_name:
-          mean_df.loc[len(mean_df)] = list(param_to_value_no_measures.values()) + [res.iloc[0]['rand_id']] + list(measure_means.values())
+          mean_df.loc[len(mean_df)] = list(param_to_value.values()) + [res.iloc[0]['rand_id']] + list(measure_means.values())
         else:
-          mean_df.loc[len(mean_df)] = list(param_to_value_no_measures.values()) + list(measure_means.values())
+          mean_df.loc[len(mean_df)] = list(param_to_value.values()) + list(measure_means.values())
       else:
         print(f'Missing rows for param combo: {combo}')
     dfs_mean_pen[df_name] = mean_df
@@ -2360,27 +2442,15 @@ def write_mean_top_results_latex_single_n(n):
       \\begin{tabular}{c|c|c|c}
       \\textbf{Cascade Type} & \\textbf{Graph Topology} & \\textbf{Means} & \\textbf{All}\\\\
       \\hline
-      \\multirow{4}{*}{Simple} & ER & simple-er-mean & simple-er-all \\\\
-      \\cline{2-4}
-      & WS & simple-ws-mean & simple-ws-all \\\\
-      \\cline{2-4}
-      & BA & simple-ba-mean & simple-ba-all \\\\
+      \\multirow{2}{*}{Simple} & BA & simple-ba-mean & simple-ba-all \\\\
       \\cline{2-4}
       & BA-hg & simple-ba-group-homophily-mean & simple-ba-group-homophily-all \\\\
       \\hline
-      \\multirow{4}{*}{Complex} & ER & complex-er-mean & complex-er-all \\\\
-      \\cline{2-4}
-      & WS & complex-ws-mean & complex-ws-all \\\\
-      \\cline{2-4}
-      & BA & complex-ba-mean & complex-ba-all \\\\
+      \\multirow{2}{*}{Complex} & BA & complex-ba-mean & complex-ba-all \\\\
       \\cline{2-4}
       & BA-hg & complex-ba-group-homophily-mean & complex-ba-group-homophily-all \\\\
       \\hline
-      \\multirow{4}{*}{Cognitive} & ER & cognitive-er-mean & cognitive-er-all \\\\
-      \\cline{2-4}
-      & WS & cognitive-ws-mean & cognitive-ws-all \\\\
-      \\cline{2-4}
-      & BA & cognitive-ba-mean & cognitive-ba-all \\\\
+      \\multirow{2}{*}{Cognitive} & BA & cognitive-ba-mean & cognitive-ba-all \\\\
       \\cline{2-4}
       & BA-hg & cognitive-ba-group-homophily-mean & cognitive-ba-group-homophily-all \\\\
     \\end{tabular}
@@ -2493,6 +2563,7 @@ def write_mean_top_results_json():
 
 def mean_top_results(tops):
   dfs = pen_name_mean_analysis_dfs()
+  dfs = add_combo_measures_to_analysis_dfs(dfs)
   measures = ['mape']
   mean_results = {}
   for top in tops:
@@ -2512,7 +2583,7 @@ def mean_top_measures(dfs, measures, num_top):
   sorting) to take the mean across.
   '''
   return { df_name: {
-    measure: df.sort_values(by=measure).head(num_top)[measure].mean() for measure in measures
+    measure: df.sort_values(by=measure, ascending=True).head(num_top)[measure].mean() for measure in measures
   } for df_name, df in dfs.items() }
 
 def write_num_high_scoring_metrics_latex():
@@ -2521,27 +2592,15 @@ def write_num_high_scoring_metrics_latex():
       \\begin{tabular}{p{0.1\linewidth} | p{0.15\linewidth} | p{0.2\linewidth} | p{0.2\linewidth} | p{0.1\linewidth} | p{0.1\linewidth}}
       \\textbf{Cascade Type} & \\textbf{Graph Topology} & \\textbf{Number of Runs (Mean)} & \\textbf{Number of Runs (All)} & \\textbf{Mean Total} & \\textbf{All Total} \\\\
       \\hline
-      \\multirow{4}{*}{Simple} & ER & simple-er-mean & simple-er-mean & \\multirow{4}{*}{simple-mean-total} & \\multirow{4}{*}{simple-all-total} \\\\
-      \\cline{2-4}
-      & WS & simple-ws-mean & simple-ws-all & & \\\\
-      \\cline{2-4}
-      & BA & simple-ba-mean & simple-ba-all & & \\\\
+      \\multirow{2}{*}{Simple} & BA & simple-ba-mean & simple-ba-all & \\multirow{2}{*}{simple-mean-total} & \\multirow{2}{*}{simple-all-total} \\\\
       \\cline{2-4}
       & BA-hg & simple-ba-group-homophily-mean & simple-ba-group-homophily-all & & \\\\
       \\hline
-      \\multirow{4}{*}{Complex} & ER & complex-er-mean & complex-er-mean & \\multirow{4}{*}{complex-mean-total} & \\multirow{4}{*}{complex-all-total} \\\\
-      \\cline{2-4}
-      & WS & complex-ws-mean & complex-ws-all & & \\\\
-      \\cline{2-4}
-      & BA & complex-ba-mean & complex-ba-all & & \\\\
+      \\multirow{2}{*}{Complex} & BA & complex-ba-mean & complex-ba-all & \\multirow{2}{*}{complex-mean-total} & \\multirow{2}{*}{complex-all-total} \\\\
       \\cline{2-4}
       & BA-hg & complex-ba-group-homophily-mean & complex-ba-group-homophily-all & & \\\\
       \\hline
-      \\multirow{4}{*}{Cognitive} & ER & cognitive-er-mean & cognitive-er-mean & \\multirow{4}{*}{cognitive-mean-total} & \\multirow{4}{*}{cognitive-all-total} \\\\
-      \\cline{2-4}
-      & WS & cognitive-ws-mean & cognitive-ws-all & & \\\\
-      \\cline{2-4}
-      & BA & cognitive-ba-mean & cognitive-ba-all & & \\\\
+      \\multirow{2}{*}{Cognitive} & BA & cognitive-ba-mean & cognitive-ba-all & \\multirow{2}{*}{cognitive-mean-total} & \\multirow{2}{*}{cognitive-all-total} \\\\
       \\cline{2-4}
       & BA-hg & cognitive-ba-group-homophily-mean & cognitive-ba-group-homophily-all & & \\\\
     \\end{tabular}
@@ -2562,7 +2621,8 @@ def write_num_high_scoring_metrics_latex():
     highest_mean = max(ct_mean_runs)
     highest_all = max(ct_all_runs)
 
-    for graph_type in GRAPH_TYPES:
+    graph_types = [GRAPH_TYPES.BA, GRAPH_TYPES.BA_GROUP_H]
+    for graph_type in graph_types:
       gt_str = graph_type.value
       df_name_mean = f'{ct_str}-{gt_str}-mean' 
       mean_score = results[df_name_mean]
@@ -2601,7 +2661,10 @@ def num_high_scoring_metrics():
   metric was greater than a certain threshold.
   '''
   dfs = pen_name_mean_analysis_dfs()
-  mape_threshold = 0.25
+  dfs = add_combo_measures_to_analysis_dfs(dfs)
+  # This is from when we just used MAPE alone, and the check was less than or equal to
+  mape_threshold = 0.5
+  mape_pearson_threshold = 0.75
 
   high_scoring_dfs = { df_name: df[df['mape'] <= mape_threshold] for df_name,df in dfs.items() }
   results = { df_name: len(df) for df_name,df in high_scoring_dfs.items() }
@@ -2617,7 +2680,7 @@ def top_params_dfs(high_scoring_dfs):
 
   :param high_scoring_dfs: The result of running num_high_scoring_metrics.
   '''
-  num_top_score_head = 50
+  num_top_score_head = 100
   top_params_dfs = {}
   for df_name,df in high_scoring_dfs.items():
     df_sorted = df.sort_values(by='mape')
@@ -2726,17 +2789,54 @@ def plot_sim_run_from_df(data_df, top_df, output_dir='', output_prefix=''):
   num_rows_to_plot = 10
   top_rows = top_df.iloc[0:num_rows_to_plot,:]
   query_cols = list_subtract(list(top_df.columns), ['measure','mape','pearson','euclidean','mape*pearson'])
+  i = 0
   for row in top_rows.iterrows():
     row_data = row[1]
     query = ' and '.join([ f'{col}=={row_data[col]}' for col in query_cols ])
     data_rows = data_df.query(query)
-    gallup_dict = read_gallup_data_into_dict('../labeled-data/public/polling-data.csv')
-    plot_opinion_timeseries_against_polling(data_rows, gallup_dict, output_dir, f'{output_prefix}-{"-".join([str(row_data[col]) for col in query_cols])}.png')
+    gallup_dict = read_gallup_data_into_dict('../labeled-data/public/gallup-polling.csv')
+    plot_opinion_timeseries_against_polling(data_rows, gallup_dict, output_dir, f'{output_prefix}-{i}_{"-".join([str(row_data[col]) for col in query_cols])}.png')
+    i+=1
+
+def plot_belief_exposure_by_belief(data_path, out_filename):
+  '''
+  Generate and save plots showing exposure and belief of different messages
+  by different groups of agents.
+
+  :param data_path: The raw data path containing message files to process
+  for one repetition of simulation trials.
+  :param out_filename: A filename piece to use to distinguish the saved
+  plots from other plots.
+  '''
+  message_multidata = process_multi_message_data(data_path)
+  combined_exposure_by_belief = message_exposure_by_belief_multi_analysis(message_multidata)
+  combined_belief_by_belief = message_belief_by_belief_multi_analysis(message_multidata)
+  graph_messages_interaction_by_belief('', combined_exposure_by_belief, 'heard', out_path='../paper-figures/cascade-experiment-figures', out_name=f'exposure-by-belief_{out_filename}.png')
+  graph_messages_interaction_by_belief('', combined_belief_by_belief, 'believed', out_path='../paper-figures/cascade-experiment-figures', out_name=f'belief-by-belief_{out_filename}.png')
+
+def plot_belief_exposure_by_group(data_path, graph_path, out_filename):
+  '''
+  Generate and save plots showing exposure and belief of different messages
+  by different groups of agents.
+
+  :param data_path: The raw data path containing message files to process
+  for one repetition of simulation trials.
+  :param graph_path: A path to the corresponding graph used for simulation
+  for those runs on the repetition.
+  :param out_filename: A filename piece to use to distinguish the saved
+  plots from other plots.
+  '''
+  combined_group_exposure = message_exposure_by_group_multi_analysis(data_path, graph_path)
+  combined_group_belief = message_belief_by_group_multi_analysis(data_path, graph_path)
+  graph_message_interaction_by_belief_by_group('', combined_group_exposure, 'heard', out_path='../paper-figures/cascade-experiment-figures', out_name=f'exposure-by-belief-by-group_{out_filename}.png')
+  graph_message_interaction_by_media_by_group('', combined_group_exposure, 'heard', out_path='../paper-figures/cascade-experiment-figures', out_name=f'exposure-by-media-by-group_{out_filename}.png')
+  graph_message_interaction_by_belief_by_group('', combined_group_belief, 'believed', out_path='../paper-figures/cascade-experiment-figures', out_name=f'belief-by-belief-by-group_{out_filename}.png')
+  graph_message_interaction_by_media_by_group('', combined_group_belief, 'believed', out_path='../paper-figures/cascade-experiment-figures', out_name=f'belief-by-media-by-group_{out_filename}.png')
 
 def process_experiment_data_to_dfs():
   data_out = SIM_DF_DATA_DIR
   contagion_types_tested = [ CASCADE_TYPES.SIMPLE, CASCADE_TYPES.COMPLEX, CASCADE_TYPES.COGNITIVE ] #['simple','complex','cognitive']
-  graph_topos_tested = [ GRAPH_TYPES.ER, GRAPH_TYPES.WS, GRAPH_TYPES.BA, GRAPH_TYPES.BA_GROUP_H ] #['er','ws','ba','ba-group-homophily']
+  graph_topos_tested = [ GRAPH_TYPES.BA, GRAPH_TYPES.BA_GROUP_H ] #['er','ws','ba','ba-group-homophily']
   contagion_graph_combos = itertools.product(contagion_types_tested,graph_topos_tested)
   fns = {
     (CASCADE_TYPES.SIMPLE, GRAPH_TYPES.ER): get_simple_contagion_param_sweep_ER_multidata,
@@ -2772,7 +2872,7 @@ def process_experiment_data_to_dfs():
       print('Generating all runs dataframe...')
       multidata = fns[(cascade_type,graph_type)](f'{SIM_RAW_DATA_DIR}/{ct_str}-contagion-sweep-{GRAPH_TYPE_DIRECTORY_NAMES[graph_type]}')
       multidata_measure = { key: val for key, val in multidata.items() if key[1] in measures_to_report }
-      all_params = CASCADE_PARAMETERS[cascade_type] + GRAPH_PARAMETERS[graph_type] + ['repetition']
+      all_params = SIM_PARAM_ORDERS[(cascade_type, graph_type)]
       all_df = multidata_as_dataframe(multidata_measure, all_params)
       write_dataframe_with_simulation_data(all_df, all_filename)
 
@@ -2786,7 +2886,7 @@ def process_experiment_data_to_dfs():
 
 def process_all_exp_metrics():
   cascade_types = [ CASCADE_TYPES.SIMPLE, CASCADE_TYPES.COMPLEX, CASCADE_TYPES.COGNITIVE ]
-  graph_topologies = [ GRAPH_TYPES.ER, GRAPH_TYPES.WS, GRAPH_TYPES.BA, GRAPH_TYPES.BA_GROUP_H ]
+  graph_topologies = [ GRAPH_TYPES.BA, GRAPH_TYPES.BA_GROUP_H ]
 
   metric_functions = {
     (CASCADE_TYPES.SIMPLE, GRAPH_TYPES.ER): metrics_for_simple_contagion_param_sweep_ER,
@@ -2881,6 +2981,7 @@ def process_all_exp_metrics():
     (CASCADE_TYPES.COGNITIVE, GRAPH_TYPES.BA_GROUP_H): { 'all': None, 'mean': None },
   }
   data_path = ANALYSIS_DATA_DIR + '/pen-means'
+  # data_path = ANALYSIS_DATA_DIR
 
   for cascade_type in cascade_types:
     for graph_topology in graph_topologies:
@@ -2924,11 +3025,7 @@ def process_all_exp_metrics():
       if 'Unnamed: 0' in all_df.columns:
         all_df.drop(columns=['Unnamed: 0'], inplace=True)
       poll_plot_output_dir = f'{data_path}/sim-poll-plots'
-      # if not os.path.isdir(poll_plot_output_dir):
-      #   os.mkdir(poll_plot_output_dir)
       plot_sim_run_from_df(all_df, top_dfs[ct_gt_combo]['mean'], output_dir=poll_plot_output_dir, output_prefix=f'{ct_str}-{gt_str}')
-      # processing_functions[ct_gt_combo]['all'](top_dfs[ct_gt_combo]['all'], f'{SIM_RAW_DATA_DIR}/{ct_str}-contagion-sweep-{gt_dir_name}', 'results-all')
-      # processing_functions[ct_gt_combo]['mean'](top_dfs[ct_gt_combo]['mean'], f'{SIM_RAW_DATA_DIR}/{ct_str}-contagion-sweep-{gt_dir_name}', 'results-mean')
 
 def get_df_columns_in_order():
   # data_paths = [ SIM_DF_DATA_DIR, ANALYSIS_DATA_DIR, f'{ANALYSIS_DATA_DIR}/pen-means' ]
@@ -2971,6 +3068,30 @@ def get_df_columns_in_order():
             renamed_df.columns.values[i] = all_cols[i]
           dfs[full_path] = renamed_df
           renamed_df.to_csv(full_path)
+  return dfs
+
+def get_dfs_with_column_types_correct():
+  data_path = f'{ANALYSIS_DATA_DIR}/pen-means'
+  dfs = {}
+  select_graph_types = [ GRAPH_TYPES.BA, GRAPH_TYPES.BA_GROUP_H ]
+  for cascade_type in CASCADE_TYPES:
+    ct_str = cascade_type.value
+    cascade_params = CASCADE_PARAMETERS[cascade_type]
+    for graph_type in select_graph_types:
+    # for graph_type in GRAPH_TYPES:
+      gt_str = graph_type.value
+      graph_params = GRAPH_PARAMETERS[graph_type]
+      for all_mean in ['all','mean']:
+        filename = f'{ct_str}-{gt_str}-{all_mean}.csv'
+        full_path = f'{data_path}/{filename}'
+        print(f'Fixing {full_path}...')
+        df = pd.read_csv(full_path)
+        df.drop(columns=['Unnamed: 0'], inplace=True)
+        typed_df = df.copy()
+        for param in cascade_params + graph_params:
+          typed_df[param] = typed_df[param].astype(PARAM_TYPES[param])
+        dfs[full_path] = typed_df
+        typed_df.to_csv(full_path)
   return dfs
 
 '''

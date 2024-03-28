@@ -2572,7 +2572,7 @@ CHOOSER
 spread-type
 spread-type
 "simple" "complex" "cognitive"
-2
+0
 
 TEXTBOX
 302
@@ -2591,7 +2591,7 @@ SWITCH
 862
 load-graph?
 load-graph?
-1
+0
 1
 -1000
 
@@ -2601,7 +2601,7 @@ INPUTBOX
 244
 929
 load-graph-path
-D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/complex-contagion-sweep-BA-group-homophily/graphs/10-0.5-0.5-7.csv
+D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/simple-contagion-sweep-BA-group-homophily/graphs/15-0.01-0.75-9.csv
 1
 0
 String
@@ -2612,7 +2612,7 @@ INPUTBOX
 247
 995
 save-graph-path
-D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/complex-contagion-sweep-BA-group-homophily/graphs/15-0.9-0.75-9.csv
+D:/school/grad-school/Tufts/research/gallup-media-mask/simulation-data/simple-contagion-sweep-BA-group-homophily/graphs/10-0.01-0.75-9.csv
 1
 0
 String
@@ -2643,7 +2643,7 @@ simple-spread-chance
 simple-spread-chance
 0
 1
-0.75
+0.01
 0.01
 1
 NIL
@@ -2658,7 +2658,7 @@ complex-spread-ratio
 complex-spread-ratio
 0
 1
-0.5
+0.25
 0.01
 1
 NIL
@@ -2846,7 +2846,7 @@ CHOOSER
 graph-type
 graph-type
 "erdos-renyi" "watts-strogatz" "barabasi-albert" "ba-homophilic" "mag" "facebook" "kronecker"
-2
+3
 
 SLIDER
 257
@@ -2922,7 +2922,7 @@ ba-m
 ba-m
 0
 20
-10.0
+15.0
 1
 1
 NIL
@@ -3430,7 +3430,7 @@ repetition
 repetition
 0
 10
-7.0
+9.0
 1
 1
 NIL
@@ -3819,7 +3819,7 @@ group-homophily
 group-homophily
 0
 1
-0.5
+0.75
 0.01
 1
 NIL
@@ -4553,6 +4553,7 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
       <value value="&quot;simple&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="simple-spread-chance">
+      <value value="0.01"/>
       <value value="0.05"/>
       <value value="0.1"/>
       <value value="0.25"/>
@@ -5532,7 +5533,7 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
   </experiment>
   <experiment name="complex-contagion-param-sweep-BA-homophilic-group" repetitions="30" runMetricsEveryStep="false">
     <setup>setup-py
-let run-dir (word sim-output-dir substring date-time-safe 11 (length date-time-safe) "-complex-contagion-sweep-BA-homophily-group")
+let run-dir (word sim-output-dir "complex-contagion-sweep-BA-group-homophily")
 let graphs-path (word run-dir "/graphs")
 carefully [
   if not (py:runresult (word "os.path.isdir('" graphs-path "')")) [
@@ -5868,11 +5869,7 @@ export-plot "supportive-opinion-per-group" (word contagion-dir "/" behavior-rand
       <value value="&quot;simple&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="simple-spread-chance">
-      <value value="0.05"/>
-      <value value="0.1"/>
-      <value value="0.25"/>
-      <value value="0.5"/>
-      <value value="0.75"/>
+      <value value="0.01"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="contagion-on?">
       <value value="false"/>
@@ -6193,6 +6190,7 @@ carefully [
       <value value="&quot;simple&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="simple-spread-chance">
+      <value value="0.01"/>
       <value value="0.05"/>
       <value value="0.1"/>
       <value value="0.25"/>
@@ -7127,6 +7125,7 @@ carefully [
       <value value="&quot;simple&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="simple-spread-chance">
+      <value value="0.01"/>
       <value value="0.05"/>
       <value value="0.1"/>
       <value value="0.25"/>
