@@ -404,18 +404,12 @@ Read message data over time for given media agent IDs.
 :param path: The path to the file to read.
 '''
 def read_message_over_time_data(path):
-    f = open(path, 'r')
-    raw = f.read()
-    data = json.loads(raw)
-    messages = {}
-    last_valid_t = -1
-    for t in range(data['start'], data['stop']):
-        if str(t) in data:
-            last_valid_t = str(t)
-        if last_valid_t != -1:
-          messages[t] = data[last_valid_t]
-    f.close()
-    return messages
+  data = json.load(open(path, 'r'))
+  converted_messages = {}
+  for tick, messages in data.items():
+    if tick != 'start' and tick != 'stop':
+      converted_messages[int(tick)] = messages
+  return converted_messages
 
 '''
 UTILITY FUNCTIONS
